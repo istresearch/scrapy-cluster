@@ -1,0 +1,7 @@
+setuptools
+redis
+kafka-python
+docopt
+service_identity
+mock
+jsonschema
