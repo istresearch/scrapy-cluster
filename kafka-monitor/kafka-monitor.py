@@ -152,11 +152,11 @@ def main():
 
        Run the monitor:
 
-            python wat-scrapy-kafka-monitor.py run
+            python kafka-monitor.py run
 
         It'll sit there. In a separate terminal, feed it some data:
 
-            python wat-scrapy-kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
+            python kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
 
         That message will be inserted into the Kafka topic. You should then see the
         monitor terminal pick it up and insert the data into Redis. Or, if you
