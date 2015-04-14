@@ -71,11 +71,7 @@ class KafkaMonitor:
         @param dict: a valid dictionary object
         '''
         # format key
-        ex_res = self.extract(dict['url'])
-        key = "{sid}:{dom}.{suf}:queue".format(
-            sid=dict['spiderid'],
-            dom=ex_res.domain,
-            suf=ex_res.suffix)
+        key = "{sid}:queue".format(sid=dict['spiderid'])
         val = pickle.dumps(dict, protocol=-1)
 
         # shortcut to shove stuff into the priority queue
