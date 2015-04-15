@@ -1,6 +1,8 @@
 # scrapy-cluster
 
-This Scrapy project uses Redis and Kafka to create a distributed scraping
+## CURRENTLY UNDER CONSTRUCTION
+
+This Scrapy project uses Redis and Kafka to create a distributed on demand scraping
 cluster.
 
 The goal is to distribute seed URLs among many waiting spider instances, whose
@@ -15,7 +17,6 @@ and work with the spider entirely via Redis.
 
 ## Dependencies
 
-- scrapy-redis: https://github.com/darkrho/scrapy-redis
 - redis: http://redis.io
 - kafka-python: https://github.com/mumrah/kafka-python
 - kafka: http://kafka.apache.org
