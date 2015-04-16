@@ -5,13 +5,13 @@ The Kafka Monitor serves as the entry point into the crawler architecture. It va
 First, make sure your `settings_crawler.py` and `settings_actions.py` are updated with your Kafka and Redis hosts.
 
 Crawl Request Input:
- <todo>
+ todo
 
 Crawl Request Output:
- <todo>
+ todo
 
 Action Request Input:
- <todo>
+ todo
 
 Action Request Output:
- <todo>
+ todo

@@ -18,5 +18,5 @@ Other core components required to run the cluster
 
 ## Quick start
 
-<todo>
+todo
 

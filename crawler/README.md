@@ -12,4 +12,4 @@ scrapy runspider crawling/spiders/link_spider.py
 
 To run multiple crawlers, simply run in the background across X number of machines. Because the crawlers coordinate their efforts through Redis, any one crawler can be brought up/down in order to add crawling capability.
 
-<todo>
+todo
