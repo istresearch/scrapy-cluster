@@ -1,4 +1,4 @@
-# Specify the host and port to use when connecting to Redis (optional).
+# Specify the host and port to use when connecting to Redis.
 REDIS_HOST = ''
 REDIS_PORT = '6379'
 
