@@ -1,6 +1,6 @@
 # Redis host configuration
-REDIS_HOST = 'server-106'
+REDIS_HOST = ''
 REDIS_PORT = 6379
 
-KAFKA_HOSTS = 'server-107:9092'
+KAFKA_HOSTS = ''
 KAFKA_TOPIC_PREFIX = 'demo'

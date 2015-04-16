@@ -1,9 +1,9 @@
 # Specify the host and port to use when connecting to Redis (optional).
-REDIS_HOST = 'server-106'
+REDIS_HOST = ''
 REDIS_PORT = '6379'
 
 # Kafka server information
-KAFKA_HOSTS = 'server-107:9092'
+KAFKA_HOSTS = ''
 KAFKA_TOPIC_PREFIX = 'demo'
 
 # Scrapy Settings
