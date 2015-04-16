@@ -1,6 +1,6 @@
 # Redis host configuration
-REDIS_HOST = ''
-REDIS_PORT =
+REDIS_HOST = 'server-106'
+REDIS_PORT = 6379
 
-# how often to poll
-POLL_INTERVAL =
+KAFKA_HOSTS = 'server-107:9092'
+KAFKA_TOPIC_PREFIX = 'demo'
