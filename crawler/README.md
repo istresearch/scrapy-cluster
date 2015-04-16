@@ -1,5 +1,15 @@
-Scrapy cannot have a project with ‘-‘ in it, therefore we need to make a generic ‘crawling’ project underneath the versioned folder.
+## Crawler
 
-To run the crawler offline test:
-/opt/miniconda/bin/python tests/tests_offline.py -v
+This is a complete Scrapy crawling project.
 
+First, make sure your `settings.py` is updated with your Kafka and Redis hosts.
+
+To run the crawler offline test to make sure nothing is broken:
+python tests/tests_offline.py -v
+
+Then run the crawler:
+scrapy runspider crawling/spiders/link_spider.py
+
+To run multiple crawlers, simply run in the background across X number of machines. Because the crawlers coordinate their efforts through Redis, any one crawler can be brought up/down in order to add crawling capability.
+
+<todo>

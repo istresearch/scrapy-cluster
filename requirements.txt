@@ -1,3 +1,4 @@
+scrapy
 setuptools
 redis
 kafka-python
