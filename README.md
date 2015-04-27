@@ -29,6 +29,10 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 - Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
 
+## Architecture Overview
+
+![Architecture Overview](https://github.com/istresearch/scrapy-cluster/blob/master/ScrapyClusterArchitecture.jpg "Scrapy Cluster")
+
 ## Quick Start
 
 Please see the [Quick Start](https://github.com/istresearch/scrapy-cluster/blob/master/Quick_Start.md) guide for information on how to get your cluster up and running. For a more in depth overview of the different components, please refer to the README's within each subproject.
