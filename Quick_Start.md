@@ -2,12 +2,14 @@
 
 *This guide does not go into detail as to how everything works, but hopefully will get you scraping quickly. For more information about each process works please see the README's within each sub project.*
 
-1) Make Sure you have Apache Zookeeper, Apache Kafka, and Redis up and running on your cluster. For more information about standing those up, please refer to the links above.
+1) Make Sure you have Apache Zookeeper, Apache Kafka, and Redis up and running on your cluster. For more information about standing those up, please refer to the official project documentation.
 
 2) Download and unzip the project from the sidebar or [here](https://github.com/istresearch/scrapy-cluster/archive/master.zip). Lets assume our project is now in `~/scrapy-cluster`
 
 3) You will now need to configure the following four settings files:
+
 3a) `~/scrapy-cluster/kafka-monitor/settings-crawling.py`
+
 Add your specific configuraiton to `REDIS_HOST`, `REDIS_PORT`, and `KAFKA_HOSTS`.
 
 For example:
@@ -20,6 +22,7 @@ KAFKA_HOSTS = 'server-2:9092'
 This is used to determine where the Kafka Monitor will listen to incoming crawl requests and where send them.
 
 3b) `~/scrapy-cluster/kafka-monitor/settings-actions.py`
+
 Add your specific configuraiton to `REDIS_HOST`, `REDIS_PORT`, and `KAFKA_HOSTS`.
 
 For example:
@@ -32,6 +35,7 @@ KAFKA_HOSTS = 'server-2:9092'
 Notice this is very similar to the first settings file, but the other parameters are different. This settings file is used to listen for action requests and determines where to send them.
 
 3c) `~/scrapy-cluster/crawler/crawling/settings.py`
+
 Add your specific configuraiton to `REDIS_HOST`, `REDIS_PORT`, and `KAFKA_HOSTS`.
 
 For example:
@@ -44,6 +48,7 @@ KAFKA_HOSTS = 'server-2:9092'
 This settings file is used to configure Scrapy. It uses all of the configurations already built in with the project, with a few more to get us into cluster mode. The new settings are utilized by the scheduler and item pipeline.
 
 3d) `~/scrapy-cluster/redis-monitor/settings.py`
+
 Add your specific configuraiton to `REDIS_HOST`, `REDIS_PORT`, and `KAFKA_HOSTS`.
 
 For example:
@@ -89,6 +94,7 @@ This last settings file is used to get information out of the redis queue, and t
 `python kafkadump.py dump demo.outbound_firehose --host=server-2:9092`
 
 5) We now need to feed the cluster a crawl request. This is done via the same kafka-monitor python script, but with different command line arguements.
+
 `python kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"abc123"}' -s settings_crawling.py}'`
 
 You will see the following output on the command line for that successful request:
@@ -113,14 +119,16 @@ You will see the following output on the command line for that successful reques
 7) The Redis Monitor utility is useful for learning about your crawl while it is being processed and sitting in redis, so we will pick a larger site so we can see how it works (Note this requires a full deployment).
 
 Crawl Request:
+
 `python kafka-monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"abc1234", "maxdepth":1}' -s settings_crawling.py}'`
 
 Now send an `info` action request to see what is going on with the crawl:
+
 `python kafka-monitor.py feed -s settings_actions.py '{"action":"info", "appid":"testapp", "uuid":"someuuid", "crawlid":"abc1234", "spiderid":"link"}'`
 
 The following things will occur for this action request:
   1. The Kafka monitor will receive the action request and put it into Redis
-  2. The Redis Monitor will act on the info request, and tally the current pending requests for the particular `spider`, `appid`, and `crawlid`
+  2. The Redis Monitor will act on the info request, and tally the current pending requests for the particular `spiderid`, `appid`, and `crawlid`
   3. The Redis Monitor will send the result back to Kafka
   4. The Kafka Dump utility monitoring the actions will receive a result similar to the following:
 
@@ -129,15 +137,16 @@ The following things will occur for this action request:
 ```
 In this case we had 48 urls pending in the queue, so yours may be slightly different.
 
-8) If the crawl from 7 is still running, lets stop it by issuing a `stop` action request (Note this requires a full deployment).
+8) If the crawl from step 7 is still running, lets stop it by issuing a `stop` action request (Note this requires a full deployment).
 
 Action Request:
+
 `python kafka-monitor.py feed -s settings_actions.py '{"action":"stop", "appid":"testapp", "uuid":"someuuid", "crawlid":"abc1234", "spiderid":"link"}'`
 
 The following things will occur for this action request:
   1. The Kafka monitor will receive the action request and put it into Redis
   2. The Redis Monitor will act on the stop request, and purge the current pending requests for the particular `spider`, `appid`, and `crawlid`
-  3. The Redis Monitor will blacklist the crawlid, so no more pending requests can be generated from the spiders
+  3. The Redis Monitor will blacklist the `crawlid`, so no more pending requests can be generated from the spiders or application
   3. The Redis Monitor will send the purge total result back to Kafka
   4. The Kafka Dump utility monitoring the actions will receive a result similar to the following:
 
