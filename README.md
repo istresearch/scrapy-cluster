@@ -10,13 +10,26 @@ The input to the system is a set of Kafka topics and the output is a set of Kafk
 
 Please see `requirements.txt` for Pip package dependencies across the different sub projects.
 
-Other core components required to run the cluster
+Other important components required to run the cluster
 
+- Python 2.7: https://www.python.org/downloads/
 - Redis: http://redis.io
 - Zookeeper: https://zookeeper.apache.org
 - Kafka: http://kafka.apache.org
 
-## Quick start
+## Core Concepts
 
-todo
+This project tries to bring together a bunch of new concepts to Scrapy and large scale distributed crawling in general. Some bullet points include:
+
+- The spiders are dynamic and on demand, meaning that they allow the arbitrary collection of any web page that is submitted to the scraping cluster
+- Scale scrapy instances across a single machine or multiple machines
+- Coordinate and prioritize their scraping effort for desired sites
+- Persist across scraping jobs or have multiple scraping jobs going at the same time
+- Allows for unparalleled access into the information about your scraping job, what is upcoming, and how the sites are ranked
+- Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
+- Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
+
+## Quick Start
+
+Please see the [Quick Start](https://github.com/istresearch/scrapy-cluster/blob/master/Quick_Start.md) guide for information on how to get your cluster up and running. For a more in depth overview of the different components, please refer to the README's within each subproject.
 
