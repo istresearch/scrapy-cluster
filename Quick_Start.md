@@ -95,7 +95,7 @@ This last settings file is used to get information out of the redis queue, and t
 
 5) We now need to feed the cluster a crawl request. This is done via the same kafka-monitor python script, but with different command line arguements.
 
-`python kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"abc123"}' -s settings_crawling.py}'`
+`python kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"abc123"}' -s settings_crawling.py`
 
 You will see the following output on the command line for that successful request:
 ```
@@ -120,7 +120,7 @@ You will see the following output on the command line for that successful reques
 
 Crawl Request:
 
-`python kafka-monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"abc1234", "maxdepth":1}' -s settings_crawling.py}'`
+`python kafka-monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"abc1234", "maxdepth":1}' -s settings_crawling.py`
 
 Now send an `info` action request to see what is going on with the crawl:
 
@@ -145,7 +145,7 @@ Action Request:
 
 The following things will occur for this action request:
   1. The Kafka monitor will receive the action request and put it into Redis
-  2. The Redis Monitor will act on the stop request, and purge the current pending requests for the particular `spider`, `appid`, and `crawlid`
+  2. The Redis Monitor will act on the stop request, and purge the current pending requests for the particular `spiderid`, `appid`, and `crawlid`
   3. The Redis Monitor will blacklist the `crawlid`, so no more pending requests can be generated from the spiders or application
   3. The Redis Monitor will send the purge total result back to Kafka
   4. The Kafka Dump utility monitoring the actions will receive a result similar to the following:
