@@ -15,14 +15,4 @@ class RawResponseItem(Item):
     headers = Field()
     body = Field()
     links = Field()
-    image_urls = Field()
-    ts = Field()
     attrs = Field()
-    onion = Field()
-
-class ErrorResponseItem(Item):
-    logger = Field()
-    error_request = Field()
-    error_reason = Field()
-    retry_count = Field()
-    status_code = Field()

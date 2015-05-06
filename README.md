@@ -26,7 +26,7 @@ Other important components required to run the cluster
 This project tries to bring together a bunch of new concepts to Scrapy and large scale distributed crawling in general. Some bullet points include:
 
 - The spiders are dynamic and on demand, meaning that they allow the arbitrary collection of any web page that is submitted to the scraping cluster
-- Scale scrapy instances across a single machine or multiple machines
+- Scale Scrapy instances across a single machine or multiple machines
 - Coordinate and prioritize their scraping effort for desired sites
 - Persist across scraping jobs or have multiple scraping jobs going at the same time
 - Allows for unparalleled access into the information about your scraping job, what is upcoming, and how the sites are ranked
@@ -35,7 +35,7 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 
 ## Architecture Overview
 
-![Architecture Overview](https://github.com/istresearch/scrapy-cluster/blob/master/ScrapyClusterArchitecture.jpg "Scrapy Cluster")
+![Architecture Overview](https://github.com/istresearch/scrapy-cluster/blob/master/images/ScrapyClusterArchitecture.jpg "Scrapy Cluster")
 
 ## Quick Start
 
