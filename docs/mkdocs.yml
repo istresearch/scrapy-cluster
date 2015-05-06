@@ -1,0 +1,9 @@
+site_name: Scrapy Cluster
+pages:
+- [index.md, Home]
+- [quickstart.md, Quick Start]
+- [crawler.md, Crawler]
+- [kafka-monitor.md, Kafka Monitor]
+- [redis-monitor.md, Redis Monitor]
+- [license.md, License]
+theme: readthedocs
