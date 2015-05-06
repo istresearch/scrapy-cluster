@@ -3,7 +3,8 @@ pages:
 - [index.md, Home]
 - [quickstart.md, Quick Start]
 - [crawler.md, Crawler]
-- [kafka-monitor.md, Kafka Monitor]
-- [redis-monitor.md, Redis Monitor]
+- [kafkamonitor.md, Kafka Monitor]
+- [redismonitor.md, Redis Monitor]
 - [license.md, License]
 theme: readthedocs
+repo_url: https://github.com/istresearch/scrapy-cluster
