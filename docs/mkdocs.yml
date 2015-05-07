@@ -1,9 +1,9 @@
 site_name: Scrapy Cluster
 pages:
 - [index.md, Home]
-#- [quickstart.md, Quick Start]
-#- [crawler.md, Crawler]
-#- [kafkamonitor.md, Kafka Monitor]
-#- [redismonitor.md, Redis Monitor]
-#- [license.md, License]
+- [quickstart.md, Quick Start]
+- [crawler.md, Crawler]
+- [kafkamonitor.md, Kafka Monitor]
+- [redismonitor.md, Redis Monitor]
+- [license.md, License]
 repo_url: https://github.com/istresearch/scrapy-cluster
