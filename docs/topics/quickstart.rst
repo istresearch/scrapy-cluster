@@ -13,8 +13,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 
 a) ``~/scrapy-cluster/kafka-monitor/settings-crawling.py``
 
-Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and
-``KAFKA_HOSTS``.
+Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and ``KAFKA_HOSTS``.
 
 For example:
 
@@ -28,8 +27,7 @@ This is used to determine where the Kafka Monitor will listen to incoming crawl 
 
 b) ``~/scrapy-cluster/kafka-monitor/settings-actions.py``
 
-Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and
-``KAFKA_HOSTS``.
+Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and ``KAFKA_HOSTS``.
 
 For example:
 
@@ -43,8 +41,7 @@ Notice this is very similar to the first settings file, but the other parameters
 
 c) ``~/scrapy-cluster/crawler/crawling/settings.py``
 
-Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and
-``KAFKA_HOSTS``.
+Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and ``KAFKA_HOSTS``.
 
 For example:
 
@@ -58,8 +55,7 @@ This settings file is used to configure Scrapy. It uses all of the configuration
 
 d) ``~/scrapy-cluster/redis-monitor/settings.py``
 
-Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and
-``KAFKA_HOSTS``.
+Add your specific configuraiton to ``REDIS_HOST``, ``REDIS_PORT``, and ``KAFKA_HOSTS``.
 
 For example:
 
