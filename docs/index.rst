@@ -6,12 +6,14 @@
 Welcome to Scrapy Cluster's documentation!
 ==========================================
 
+This documentation provides everything you need to know about the Scrapy based distributed crawling project, Scrapy Cluster.
+
 Contents:
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    topics/architecture
+    topics/overview
     topics/quickstart
     topics/crawler
     topics/kafkamonitor

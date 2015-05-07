@@ -1,5 +1,5 @@
 Redis Monitor
--------------
+=============
 
 The Redis Monitor serves to moderate the redis based crawling queue.
 
