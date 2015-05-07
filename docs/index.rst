@@ -3,10 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Scrapy Cluster's documentation!
+Scrapy Cluster |version| Documentation
 ==========================================
 
 This documentation provides everything you need to know about the Scrapy based distributed crawling project, Scrapy Cluster.
+
+.. note:: As of 4/27/15 an official tagged release is getting close, we are just trying to consolidate documentation and ensure everything works easily for new users. Thank you for your patience and interest! If you would like to jump right in anyways, the :doc:`topics/quickstart` guide is complete.
 
 Contents:
 

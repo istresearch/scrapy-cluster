@@ -69,7 +69,7 @@ This last settings file is used to get information out of the redis queue, and t
 
 4) At this point we can start up either a bare bones cluster, or a fully operational cluster:
 
-*Note you can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.*
+.. note:: You can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.
 
 **Bare Bones:**
 
@@ -158,7 +158,7 @@ You will see the following output on the command line for that successful reques
   #. After the scraped item is yielded to the Scrapy item pipeline, the Kafka Pipeline object will push the result back to Kafka
   #. The Kafka Dump utility will read from the resulting output topic, and print out the raw scrape object it received
 
-7) The Redis Monitor utility is useful for learning about your crawl while it is being processed and sitting in redis, so we will pick a larger site so we can see how it works (Note this requires a full deployment).
+7) The Redis Monitor utility is useful for learning about your crawl while it is being processed and sitting in redis, so we will pick a larger site so we can see how it works (this requires a full deployment).
 
 Crawl Request:
 
@@ -186,7 +186,7 @@ The following things will occur for this action request:
 
 In this case we had 48 urls pending in the queue, so yours may be slightly different.
 
-8) If the crawl from step 7 is still running, lets stop it by issuing a ``stop`` action request (Note this requires a full deployment).
+8) If the crawl from step 7 is still running, lets stop it by issuing a ``stop`` action request (this requires a full deployment).
 
 Action Request:
 

@@ -115,11 +115,13 @@ redis\_dupefilter.py
 
 An extremely basic class that serves as a crawl link duplication filter utilizing a Redis Set. This allows two important things:
 
-- Any unique ``crawl id`` will not recrawl a url it has already seen
+- Any unique ``crawlid`` will not recrawl a url it has already seen
 
-- New crawl requests with a **different** ``crawl id`` can crawl those same links, without being effected by other crawl duplication filters
+- New crawl requests with a **different** ``crawlid`` can crawl those same links, without being effected by other crawl duplication filters
 
-This allows for a crawl job over a variety of links to not waste resources by crawling the same things. If you would like to recrawl those same urls, simply submit the same url with a different crawl identifier to the API. If you would like to continue to expand your crawl frontier, submit a crawl with the same identifier. Note that if none of your urls have changed then your crawl will halt because it found zero new links to spider.
+This allows for a crawl job over a variety of links to not waste resources by crawling the same things. If you would like to recrawl those same urls, simply submit the same url with a different crawl identifier to the API. If you would like to continue to expand your crawl frontier, submit a crawl with the same identifier.
+
+.. note:: If you continue to submit the same ``crawlid`` and none of the urls have changed, the crawl prematurely stop because it found zero new links to spider.
 
 redis\_queue.py
 ^^^^^^^^^^^^^^^
@@ -146,7 +148,7 @@ redis\_spider.py
 
 A base class that extends the default Scrapy Spider so we can crawl continuously in cluster mode. All you need to do is implement the ``parse`` method and everything else is taken care of behind the scenes.
 
-*Side Note: There is a method within this class called ``reconstruct_headers()`` that is very important you take advantage of! The issue we ran into was that we were dropping data in our headers fields when encoding the item into json. The Scrapy shell didn’t see this issue, print statements couldn’t find it, but it boiled down to the python list being treated as a single element. We think this may be a formal defect in Python 2.7 but have not made an issue yet as the bug needs much more testing.*
+.. note:: There is a method within this class called ``reconstruct_headers()`` that is very important you take advantage of! The issue we ran into was that we were dropping data in our headers fields when encoding the item into json. The Scrapy shell didn’t see this issue, print statements couldn’t find it, but it boiled down to the python list being treated as a single element. We think this may be a formal defect in Python 2.7 but have not made an issue yet as the bug needs much more testing.*
 
 link\_spider.py
 ^^^^^^^^^^^^^^^
@@ -159,7 +161,7 @@ An introduction into generic link crawling, the LinkSpider inherits from the bas
 
 These two things enable generic depth based crawling, and the majority of the code used within the class is to generate those two objects. For a single page this spider might yield 100 urls to crawl and 1 html item to be processed by the Kafka pipeline.
 
-Note that we do not need to use the duplication filter here, as the scheduler handles that for us. All this spider cares about is generating the two items listed above.
+.. note:: We do not need to use the duplication filter here, as the scheduler handles that for us. All this spider cares about is generating the two items listed above.
 
 lxmlhtml.py
 ^^^^^^^^^^^
