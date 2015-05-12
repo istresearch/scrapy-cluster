@@ -6,10 +6,6 @@ The goal is to distribute seed URLs among many waiting spider instances, whose r
 
 The input to the system is a set of Kafka topics and the output is a set of Kafka topics. Raw HTML and assets are crawled interactively, spidered, and output to the log. For easy local development, you can also disable the Kafka portions and work with the spider entirely via Redis, although this is not recommended due to the serialization of of the crawl requests.
 
-*Note as of 4/27/15:*
-
-*An official tagged release is getting close, we are just trying to consolidate documentation and ensure everything works easily for new users. Thank you for your patience and interest! If you would like to jump right in anyways, the [Quick Start](https://github.com/istresearch/scrapy-cluster/blob/master/Quick_Start.md) guide is complete.*
-
 ## Dependencies
 
 Please see `requirements.txt` for Pip package dependencies across the different sub projects.
@@ -33,11 +29,6 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 - Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
 
-## Architecture Overview
+## Documentation
 
-![Architecture Overview](https://github.com/istresearch/scrapy-cluster/blob/master/images/ScrapyClusterArchitecture.jpg "Scrapy Cluster")
-
-## Quick Start
-
-Please see the [Quick Start](https://github.com/istresearch/scrapy-cluster/blob/master/Quick_Start.md) guide for information on how to get your cluster up and running. For a more in depth overview of the different components, please refer to the README's within each subproject.
-
+Please check out our official [Scrapy Cluster documentation](http://scrapy-cluster.readthedocs.org/) for more details on how everything works!

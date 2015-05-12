@@ -29,13 +29,9 @@ Then run the crawler:
 
 To run multiple crawlers, simply run in the background across X number of machines. Because the crawlers coordinate their efforts through Redis, any one crawler can be brought up/down in order to add crawling capability.
 
--  To execute a crawl, please refer the `Kafka Monitor`_ documentation
+-  To execute a crawl, please refer the :doc:`./kafkamonitor` documentation
 
--  To learn more about how to see crawl info, please see the `Redis
-   Monitor`_ documentation
-
-.. _Kafka Monitor: https://github.com/istresearch/scrapy-cluster/blob/master/kafka-monitor/README.md
-.. _Redis Monitor: https://github.com/istresearch/scrapy-cluster/blob/master/redis-monitor/README.md
+-  To learn more about how to see crawl info, please see the :doc:`./redismonitor` documentation
 
 Design Considerations
 ---------------------

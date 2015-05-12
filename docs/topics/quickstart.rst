@@ -7,6 +7,8 @@ Quick Start
 
 2) Download and unzip the project `here`_.
 
+.. _here: https://github.com/istresearch/scrapy-cluster/archive/master.zip
+
 Lets assume our project is now in ``~/scrapy-cluster``
 
 3) You will now need to configure the following four settings files:
@@ -91,7 +93,6 @@ This last settings file is used to get information out of the redis queue, and t
 
        python kafkadump.py dump demo.crawled_firehose --host=server-2:9092
 
-.. _here: https://github.com/istresearch/scrapy-cluster/archive/master.zip
 
 **Fully Operational:**
 
