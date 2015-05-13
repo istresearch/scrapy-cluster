@@ -10,16 +10,44 @@ This documentation provides everything you need to know about the Scrapy based d
 
 .. note:: As of 4/27/15 an official tagged release is getting close, we are just trying to consolidate documentation and ensure everything works easily for new users. Thank you for your patience and interest! If you would like to jump right in anyways, the :doc:`topics/quickstart` guide is complete.
 
-Contents:
-
 .. toctree::
+    :hidden:
     :maxdepth: 1
 
     topics/overview
     topics/quickstart
-    topics/crawler
     topics/kafkamonitor
+    topics/crawler
     topics/redismonitor
+    topics/advanced
     topics/license
 
+Getting Started
+---------------
 
+:doc:`topics/overview`
+    Learn about the Scrapy Cluster Architecture.
+
+:doc:`topics/quickstart`
+    A Quick Start guide to those who want to jump right in.
+
+Architectural Components
+------------------------
+
+:doc:`topics/kafkamonitor`
+    The gateway into your Scrapy Cluster.
+
+:doc:`topics/crawler`
+    The crawling plant behind the scenes.
+
+:doc:`topics/redismonitor`
+    Provides the insight in how your crawls are doing.
+
+Miscellaneous
+-------------
+
+:doc:`topics/advanced`
+    Advanced items to consider when running Scrapy Cluster.
+
+:doc:`topics/license`
+    Scrapy Cluster is licensed under the MIT License.

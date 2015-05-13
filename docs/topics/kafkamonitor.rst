@@ -70,7 +70,9 @@ Outbound Crawl Result Kafka Topics:
 
 - ``demo.crawled_firehouse`` - A firehose topic of all resulting crawls within the system. Any single page crawled by the Scrapy Cluster is guaranteed to come out this pipe.
 
-- ``demo.crawled_<appid>`` - A special topic created for unique applications. Any application can listen to their own specific crawl results by listening to the the topic created under the ``appid`` they used to submit the request. These topics a a subset of the crawl firehose data and only contain the results that are applicable to the application who submitted it.
+- ``demo.crawled_<appid>`` - A special topic created for unique applications that submit crawl requests. Any application can listen to their own specific crawl results by listening to the the topic created under the ``appid`` they used to submit the request. These topics are a subset of the crawl firehose data and only contain the results that are applicable to the application who submitted it.
+
+.. note:: For more information about the topics generated and used by the Redis Monitor, please see the :doc:`./redismonitor` documentation
 
 Example Crawl Requests:
 
