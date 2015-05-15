@@ -131,6 +131,7 @@ Crawl ID Info Response from Kafka
 The ``stop`` action is used to abruptly halt the current crawl job. A request takes the following form:
 
 Stop Request
+
     ::
 
         python kafka-monitor.py feed -s settings_actions.py '{"action":"stop", "appid":"testapp", "uuid":"someuuid2", "crawlid":"ABC123", "spiderid":"link"}'

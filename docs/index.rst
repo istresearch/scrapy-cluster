@@ -41,7 +41,7 @@ Architectural Components
     The crawling plant behind the scenes.
 
 :doc:`topics/redismonitor`
-    Provides the insight in how your crawls are doing.
+    Provides the insight into how your crawls are doing.
 
 Miscellaneous
 -------------
