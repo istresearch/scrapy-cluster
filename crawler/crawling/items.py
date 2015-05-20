@@ -4,7 +4,6 @@
 
 from scrapy import Item, Field
 
-
 class RawResponseItem(Item):
     appid = Field()
     crawlid = Field()

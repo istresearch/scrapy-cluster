@@ -10,9 +10,6 @@ import logging
 
 from kafka import KafkaClient, SimpleProducer
 
-from pythonjsonlogger import jsonlogger
-from logging.handlers import RotatingFileHandler
-
 from crawling.items import RawResponseItem
 
 class KafkaPipeline(object):
