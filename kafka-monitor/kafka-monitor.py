@@ -95,8 +95,6 @@ class KafkaMonitor:
                             crawlid=dict['crawlid'])
             self.redis_conn.set(key, dict['expires'])
 
-        print 'Added crawl to Redis'
-
     def handle_action_request(self, dict):
         '''
         Processes a vaild action request
@@ -113,8 +111,6 @@ class KafkaMonitor:
             key = key + ":" + dict['crawlid']
 
         self.redis_conn.set(key, dict['uuid'])
-
-        print 'Added action to Redis'
 
     def _main_loop(self):
         '''

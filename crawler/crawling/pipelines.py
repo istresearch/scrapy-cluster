@@ -14,7 +14,6 @@ from pythonjsonlogger import jsonlogger
 from logging.handlers import RotatingFileHandler
 
 from crawling.items import RawResponseItem
-from crawling.items import ErrorResponseItem
 
 class KafkaPipeline(object):
 
@@ -38,7 +37,6 @@ class KafkaPipeline(object):
         return cls.from_settings(crawler.settings)
 
     def process_item(self, item, spider):
-        print "got item"
         datum = dict(item)
         datum["timestamp"] = dt.datetime.utcnow().isoformat()
         prefix = self.topic_prefix
@@ -55,7 +53,7 @@ class KafkaPipeline(object):
 
         self.producer.send_messages(appid_topic, message)
         self.producer.send_messages(firehose_topic, message)
-        print "sent to kafka"
+
         return item
 
     def checkTopic(self, topicName):

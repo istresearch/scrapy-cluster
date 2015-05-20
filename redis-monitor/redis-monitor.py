@@ -65,21 +65,17 @@ class RedisMonitor:
             if len(elements) == 4:
                 dict['crawlid'] = elements[3]
 
-            # we received the info message
-            print "received info request"
-
             # generate the information requested
             if 'crawlid' in dict:
-                print "got crawlid info"
                 master = self._build_crawlid_info(master, dict)
             else:
-                print "got appid info"
                 master = self._build_appid_info(master, dict)
 
             self.redis_conn.delete(key)
 
             if self._send_to_kafka(master):
-                print 'Sent info to kafka'
+                pass
+                #print 'Sent info to kafka'
             else:
                 print 'Failed to send info to kafka'
 
@@ -266,7 +262,8 @@ class RedisMonitor:
                 self.redis_conn.delete(key)
 
                 if self._send_to_kafka(extras):
-                    print 'Sent expired ack to kafka'
+                    #print 'Sent expired ack to kafka'
+                    pass
                 else:
                     print 'Failed to send expired ack to kafka'
 
@@ -281,9 +278,6 @@ class RedisMonitor:
             appid = elements[2]
             crawlid = elements[3]
             uuid = self.redis_conn.get(key)
-
-            # log we received the stop message
-            print 'Received stop request'
 
             redis_key = spiderid + ":blacklist"
             value = '{appid}||{crawlid}'.format(appid=appid,
@@ -312,7 +306,7 @@ class RedisMonitor:
                                         aid=appid,
                                         cid=crawlid)
                 self.redis_conn.delete(timeout_key)
-                print 'Sent stop ack to kafka'
+                #print 'Sent stop ack to kafka'
             else:
                 print 'Failed to send stop ack to kafka'
 

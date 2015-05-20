@@ -19,7 +19,6 @@ from crawling.spiders.link_spider import LinkSpider
 from scrapy.http import HtmlResponse
 from scrapy.http import Request
 from crawling.items import RawResponseItem
-from crawling.items import ErrorResponseItem
 
 import Queue
 from redis.exceptions import WatchError
