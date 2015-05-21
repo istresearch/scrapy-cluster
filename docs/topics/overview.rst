@@ -7,8 +7,6 @@ The goal is to distribute seed URLs among many waiting spider instances, whose r
 
 The input to the system is a set of Kafka topics and the output is a set of Kafka topics. Raw HTML and assets are crawled interactively, spidered, and output to the log. For easy local development, you can also disable the Kafka portions and work with the spider entirely via Redis, although this is not recommended due to the serialization of of the crawl requests.
 
-.. note:: As of 4/27/15 an official tagged release is getting close, we are just trying to consolidate documentation and ensure everything works easily for new users. Thank you for your patience and interest! If you would like to jump right in anyways, the :doc:`./quickstart` guide is complete.
-
 Dependencies
 ------------
 

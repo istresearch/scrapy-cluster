@@ -46,7 +46,7 @@ Each crawl job that is submitted to the cluster is given a priority, and for eve
    :alt: Breath First
    :align:   center
 
-As you can see above. the initial seed url generates 4 new links. Since we are using a priority based queue, the spiders continue to pop from the highest priority crawl request, and then decrease the priority for level deep they are from the parent request. Any new links are fed back into the same exact queue mechanism but with a lower priority to allow for the equal levels links to be crawled first.
+As you can see above. the initial seed url generates 4 new links. Since we are using a priority based queue, the spiders continue to pop from the highest priority crawl request, and then decrease the priority for level deep they are from the parent request. Any new links are fed back into the same exact queue mechanism but with a lower priority to allow for the equal leveled links to be crawled first.
 
 When a spider encounters a link it has already seen, the duplication filter based on the request’s ``crawlid`` will filter it out. The spiders will continue to traverse the resulting graph generated until they have reached either their maximum link depth or have exhausted all possible urls.
 
@@ -144,7 +144,7 @@ redis\_spider.py
 
 A base class that extends the default Scrapy Spider so we can crawl continuously in cluster mode. All you need to do is implement the ``parse`` method and everything else is taken care of behind the scenes.
 
-.. note:: There is a method within this class called ``reconstruct_headers()`` that is very important you take advantage of! The issue we ran into was that we were dropping data in our headers fields when encoding the item into json. The Scrapy shell didn’t see this issue, print statements couldn’t find it, but it boiled down to the python list being treated as a single element. We think this may be a formal defect in Python 2.7 but have not made an issue yet as the bug needs much more testing.*
+.. note:: There is a method within this class called ``reconstruct_headers()`` that is very important you take advantage of! The issue we ran into was that we were dropping data in our headers fields when encoding the item into json. The Scrapy shell didn’t see this issue, print statements couldn’t find it, but it boiled down to the python list being treated as a single element. We think this may be a formal defect in Python 2.7 but have not made an issue yet as the bug needs much more testing.
 
 link\_spider.py
 ^^^^^^^^^^^^^^^

@@ -8,8 +8,6 @@ Scrapy Cluster |version| Documentation
 
 This documentation provides everything you need to know about the Scrapy based distributed crawling project, Scrapy Cluster.
 
-.. note:: As of 5/15/15 an official tagged release is getting close, we are just trying to ensure everything works easily for new users and iron out any linger documentation issues. Thank you for your patience and interest!
-
 .. toctree::
     :hidden:
     :maxdepth: 1

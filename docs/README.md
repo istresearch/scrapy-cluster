@@ -13,4 +13,4 @@ Serving on http://127.0.0.1:8000
 ...
 ```
 
-in order to view the documentation as you live edit it on your machine. Note that the `default` theme is overridden by readthedocs when uploading, so don't mind that the local documentation is different from what you see online.
+You will now be able to view the documentation as you live edit it on your machine. Note that the `default` theme is overridden by readthedocs when uploading, so don't mind that the local documentation is different from what you see online.
