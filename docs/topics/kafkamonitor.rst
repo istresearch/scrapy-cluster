@@ -90,7 +90,7 @@ Example Crawl Requests:
 
 ::
 
-    python wat-scrapy-kafka-monitor.py feed '{"url": "http://aol.com/", "appid":"testapp", "crawlid":"a23bbqwewqe", "maxdepth":3, "allowed_domains":["aol.com"], "expires":1423591888}' -s settings_crawling.py
+    python kafka-monitor.py feed '{"url": "http://aol.com/", "appid":"testapp", "crawlid":"a23bbqwewqe", "maxdepth":3, "allowed_domains":["aol.com"], "expires":1423591888}' -s settings_crawling.py
 
 - Submits an aol.com crawl that runs for (at the time) 3 minutes with a large depth of 3, but limits the crawlers to only the ``aol.com`` domain so as to not get lost in the weeds of the internet.
 
