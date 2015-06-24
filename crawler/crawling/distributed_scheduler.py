@@ -117,6 +117,9 @@ class DistributedScheduler(object):
             '_encoding': request._encoding,
             'priority': request.priority,
             'dont_filter': request.dont_filter,
+             # callback/errback are assumed to be a bound instance of the spider
+            'callback': None if request.callback is None else request.callback.func_name,
+            'errback': None if request.errback is None else request.errback.func_name,
         }
         return req_dict
 
