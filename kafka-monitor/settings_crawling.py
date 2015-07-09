@@ -9,3 +9,6 @@ KAFKA_GROUP = 'demo-group'
 
 SCHEMA = "scraper_schema.json"
 SCHEMA_METHOD = "handle_crawl_request"
+
+TLD_DEST = ""
+TLD_PATH = "file://" + TLD_DEST

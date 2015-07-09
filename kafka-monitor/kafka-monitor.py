@@ -9,6 +9,7 @@ import time
 import redis
 import json
 import sys
+import tldextract
 import importlib
 
 from jsonschema import ValidationError
@@ -51,6 +52,11 @@ class KafkaMonitor:
 
         self.result_method = self.get_method(self.settings.SCHEMA_METHOD)
 
+        # we already have a cached domain list
+        self.extract = tldextract.TLDExtract(
+                            suffix_list_url=self.settings.TLD_PATH,
+                            cache_file=None)
+
         self.validator = self.extend_with_default(Draft4Validator)
 
     def extend_with_default(self, validator_class):
@@ -81,7 +87,12 @@ class KafkaMonitor:
         @param dict: a valid dictionary object
         '''
         # format key
-        key = "{sid}:queue".format(sid=dict['spiderid'])
+        ex_res = self.extract(dict['url'])
+        key = "{sid}:{dom}.{suf}:queue".format(
+            sid=dict['spiderid'],
+            dom=ex_res.domain,
+            suf=ex_res.suffix)
+
         val = pickle.dumps(dict, protocol=-1)
 
         # shortcut to shove stuff into the priority queue
