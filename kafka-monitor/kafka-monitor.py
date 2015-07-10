@@ -52,10 +52,8 @@ class KafkaMonitor:
 
         self.result_method = self.get_method(self.settings.SCHEMA_METHOD)
 
-        # we already have a cached domain list
-        self.extract = tldextract.TLDExtract(
-                            suffix_list_url=self.settings.TLD_PATH,
-                            cache_file=None)
+        # set up tldextract
+        self.extract = tldextract.TLDExtract()
 
         self.validator = self.extend_with_default(Draft4Validator)
 
