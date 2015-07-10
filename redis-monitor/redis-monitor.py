@@ -120,42 +120,55 @@ class RedisMonitor:
         master['crawlids'] = {}
         master['appid'] = dict['appid']
 
-        match_string = '{sid}:queue'.format(sid=dict['spiderid'])
+        # get all domain queues
+        match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
+        for key in self.redis_conn.scan_iter(match=match_string):
+            domain = key.split(":")[1]
+            sortedDict = self._get_bin(key)
 
-        sortedDict = self._get_bin(match_string)
+            # now iterate through binned dict
+            for score in sortedDict:
+                for item in sortedDict[score]:
+                    if 'meta' in item:
+                        item = item['meta']
+                    if item['appid'] == dict['appid']:
+                        crawlid = item['crawlid']
 
-        # now iterate through binned dict
-        for score in sortedDict:
-            for item in sortedDict[score]:
-                if 'meta' in item:
-                    item = item['meta']
-                if item['appid'] == dict['appid']:
-                    crawlid = item['crawlid']
+                        # add new crawlid to master dict
+                        if crawlid not in master['crawlids']:
+                            master['crawlids'][crawlid] = {}
+                            master['crawlids'][crawlid]['total'] = 0
+                            master['crawlids'][crawlid]['domains'] = {}
+                            master['crawlids'][crawlid]['distinct_domains'] = 0
 
-                    # add new crawlid to master dict
-                    if crawlid not in master['crawlids']:
-                        master['crawlids'][crawlid] = {}
-                        master['crawlids'][crawlid]['total'] = 0
-                        master['crawlids'][crawlid]['high_priority'] = -9999
-                        master['crawlids'][crawlid]['low_priority'] = 9999
+                            timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(
+                                        sid=dict['spiderid'],
+                                        aid=dict['appid'],
+                                        cid=crawlid)
+                            if self.redis_conn.exists(timeout_key):
+                                master['crawlids'][crawlid]['expires'] = self.redis_conn.get(timeout_key)
 
-                        timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(
-                                    sid=dict['spiderid'],
-                                    aid=dict['appid'],
-                                    cid=crawlid)
-                        if self.redis_conn.exists(timeout_key):
-                            master['crawlids'][crawlid]['expires'] = self.redis_conn.get(timeout_key)
+                            master['total_crawlids'] = master['total_crawlids'] + 1
 
-                        master['total_crawlids'] = master['total_crawlids'] + 1
+                        master['crawlids'][crawlid]['total'] = master['crawlids'][crawlid]['total'] + 1
 
-                    if item['priority'] > master['crawlids'][crawlid]['high_priority']:
-                        master['crawlids'][crawlid]['high_priority'] = item['priority']
+                        if domain not in master['crawlids'][crawlid]['domains']:
+                            master['crawlids'][crawlid]['domains'][domain] = {}
+                            master['crawlids'][crawlid]['domains'][domain]['total'] = 0
+                            master['crawlids'][crawlid]['domains'][domain]['high_priority'] = -9999
+                            master['crawlids'][crawlid]['domains'][domain]['low_priority'] = 9999
+                            master['crawlids'][crawlid]['distinct_domains'] = master['crawlids'][crawlid]['distinct_domains'] + 1
+                            master['total_domains'] = master['total_domains'] + 1
 
-                    if item['priority'] < master['crawlids'][crawlid]['low_priority']:
-                        master['crawlids'][crawlid]['low_priority'] = item['priority']
+                        master['crawlids'][crawlid]['domains'][domain]['total'] = master['crawlids'][crawlid]['domains'][domain]['total'] + 1
 
-                    master['crawlids'][crawlid]['total'] = master['crawlids'][crawlid]['total'] + 1
-                    master['total_pending'] = master['total_pending'] + 1
+                        if item['priority'] > master['crawlids'][crawlid]['domains'][domain]['high_priority']:
+                            master['crawlids'][crawlid]['domains'][domain]['high_priority'] = item['priority']
+
+                        if item['priority'] < master['crawlids'][crawlid]['domains'][domain]['low_priority']:
+                            master['crawlids'][crawlid]['domains'][domain]['low_priority'] = item['priority']
+
+                        master['total_pending'] = master['total_pending'] + 1
 
         return master
 
@@ -189,8 +202,10 @@ class RedisMonitor:
         @return: the crawlid info object
         '''
         master['total_pending'] = 0
+        master['total_domains'] = 0
         master['appid'] = dict['appid']
         master['crawlid'] = dict['crawlid']
+        master['domains'] = {}
 
         timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(sid=dict['spiderid'],
                                                         aid=dict['appid'],
@@ -199,30 +214,34 @@ class RedisMonitor:
             master['expires'] = self.redis_conn.get(timeout_key)
 
         # get all domain queues
-        match_string = '{sid}:queue'.format(sid=dict['spiderid'])
-        sortedDict = self._get_bin(match_string)
+        match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
+        for key in self.redis_conn.scan_iter(match=match_string):
+            domain = key.split(":")[1]
+            sortedDict = self._get_bin(key)
 
-        # now iterate through binned dict
-        for score in sortedDict:
-            for item in sortedDict[score]:
-                if 'meta' in item:
-                    item = item['meta']
-                if item['appid'] == dict['appid'] and \
-                                item['crawlid'] == dict['crawlid']:
+            # now iterate through binned dict
+            for score in sortedDict:
+                for item in sortedDict[score]:
+                    if 'meta' in item:
+                        item = item['meta']
+                    if item['appid'] == dict['appid'] and \
+                                    item['crawlid'] == dict['crawlid']:
+                        if domain not in master['domains']:
+                            master['domains'][domain] = {}
+                            master['domains'][domain]['total'] = 0
+                            master['domains'][domain]['high_priority'] = -9999
+                            master['domains'][domain]['low_priority'] = 9999
+                            master['total_domains'] = master['total_domains'] + 1
 
-                    if 'high_priority' not in master:
-                        master['high_priority'] = -99999
+                        master['domains'][domain]['total'] = master['domains'][domain]['total'] + 1
 
-                    if 'low_priority' not in master:
-                        master['low_priority'] = 99999
+                        if item['priority'] > master['domains'][domain]['high_priority']:
+                            master['domains'][domain]['high_priority'] = item['priority']
 
-                    if item['priority'] > master['high_priority']:
-                        master['high_priority'] = item['priority']
+                        if item['priority'] < master['domains'][domain]['low_priority']:
+                            master['domains'][domain]['low_priority'] = item['priority']
 
-                    if item['priority'] < master['low_priority']:
-                        master['low_priority'] = item['priority']
-
-                    master['total_pending'] = master['total_pending'] + 1
+                        master['total_pending'] = master['total_pending'] + 1
 
         return master
 
@@ -337,17 +356,18 @@ class RedisMonitor:
         '''
         total_purged = 0
 
-        match_string = '{sid}:queue'.format(sid=spiderid)
+        match_string = '{sid}:*:queue'.format(sid=spiderid)
         # using scan for speed vs keys
-        for item in self.redis_conn.zscan_iter(match_string):
-            item_key = item[0]
-            item = pickle.loads(item_key)
-            if 'meta' in item:
-                item = item['meta']
+        for key in self.redis_conn.scan_iter(match=match_string):
+            for item in self.redis_conn.zscan_iter(key):
+                item_key = item[0]
+                item = pickle.loads(item_key)
+                if 'meta' in item:
+                    item = item['meta']
 
-            if item['appid'] == appid and item['crawlid'] == crawlid:
-                self.redis_conn.zrem(match_string, item_key)
-                total_purged = total_purged + 1
+                if item['appid'] == appid and item['crawlid'] == crawlid:
+                    self.redis_conn.zrem(key, item_key)
+                    total_purged = total_purged + 1
 
         return total_purged
 
