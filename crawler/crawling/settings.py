@@ -22,6 +22,9 @@ SCHEDULER = "crawling.distributed_scheduler.DistributedScheduler"
 # Don't cleanup redis queues, allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 
+# seconds to wait between seeing new queues, cannot be faster than spider_idle time of 5
+SCHEDULER_QUEUE_REFRESH = 10
+
 # how long we want the duplicate timeout queues to stick around in seconds
 DUPEFILTER_TIMEOUT = 60
 

@@ -6,6 +6,7 @@ import redis
 import json
 import random
 import time
+import tldextract
 import urllib
 import re
 
@@ -20,42 +21,59 @@ except ImportError:
 class DistributedScheduler(object):
     '''
     Scrapy request scheduler that utilizes Priority Queues
-    to moderate scrape requests within a distributed scrapy
+    to moderate different domain scrape requests within a distributed scrapy
     cluster
     '''
     redis_conn = None # the redis connection
-    queue = None # the queue to use for crawling
+    queue_dict = None # the dict of throttled queues
     spider = None # the spider using this scheduler
+    queue_keys = None # the list of current queues
     queue_class = None # the class to use for the queue
     dupefilter = None # the redis dupefilter
+    update_time = 0 # the last time the queues were updated
+    update_interval = 0 # how often to update the queues
+    extract = None # the tld extractor
     item_retries = 0 # the number of extra tries to get an item
 
-    def __init__(self, server, persist, timeout, retries):
+    def __init__(self, server, persist, update_int, timeout, retries):
         '''
         Initialize the scheduler
         '''
         self.redis_conn = server
         self.persist = persist
+        self.queue_dict = {}
+        self.update_interval = update_int
         self.rfp_timeout = timeout
         self.item_retires = retries
 
-    def setup(self):
+        # set up tldextract
+        self.extract = tldextract.TLDExtract()
+
+    def update_queues(self):
         '''
-        Used to initialize things when using mock
-        spider.name is not set yet
+        Updates the in memory list of the redis queues
+        Creates new queue instances if it does not have them
         '''
-        self.queue = RedisPriorityQueue(self.redis_conn,
-                                        self.spider.name + ":queue")
+        self.queue_keys = self.redis_conn.keys(self.spider.name + ":*:queue")
+
+        for key in self.queue_keys:
+            # add the tld from the key `type:tld:queue`
+            the_domain = re.split(':', key)[1]
+            the_key = self.spider.name + ":" + the_domain
+
+            if key not in self.queue_dict:
+                self.queue_dict[key] = RedisPriorityQueue(self.redis_conn, the_key)
 
     @classmethod
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
                                             port=settings.get('REDIS_PORT'))
         persist = settings.get('SCHEDULER_PERSIST', True)
+        up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         timeout = settings.get('DUPEFILTER_TIMEOUT', 600)
         retries = settings.get('SCHEDULER_ITEM_RETRIES', 3)
 
-        return cls(server, persist, timeout, retries)
+        return cls(server, persist, up_int, timeout, retries)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -63,7 +81,7 @@ class DistributedScheduler(object):
 
     def open(self, spider):
         self.spider = spider
-        self.setup()
+        self.update_queues()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
                             self.spider.name + ':dupefilter', self.rfp_timeout)
 
@@ -85,7 +103,7 @@ class DistributedScheduler(object):
 
     def enqueue_request(self, request):
         '''
-        Pushes a request from the spider back into the queue
+        Pushes a request from the spider into the proper queue
         '''
         if not request.dont_filter and self.dupefilter.request_seen(request):
             return
@@ -93,13 +111,28 @@ class DistributedScheduler(object):
 
         if not self.is_blacklisted(req_dict['meta']['appid'],
                                     req_dict['meta']['crawlid']):
-            key = "{sid}:queue".format(sid=req_dict['meta']['spiderid'])
+            # grab the tld of the request
+            ex_res = self.extract(req_dict['url'])
+            key = "{sid}:{dom}.{suf}:queue".format(
+                sid=req_dict['meta']['spiderid'],
+                dom=ex_res.domain,
+                suf=ex_res.suffix)
+
             curr_time = time.time()
 
             # insert if crawl never expires (0) or time < expires
             if req_dict['meta']['expires'] == 0 or \
                     curr_time < req_dict['meta']['expires']:
-                self.queue.push(req_dict, req_dict['meta']['priority'])
+                # we may already have the queue in memory
+                if key in self.queue_keys:
+                    self.queue_dict[key].push(req_dict,
+                                            req_dict['meta']['priority'])
+                else:
+                    # shoving into a new redis queue, negative b/c of sorted sets
+                    # this will populate ourself and other schedulers when
+                    # they call update_queues
+                    self.redis_conn.zadd(key, pickle.dumps(req_dict, protocol=-1),
+                                        -req_dict['meta']['priority'])
 
     def request_to_dict(self, request):
         '''
@@ -125,16 +158,17 @@ class DistributedScheduler(object):
 
     def find_item(self):
         '''
-        Finds an item from the queue
+        Finds an item from the queues
         '''
+        random.shuffle(self.queue_keys)
         count = 0
 
         while count <= self.item_retries:
-            item = self.queue.pop()
-            if item:
-                # very basic limiter
-                time.sleep(1)
-                return item
+            for key in self.queue_keys:
+                # the throttled queue only returns an item if it is allowed
+                item = self.queue_dict[key].pop()
+                if item:
+                    return item
             # we want the spiders to get slightly out of sync
             # with each other for better performance
             time.sleep(random.random())
@@ -144,9 +178,14 @@ class DistributedScheduler(object):
 
     def next_request(self):
         '''
-        Logic to handle getting a new url request
+        Logic to handle getting a new url request, from a bunch of
+        different queues
         '''
         t = time.time()
+        # update the redis queues every so often
+        if t - self.update_time > self.update_interval:
+            self.update_time = t
+            self.update_queues()
 
         item = self.find_item()
         if item:
@@ -181,15 +220,42 @@ class DistributedScheduler(object):
                 item['retry_times'] = 0
             if "expires" not in item:
                 item['expires'] = 0
+            if "useragent" not in item:
+                item['useragent'] = None
+            if "cookie" not in item:
+                item['cookie'] = None
 
             for key in ('attrs', 'allowed_domains', 'curdepth', 'maxdepth',
                     'appid', 'crawlid', 'spiderid', 'priority', 'retry_times',
-                    'expires', 'allow_regex', 'deny_regex', 'deny_extensions'):
+                    'expires', 'allow_regex', 'deny_regex', 'deny_extensions',
+                    'useragent', 'cookie'):
                 req.meta[key] = item[key]
+
+            # extra check to add items to request
+            if item['useragent'] is not None:
+                req.headers['User-Agent'] = item['useragent']
+            if item['cookie'] is not None:
+                if isinstance(item['cookie'], dict):
+                    req.cookies = item['cookie']
+                elif isinstance(item['cookie'], basestring):
+                    req.cookies = self.parse_cookie(item['cookie'])
 
             return req
 
         return None
+
+    def parse_cookie(self, string):
+        '''
+        Parses a cookie string like returned in a Set-Cookie header
+        @param string: The cookie string
+        @return: the cookie dict
+        '''
+        results = re.findall('([^=]+)=([^\;]+);?\s?', string)
+        my_dict = {}
+        for item in results:
+            my_dict[item[0]] = item[1]
+
+        return my_dict
 
     def has_pending_requests(self):
         '''

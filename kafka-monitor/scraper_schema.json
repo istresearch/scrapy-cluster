@@ -58,6 +58,11 @@
                               "minLength": 3,
                               "maxLength": 1000
                             },
+        "cookie":           {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 1000
+                            },
         "attrs":            { "type": "object" }
     },
     "required":             ["appid", "crawlid", "url"],

@@ -43,7 +43,8 @@ class LinkSpider(RedisSpider):
         item["status_code"] = response.status
         item["status_msg"] = "OK"
 
-        item["headers"] = self.reconstruct_headers(response)
+        item["response_headers"] = self.reconstruct_headers(response)
+        item["request_headers"] = response.request.headers
         item["body"] = response.body
         item["links"] = []
 
@@ -80,8 +81,12 @@ class LinkSpider(RedisSpider):
                             "spiderid": self.name,
                             "expires": response.meta['expires'],
                             "priority": response.meta['priority'] - 10,
+                            "useragent": response.meta['useragent'],
+                            "cookie": response.meta['cookie']
                         },
                         )
+                if response.meta['useragent'] is not None:
+                    req.headers['User-Agent'] = response.meta['useragent']
 
                 self.log("Trying to follow link '{}'".format(req.url),
                         level=INFO)
