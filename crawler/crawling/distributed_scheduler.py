@@ -57,12 +57,8 @@ class DistributedScheduler(object):
         self.queue_keys = self.redis_conn.keys(self.spider.name + ":*:queue")
 
         for key in self.queue_keys:
-            # add the tld from the key `type:tld:queue`
-            the_domain = re.split(':', key)[1]
-            the_key = self.spider.name + ":" + the_domain
-
             if key not in self.queue_dict:
-                self.queue_dict[key] = RedisPriorityQueue(self.redis_conn, the_key)
+                self.queue_dict[key] = RedisPriorityQueue(self.redis_conn, key)
 
     @classmethod
     def from_settings(cls, settings):
@@ -167,6 +163,7 @@ class DistributedScheduler(object):
             for key in self.queue_keys:
                 # the throttled queue only returns an item if it is allowed
                 item = self.queue_dict[key].pop()
+
                 if item:
                     return item
             # we want the spiders to get slightly out of sync
