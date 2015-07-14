@@ -24,6 +24,8 @@ except ImportError:
 
 class KafkaMonitor:
 
+    handler_dir = "handlers/"
+
     def __init__(self, settings):
         # dynamic import of settings file
         # remove the .py from the filename
@@ -32,12 +34,23 @@ class KafkaMonitor:
         # only need kafka for both uses
         self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
 
-    def get_method(self, key):
-        if key == 'handle_crawl_request':
-            return self.handle_crawl_request
-        elif key == 'handle_action_request':
-            return self.handle_action_request
-        raise AttributeError(key)
+    def import_class(self, name):
+        '''
+        Imports a class from a string
+
+        @param name: the module and class name in dot notation
+        '''
+        mod = __import__(name)
+        components = name.split('.')
+        for comp in components[1:]:
+            mod = getattr(mod, comp)
+        return mod
+
+    def import_class2(self, cl):
+        d = cl.rfind(".")
+        classname = cl[d+1:len(cl)]
+        m = __import__(cl[0:d], globals(), locals(), [classname])
+        return getattr(m, classname)
 
     def setup(self):
         self.redis_conn = redis.Redis(host=self.settings.REDIS_HOST,
@@ -50,10 +63,16 @@ class KafkaMonitor:
                                   auto_commit=True,
                                   iter_timeout=1.0)
 
-        self.result_method = self.get_method(self.settings.SCHEMA_METHOD)
-
         # set up tldextract
         self.extract = tldextract.TLDExtract()
+
+        # set up the handler
+        self.handler_class = self.import_class2(self.settings.HANDLER)
+        self.handler = self.handler_class()
+        self.handler.setup(self.settings)
+
+        with open(self.handler_dir + self.handler.schema) as the_file:
+            self.schema = json.load(the_file)
 
         self.validator = self.extend_with_default(Draft4Validator)
 
@@ -77,32 +96,6 @@ class KafkaMonitor:
         return validators.extend(
             validator_class, {"properties" : set_defaults},
         )
-
-    def handle_crawl_request(self, dict):
-        '''
-        Processes a vaild crawl request
-
-        @param dict: a valid dictionary object
-        '''
-        # format key
-        ex_res = self.extract(dict['url'])
-        key = "{sid}:{dom}.{suf}:queue".format(
-            sid=dict['spiderid'],
-            dom=ex_res.domain,
-            suf=ex_res.suffix)
-
-        val = pickle.dumps(dict, protocol=-1)
-
-        # shortcut to shove stuff into the priority queue
-        self.redis_conn.zadd(key, val, -dict['priority'])
-
-        # if timeout crawl, add value to redis
-        if 'expires' in dict:
-            key = "timeout:{sid}:{appid}:{crawlid}".format(
-                            sid=dict['spiderid'],
-                            appid=dict['appid'],
-                            crawlid=dict['crawlid'])
-            self.redis_conn.set(key, dict['expires'])
 
     def handle_action_request(self, dict):
         '''
@@ -138,7 +131,7 @@ class KafkaMonitor:
 
                         try:
                             self.validator(self.schema).validate(the_dict)
-                            self.result_method(the_dict)
+                            self.handler.handle(the_dict)
                         except ValidationError as ex:
                             print "invalid json received"
 
@@ -156,11 +149,7 @@ class KafkaMonitor:
         Sets up the schema to be validated against
         '''
         self.setup()
-        with open(self.settings.SCHEMA) as the_file:
-            # No try/catch so we can see if there is a json parse error
-            # on the schemas
-            self.schema = json.load(the_file)
-            self._main_loop()
+        self._main_loop()
 
     def feed(self, json_item):
         '''
