@@ -1,4 +1,7 @@
 from base_handler import BaseHandler
+import tldextract
+import redis
+import pickle
 
 class ScraperHandler(BaseHandler):
 
@@ -6,9 +9,11 @@ class ScraperHandler(BaseHandler):
 
     def setup(self, settings):
         '''
-        Setup the redis needs
+        Setup redis and tldextract
         '''
-        print "setting up scraperhandler"
+        self.extract = tldextract.TLDExtract()
+        self.redis_conn = redis.Redis(host=settings.REDIS_HOST,
+                                      port=settings.REDIS_PORT)
 
     def handle(self, dict):
         '''

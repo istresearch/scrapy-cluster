@@ -4,12 +4,11 @@ from kafka.client import KafkaClient
 from kafka.consumer import SimpleConsumer
 from kafka.producer import SimpleProducer
 from kafka.common import OffsetOutOfRangeError
+from collections import OrderedDict
 
 import time
-import redis
 import json
 import sys
-import tldextract
 import importlib
 
 from jsonschema import ValidationError
@@ -24,7 +23,7 @@ except ImportError:
 
 class KafkaMonitor:
 
-    handler_dir = "handlers/"
+    plugin_dir = "plugins/"
 
     def __init__(self, settings):
         # dynamic import of settings file
@@ -34,28 +33,18 @@ class KafkaMonitor:
         # only need kafka for both uses
         self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
 
-    def import_class(self, name):
+    def import_class(self, cl):
         '''
         Imports a class from a string
 
         @param name: the module and class name in dot notation
         '''
-        mod = __import__(name)
-        components = name.split('.')
-        for comp in components[1:]:
-            mod = getattr(mod, comp)
-        return mod
-
-    def import_class2(self, cl):
         d = cl.rfind(".")
         classname = cl[d+1:len(cl)]
         m = __import__(cl[0:d], globals(), locals(), [classname])
         return getattr(m, classname)
 
     def setup(self):
-        self.redis_conn = redis.Redis(host=self.settings.REDIS_HOST,
-                                      port=self.settings.REDIS_PORT)
-
         self.kafka_conn.ensure_topic_exists(self.settings.KAFKA_INCOMING_TOPIC)
         self.consumer = SimpleConsumer(self.kafka_conn,
                                   self.settings.KAFKA_GROUP,
@@ -63,16 +52,29 @@ class KafkaMonitor:
                                   auto_commit=True,
                                   iter_timeout=1.0)
 
-        # set up tldextract
-        self.extract = tldextract.TLDExtract()
+        # set up the plugins
+        d = self.settings.PLUGINS
+        self.plugins_dict = {}
+        for key in d:
+            the_class = self.import_class(key)
 
-        # set up the handler
-        self.handler_class = self.import_class2(self.settings.HANDLER)
-        self.handler = self.handler_class()
-        self.handler.setup(self.settings)
+            instance = the_class()
+            instance.setup(self.settings)
 
-        with open(self.handler_dir + self.handler.schema) as the_file:
-            self.schema = json.load(the_file)
+            the_schema = None
+            with open(self.plugin_dir + instance.schema) as the_file:
+                the_schema = json.load(the_file)
+
+            mini = {}
+            mini['instance'] = instance
+            if the_schema is None:
+                print "No schema found! throw error"
+            mini['schema'] = the_schema
+
+            self.plugins_dict[d[key]] = mini
+
+        self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
+                                                key=lambda t: t[0]))
 
         self.validator = self.extend_with_default(Draft4Validator)
 
@@ -97,43 +99,35 @@ class KafkaMonitor:
             validator_class, {"properties" : set_defaults},
         )
 
-    def handle_action_request(self, dict):
-        '''
-        Processes a vaild action request
-
-        @param dict: The valid dictionary object
-        '''
-        # format key
-        key = "{action}:{spiderid}:{appid}".format(
-                action = dict['action'],
-                spiderid = dict['spiderid'],
-                appid = dict['appid'])
-
-        if "crawlid" in dict:
-            key = key + ":" + dict['crawlid']
-
-        self.redis_conn.set(key, dict['uuid'])
-
     def _main_loop(self):
         '''
         Continuous loop that reads from a kafka topic and tries to validate
         incoming messages
         '''
         while True:
-            start = time.time()
-
             try:
                 for message in self.consumer.get_messages():
                     if message is None:
                         break
                     try:
                         the_dict = json.loads(message.message.value)
+                        found_plugin = False
+                        for key in self.plugins_dict:
+                            obj = self.plugins_dict[key]
+                            instance = obj['instance']
+                            schema = obj['schema']
 
-                        try:
-                            self.validator(self.schema).validate(the_dict)
-                            self.handler.handle(the_dict)
-                        except ValidationError as ex:
-                            print "invalid json received"
+                            try:
+                                self.validator(schema).validate(the_dict)
+                                found_plugin = True
+                                ret = instance.handle(the_dict)
+                                # break if nothing is returned
+                                if ret is None:
+                                    break
+                            except ValidationError as ex:
+                                pass
+                        if not found_plugin:
+                            print "Did not find schema to validate request"
 
                     except ValueError:
                             print "bad json recieved"
@@ -141,12 +135,11 @@ class KafkaMonitor:
                 # consumer has no idea where they are
                 self.consumer.seek(0,2)
 
-            end = time.time()
             time.sleep(.01)
 
     def run(self):
         '''
-        Sets up the schema to be validated against
+        Set up and run
         '''
         self.setup()
         self._main_loop()
@@ -166,34 +159,33 @@ class KafkaMonitor:
         print "=> done feeding request."
 
 def main():
-    """monitor: Monitor the Kafka topic for incoming URLs, validate the
+    """kafka-monitor: Monitor the Kafka topic for incoming URLs, validate the
     input requests.
 
     Usage:
-        monitor run --settings=<settings>
-        monitor feed --settings=<settings> <json_req>
+        kafka-monitor run [--settings=<settings>]
+        kafka-monitor feed [--settings=<settings>] <json_req>
 
     Examples:
 
-       Run the monitors:
+       Run the monitor:
 
-            python kafka-monitor.py run --settings=settings_crawling.py
-            python kafka-monitor.py run --settings=settings_actions.py
+            python kafka-monitor.py run
 
         It'll sit there. In a separate terminal, feed it some data:
 
-            python kafka-monitor.py feed -s settings_crawling.py '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
+            python kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
 
         For longer crawls, retrieve some information:
 
-            python kafka-monitor.py feed -s settings_actions.py '{"action":"info", "appid":"testapp", "crawlid":"ABC123", "uuid":"someuuid", "spiderid":"link"}'
+            python kafka-monitor.py feed '{"action":"info", "appid":"testapp", "crawlid":"ABC123", "uuid":"someuuid", "spiderid":"link"}'
 
         That message will be inserted into the Kafka topic. You should then see the
         monitor terminal pick it up and insert the data into Redis. Or, if you
         made a typo, you'll see a json or jsonschema validation error.
 
     Options:
-        -s --settings <settings>      The settings file to read from
+        -s --settings <settings>      The settings file to read from [default: settings.py].
     """
     args = docopt(main.__doc__)
 

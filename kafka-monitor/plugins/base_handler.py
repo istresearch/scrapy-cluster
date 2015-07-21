@@ -16,7 +16,7 @@ class BaseHandler():
 
     def handle(self, dict):
         '''
-        Process a valid an incoming request dict and handle any logic associated
+        Process a valid incoming request dict and handle any logic associated
         with it
 
         @param dict: The valid request object
