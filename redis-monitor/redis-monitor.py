@@ -6,27 +6,79 @@ import re
 import pickle
 import traceback
 import json
-import requests
+import importlib
 
-from settings import (REDIS_HOST, REDIS_PORT, KAFKA_HOSTS, KAFKA_TOPIC_PREFIX)
-
-from kafka import KafkaClient, SimpleProducer
+from docopt import docopt
+from collections import OrderedDict
 
 class RedisMonitor:
 
-    def __init__(self):
-        self.setup()
+    plugin_dir = "plugins/"
+    default_plugins = {
+        'plugins.info_monitor.InfoMonitor': 100,
+    }
 
-    def setup(self):
+    def __init__(self, settings):
+        self.setup(settings)
+
+    def setup(self, settings):
         '''
         Connection stuff here so we can mock it
         '''
-        self.redis_conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
+        # dynamic import of settings file
+        # remove the .py from the filename
+        self.settings = importlib.import_module(settings[:-3])
 
-        # set up kafka
-        self.kafka_conn = KafkaClient(KAFKA_HOSTS)
-        self.producer = SimpleProducer(self.kafka_conn)
-        self.topic_prefix = KAFKA_TOPIC_PREFIX
+        self.redis_conn = redis.Redis(host=self.settings.REDIS_HOST,
+                                      port=self.settings.REDIS_PORT)
+        self._load_plugins()
+
+    def import_class(self, cl):
+        '''
+        Imports a class from a string
+
+        @param name: the module and class name in dot notation
+        '''
+        d = cl.rfind(".")
+        classname = cl[d+1:len(cl)]
+        m = __import__(cl[0:d], globals(), locals(), [classname])
+        return getattr(m, classname)
+
+    def _load_plugins(self):
+        '''
+        Sets up all plugins, defaults and settings.py
+        '''
+        try:
+            loaded_plugins = self.settings.PLUGINS
+            self.default_plugins.update(self.settings.PLUGINS)
+        except Exception as e:
+            pass
+
+        self.plugins_dict = {}
+        for key in self.default_plugins:
+            # skip loading the plugin if its value is None
+            if self.default_plugins[key] is None:
+                continue
+            # valid plugin, import and setup
+            the_class = self.import_class(key)
+            instance = the_class()
+            instance.setup(self.settings)
+            # share the redis connection
+            instance.redis_conn = self.redis_conn
+
+            the_regex = instance.regex
+
+            mini = {}
+            mini['instance'] = instance
+            if the_regex is None:
+                print "No regex found! throw error"
+                continue
+            mini['regex'] = the_regex
+
+            self.plugins_dict[self.default_plugins[key]] = mini
+
+        self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
+                                                key=lambda t: t[0]))
 
     def run(self):
         '''
@@ -39,211 +91,58 @@ class RedisMonitor:
         The internal while true main loop for the redis monitor
         '''
         while True:
-            self._do_info()
-            self._do_expire()
-            self._do_stop()
+            for plugin_key in self.plugins_dict:
+                obj = self.plugins_dict[plugin_key]
+                instance = obj['instance']
+                regex = obj['regex']
+                for key in self.redis_conn.scan_iter(match=regex):
+                    val = self.redis_conn.get(key)
+                    try:
+                        instance.handle(key, val)
+                    except Exception as e:
+                        print traceback.format_exc()
+                        pass
+                    self.redis_conn.delete(key)
+
+            #self._do_info()
+            #self._do_expire()
+            #self._do_stop()
 
             time.sleep(0.1)
 
-    def _do_info(self):
-        '''
-        Processes info action requests
-        '''
-        for key in self.redis_conn.scan_iter(match="info:*:*"):
-            # the master dict to return
-            master = {}
-            master['uuid'] = self.redis_conn.get(key)
-            master['total_pending'] = 0
-            master['server_time'] = int(time.time())
-
-            # break down key
-            elements = key.split(":")
-            dict = {}
-            dict['spiderid'] = elements[1]
-            dict['appid'] = elements[2]
-
-            if len(elements) == 4:
-                dict['crawlid'] = elements[3]
-
-            # generate the information requested
-            if 'crawlid' in dict:
-                master = self._build_crawlid_info(master, dict)
-            else:
-                master = self._build_appid_info(master, dict)
-
-            self.redis_conn.delete(key)
-
-            if self._send_to_kafka(master):
-                pass
-                #print 'Sent info to kafka'
-            else:
-                print 'Failed to send info to kafka'
-
-    def _send_to_kafka(self, master):
-        '''
-        Sends the message back to Kafka
-        @param master: the final dict to send
-        @log_extras: the extras to append to the log output
-        @returns: True if successfully sent to kafka
-        '''
-        appid_topic = "{prefix}.outbound_{appid}".format(
-                                                    prefix=self.topic_prefix,
-                                                    appid=master['appid'])
-        firehose_topic = "{prefix}.outbound_firehose".format(
-                                                    prefix=self.topic_prefix)
-        try:
-            self.kafka_conn.ensure_topic_exists(appid_topic)
-            self.kafka_conn.ensure_topic_exists(firehose_topic)
-            # dont want logger in outbound kafka message
-            dump = json.dumps(master)
-            self.producer.send_messages(appid_topic, dump)
-            self.producer.send_messages(firehose_topic, dump)
-
-            return True
-        except Exception as ex:
-            print traceback.format_exc()
-            pass
-
-        return False
-
-    def _build_appid_info(self, master, dict):
-        '''
-        Builds the appid info object
-
-        @param master: the master dict
-        @param dict: the dict object received
-        @return: the appid info object
-        '''
-        master['total_crawlids'] = 0
-        master['total_pending'] = 0
-        master['total_domains'] = 0
-        master['crawlids'] = {}
-        master['appid'] = dict['appid']
-
-        # get all domain queues
-        match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
-        for key in self.redis_conn.scan_iter(match=match_string):
-            domain = key.split(":")[1]
-            sortedDict = self._get_bin(key)
-
-            # now iterate through binned dict
-            for score in sortedDict:
-                for item in sortedDict[score]:
-                    if 'meta' in item:
-                        item = item['meta']
-                    if item['appid'] == dict['appid']:
-                        crawlid = item['crawlid']
-
-                        # add new crawlid to master dict
-                        if crawlid not in master['crawlids']:
-                            master['crawlids'][crawlid] = {}
-                            master['crawlids'][crawlid]['total'] = 0
-                            master['crawlids'][crawlid]['domains'] = {}
-                            master['crawlids'][crawlid]['distinct_domains'] = 0
-
-                            timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(
-                                        sid=dict['spiderid'],
-                                        aid=dict['appid'],
-                                        cid=crawlid)
-                            if self.redis_conn.exists(timeout_key):
-                                master['crawlids'][crawlid]['expires'] = self.redis_conn.get(timeout_key)
-
-                            master['total_crawlids'] = master['total_crawlids'] + 1
-
-                        master['crawlids'][crawlid]['total'] = master['crawlids'][crawlid]['total'] + 1
-
-                        if domain not in master['crawlids'][crawlid]['domains']:
-                            master['crawlids'][crawlid]['domains'][domain] = {}
-                            master['crawlids'][crawlid]['domains'][domain]['total'] = 0
-                            master['crawlids'][crawlid]['domains'][domain]['high_priority'] = -9999
-                            master['crawlids'][crawlid]['domains'][domain]['low_priority'] = 9999
-                            master['crawlids'][crawlid]['distinct_domains'] = master['crawlids'][crawlid]['distinct_domains'] + 1
-                            master['total_domains'] = master['total_domains'] + 1
-
-                        master['crawlids'][crawlid]['domains'][domain]['total'] = master['crawlids'][crawlid]['domains'][domain]['total'] + 1
-
-                        if item['priority'] > master['crawlids'][crawlid]['domains'][domain]['high_priority']:
-                            master['crawlids'][crawlid]['domains'][domain]['high_priority'] = item['priority']
-
-                        if item['priority'] < master['crawlids'][crawlid]['domains'][domain]['low_priority']:
-                            master['crawlids'][crawlid]['domains'][domain]['low_priority'] = item['priority']
-
-                        master['total_pending'] = master['total_pending'] + 1
-
-        return master
-
-    def _get_bin(self, key):
-        '''
-        Returns a binned dictionary based on redis zscore
-
-        @return: The sorted dict
-        '''
-        # keys based on score
-        sortedDict = {}
-        # this doesnt return them in order, need to bin first
-        for item in self.redis_conn.zscan_iter(key):
-            my_item = pickle.loads(item[0])
-            # score is negated in redis
-            my_score = -item[1]
-
-            if my_score not in sortedDict:
-                sortedDict[my_score] = []
-
-            sortedDict[my_score].append(my_item)
-
-        return sortedDict
-
-    def _build_crawlid_info(self,master, dict):
-        '''
-        Builds the crawlid info object
-
-        @param master: the master dict
-        @param dict: the dict object received
-        @return: the crawlid info object
-        '''
-        master['total_pending'] = 0
-        master['total_domains'] = 0
-        master['appid'] = dict['appid']
-        master['crawlid'] = dict['crawlid']
-        master['domains'] = {}
-
-        timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(sid=dict['spiderid'],
-                                                        aid=dict['appid'],
-                                                        cid=dict['crawlid'])
-        if self.redis_conn.exists(timeout_key):
-            master['expires'] = self.redis_conn.get(timeout_key)
-
-        # get all domain queues
-        match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
-        for key in self.redis_conn.scan_iter(match=match_string):
-            domain = key.split(":")[1]
-            sortedDict = self._get_bin(key)
-
-            # now iterate through binned dict
-            for score in sortedDict:
-                for item in sortedDict[score]:
-                    if 'meta' in item:
-                        item = item['meta']
-                    if item['appid'] == dict['appid'] and \
-                                    item['crawlid'] == dict['crawlid']:
-                        if domain not in master['domains']:
-                            master['domains'][domain] = {}
-                            master['domains'][domain]['total'] = 0
-                            master['domains'][domain]['high_priority'] = -9999
-                            master['domains'][domain]['low_priority'] = 9999
-                            master['total_domains'] = master['total_domains'] + 1
-
-                        master['domains'][domain]['total'] = master['domains'][domain]['total'] + 1
-
-                        if item['priority'] > master['domains'][domain]['high_priority']:
-                            master['domains'][domain]['high_priority'] = item['priority']
-
-                        if item['priority'] < master['domains'][domain]['low_priority']:
-                            master['domains'][domain]['low_priority'] = item['priority']
-
-                        master['total_pending'] = master['total_pending'] + 1
-
-        return master
+#     def _do_info(self):
+#         '''
+#         Processes info action requests
+#         '''
+#         for key in self.redis_conn.scan_iter(match="info:*:*"):
+#             # the master dict to return
+#             master = {}
+#             master['uuid'] = self.redis_conn.get(key)
+#             master['total_pending'] = 0
+#             master['server_time'] = int(time.time())
+#
+#             # break down key
+#             elements = key.split(":")
+#             dict = {}
+#             dict['spiderid'] = elements[1]
+#             dict['appid'] = elements[2]
+#
+#             if len(elements) == 4:
+#                 dict['crawlid'] = elements[3]
+#
+#             # generate the information requested
+#             if 'crawlid' in dict:
+#                 master = self._build_crawlid_info(master, dict)
+#             else:
+#                 master = self._build_appid_info(master, dict)
+#
+#             self.redis_conn.delete(key)
+#
+#             if self._send_to_kafka(master):
+#                 pass
+#                 #print 'Sent info to kafka'
+#             else:
+#                 print 'Failed to send info to kafka'
 
     def _do_expire(self):
         '''
@@ -372,7 +271,16 @@ class RedisMonitor:
         return total_purged
 
 def main():
-    redis_monitor = RedisMonitor()
+    """redis-monitor: Monitor the Scrapy Cluster Redis instance.
+
+    Usage:
+        redis-monitor [--settings=<settings>]
+
+    Options:
+        -s --settings <settings>      The settings file to read from [default: settings.py].
+    """
+    args = docopt(main.__doc__)
+    redis_monitor = RedisMonitor(args['--settings'])
     redis_monitor.run()
 
 if __name__ == "__main__":
