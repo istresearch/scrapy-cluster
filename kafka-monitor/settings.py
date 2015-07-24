@@ -7,7 +7,4 @@ KAFKA_HOSTS = ''
 KAFKA_INCOMING_TOPIC = 'demo.incoming_urls'
 KAFKA_GROUP = 'demo-group'
 
-PLUGINS = {
- 'plugins.scraper_handler.ScraperHandler': 100,
- 'plugins.action_handler.ActionHandler': 200,
-}
+PLUGINS = {}

@@ -24,6 +24,10 @@ except ImportError:
 class KafkaMonitor:
 
     plugin_dir = "plugins/"
+    default_plugins = {
+        'plugins.scraper_handler.ScraperHandler': 100,
+        'plugins.action_handler.ActionHandler': 200,
+    }
 
     def __init__(self, settings):
         # dynamic import of settings file
@@ -44,20 +48,23 @@ class KafkaMonitor:
         m = __import__(cl[0:d], globals(), locals(), [classname])
         return getattr(m, classname)
 
-    def setup(self):
-        self.kafka_conn.ensure_topic_exists(self.settings.KAFKA_INCOMING_TOPIC)
-        self.consumer = SimpleConsumer(self.kafka_conn,
-                                  self.settings.KAFKA_GROUP,
-                                  self.settings.KAFKA_INCOMING_TOPIC,
-                                  auto_commit=True,
-                                  iter_timeout=1.0)
+    def _load_plugins(self):
+        '''
+        Sets up all plugins, defaults and settings.py
+        '''
+        try:
+            loaded_plugins = self.settings.PLUGINS
+            self.default_plugins.update(self.settings.PLUGINS)
+        except Exception as e:
+            pass
 
-        # set up the plugins
-        d = self.settings.PLUGINS
         self.plugins_dict = {}
-        for key in d:
+        for key in self.default_plugins:
+            # skip loading the plugin if its value is None
+            if self.default_plugins[key] is None:
+                continue
+            # valid plugin, import and setup
             the_class = self.import_class(key)
-
             instance = the_class()
             instance.setup(self.settings)
 
@@ -69,14 +76,24 @@ class KafkaMonitor:
             mini['instance'] = instance
             if the_schema is None:
                 print "No schema found! throw error"
+                continue
             mini['schema'] = the_schema
 
-            self.plugins_dict[d[key]] = mini
+            self.plugins_dict[self.default_plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
                                                 key=lambda t: t[0]))
 
+    def setup(self):
+        self.kafka_conn.ensure_topic_exists(self.settings.KAFKA_INCOMING_TOPIC)
+        self.consumer = SimpleConsumer(self.kafka_conn,
+                                  self.settings.KAFKA_GROUP,
+                                  self.settings.KAFKA_INCOMING_TOPIC,
+                                  auto_commit=True,
+                                  iter_timeout=1.0)
+
         self.validator = self.extend_with_default(Draft4Validator)
+        self._load_plugins()
 
     def extend_with_default(self, validator_class):
         '''
