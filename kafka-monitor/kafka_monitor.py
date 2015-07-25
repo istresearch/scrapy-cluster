@@ -165,6 +165,7 @@ class KafkaMonitor:
 
         @param json_item: The loaded json object
         '''
+        self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
         topic = self.settings.KAFKA_INCOMING_TOPIC
         producer = SimpleProducer(self.kafka_conn)
         print "=> feeding JSON request into {0}...".format(topic)
