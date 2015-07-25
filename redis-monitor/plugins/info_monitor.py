@@ -48,7 +48,7 @@ class InfoMonitor(KafkaBaseMonitor):
         else:
             print 'Failed to send info to kafka'
 
-        print master
+        self.redis_conn.delete(key)
 
     def _get_bin(self, key):
         '''
