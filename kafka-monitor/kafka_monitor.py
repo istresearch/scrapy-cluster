@@ -34,9 +34,6 @@ class KafkaMonitor:
         # remove the .py from the filename
         self.settings = importlib.import_module(settings[:-3])
 
-        # only need kafka for both uses
-        self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
-
     def import_class(self, cl):
         '''
         Imports a class from a string
@@ -74,9 +71,6 @@ class KafkaMonitor:
 
             mini = {}
             mini['instance'] = instance
-            if the_schema is None:
-                print "No schema found! throw error"
-                continue
             mini['schema'] = the_schema
 
             self.plugins_dict[self.default_plugins[key]] = mini
@@ -85,6 +79,7 @@ class KafkaMonitor:
                                                 key=lambda t: t[0]))
 
     def setup(self):
+        self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
         self.kafka_conn.ensure_topic_exists(self.settings.KAFKA_INCOMING_TOPIC)
         self.consumer = SimpleConsumer(self.kafka_conn,
                                   self.settings.KAFKA_GROUP,
@@ -122,37 +117,40 @@ class KafkaMonitor:
         incoming messages
         '''
         while True:
-            try:
-                for message in self.consumer.get_messages():
-                    if message is None:
-                        break
-                    try:
-                        the_dict = json.loads(message.message.value)
-                        found_plugin = False
-                        for key in self.plugins_dict:
-                            obj = self.plugins_dict[key]
-                            instance = obj['instance']
-                            schema = obj['schema']
-
-                            try:
-                                self.validator(schema).validate(the_dict)
-                                found_plugin = True
-                                ret = instance.handle(the_dict)
-                                # break if nothing is returned
-                                if ret is None:
-                                    break
-                            except ValidationError as ex:
-                                pass
-                        if not found_plugin:
-                            print "Did not find schema to validate request"
-
-                    except ValueError:
-                            print "bad json recieved"
-            except OffsetOutOfRangeError:
-                # consumer has no idea where they are
-                self.consumer.seek(0,2)
-
+            self._process_messages()
             time.sleep(.01)
+
+    def _process_messages(self):
+        try:
+            for message in self.consumer.get_messages():
+                if message is None:
+                    break
+                try:
+                    the_dict = json.loads(message.message.value)
+
+                    found_plugin = False
+                    for key in self.plugins_dict:
+                        obj = self.plugins_dict[key]
+                        instance = obj['instance']
+                        schema = obj['schema']
+
+                        try:
+                            self.validator(schema).validate(the_dict)
+                            found_plugin = True
+                            ret = instance.handle(the_dict)
+                            # break if nothing is returned
+                            if ret is None:
+                                break
+                        except ValidationError as ex:
+                            pass
+                    if not found_plugin:
+                        print "Did not find schema to validate request"
+
+                except ValueError:
+                        print "bad json recieved"
+        except OffsetOutOfRangeError:
+            # consumer has no idea where they are
+            self.consumer.seek(0,2)
 
     def run(self):
         '''

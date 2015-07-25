@@ -18,6 +18,7 @@ This documentation provides everything you need to know about the Scrapy based d
     topics/crawler
     topics/redismonitor
     topics/advanced
+    topics/changelog
     topics/license
 
 Getting Started
@@ -46,6 +47,9 @@ Miscellaneous
 
 :doc:`topics/advanced`
     Advanced items to consider when running Scrapy Cluster.
+
+:doc:`topics/changelog`
+    View the changes between versions of Scrapy Cluster.
 
 :doc:`topics/license`
     Scrapy Cluster is licensed under the MIT License.
