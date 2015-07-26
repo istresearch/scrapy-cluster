@@ -9,7 +9,10 @@ Scrapy Cluster 1.1
 Date: ??/??/????
 
 - Added domain based queue mechanism for better management and control across all components of the cluster
+
 - Added easy offline bash script for running all offline tests
+
+- Modified demo incoming kafka topic from ``demo.incoming_urls`` to just ``demo.incoming`` as now all crawl/info/stop requests are serviced through a single topic
 
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
@@ -22,7 +25,7 @@ Kafka Monitor Changes
 
 - Improved kafka topic dump utility
 
-- Added offline unit tests
+- Added both offline and online unit tests
 
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
