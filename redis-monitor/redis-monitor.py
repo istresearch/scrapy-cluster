@@ -6,27 +6,81 @@ import re
 import pickle
 import traceback
 import json
-import requests
+import importlib
 
-from settings import (REDIS_HOST, REDIS_PORT, KAFKA_HOSTS, KAFKA_TOPIC_PREFIX)
-
-from kafka import KafkaClient, SimpleProducer
+from docopt import docopt
+from collections import OrderedDict
 
 class RedisMonitor:
 
-    def __init__(self):
-        self.setup()
+    plugin_dir = "plugins/"
+    default_plugins = {
+        'plugins.info_monitor.InfoMonitor': 100,
+        'plugins.stop_monitor.StopMonitor': 200,
+        'plugins.expire_monitor.ExpireMonitor': 300,
+    }
 
-    def setup(self):
+    def __init__(self, settings):
+        self.setup(settings)
+
+    def setup(self, settings):
         '''
         Connection stuff here so we can mock it
         '''
-        self.redis_conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
+        # dynamic import of settings file
+        # remove the .py from the filename
+        self.settings = importlib.import_module(settings[:-3])
 
-        # set up kafka
-        self.kafka_conn = KafkaClient(KAFKA_HOSTS)
-        self.producer = SimpleProducer(self.kafka_conn)
-        self.topic_prefix = KAFKA_TOPIC_PREFIX
+        self.redis_conn = redis.Redis(host=self.settings.REDIS_HOST,
+                                      port=self.settings.REDIS_PORT)
+        self._load_plugins()
+
+    def import_class(self, cl):
+        '''
+        Imports a class from a string
+
+        @param name: the module and class name in dot notation
+        '''
+        d = cl.rfind(".")
+        classname = cl[d+1:len(cl)]
+        m = __import__(cl[0:d], globals(), locals(), [classname])
+        return getattr(m, classname)
+
+    def _load_plugins(self):
+        '''
+        Sets up all plugins, defaults and settings.py
+        '''
+        try:
+            loaded_plugins = self.settings.PLUGINS
+            self.default_plugins.update(self.settings.PLUGINS)
+        except Exception as e:
+            pass
+
+        self.plugins_dict = {}
+        for key in self.default_plugins:
+            # skip loading the plugin if its value is None
+            if self.default_plugins[key] is None:
+                continue
+            # valid plugin, import and setup
+            the_class = self.import_class(key)
+            instance = the_class()
+            instance.setup(self.settings)
+            # share the redis connection
+            instance.redis_conn = self.redis_conn
+
+            the_regex = instance.regex
+
+            mini = {}
+            mini['instance'] = instance
+            if the_regex is None:
+                print "No regex found! throw error"
+                continue
+            mini['regex'] = the_regex
+
+            self.plugins_dict[self.default_plugins[key]] = mini
+
+        self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
+                                                key=lambda t: t[0]))
 
     def run(self):
         '''
@@ -39,320 +93,31 @@ class RedisMonitor:
         The internal while true main loop for the redis monitor
         '''
         while True:
-            self._do_info()
-            self._do_expire()
-            self._do_stop()
+            for plugin_key in self.plugins_dict:
+                obj = self.plugins_dict[plugin_key]
+                instance = obj['instance']
+                regex = obj['regex']
+                for key in self.redis_conn.scan_iter(match=regex):
+                    val = self.redis_conn.get(key)
+                    try:
+                        instance.handle(key, val)
+                    except Exception as e:
+                        print traceback.format_exc()
+                        pass
 
             time.sleep(0.1)
 
-    def _do_info(self):
-        '''
-        Processes info action requests
-        '''
-        for key in self.redis_conn.scan_iter(match="info:*:*"):
-            # the master dict to return
-            master = {}
-            master['uuid'] = self.redis_conn.get(key)
-            master['total_pending'] = 0
-            master['server_time'] = int(time.time())
-
-            # break down key
-            elements = key.split(":")
-            dict = {}
-            dict['spiderid'] = elements[1]
-            dict['appid'] = elements[2]
-
-            if len(elements) == 4:
-                dict['crawlid'] = elements[3]
-
-            # generate the information requested
-            if 'crawlid' in dict:
-                master = self._build_crawlid_info(master, dict)
-            else:
-                master = self._build_appid_info(master, dict)
-
-            self.redis_conn.delete(key)
-
-            if self._send_to_kafka(master):
-                pass
-                #print 'Sent info to kafka'
-            else:
-                print 'Failed to send info to kafka'
-
-    def _send_to_kafka(self, master):
-        '''
-        Sends the message back to Kafka
-        @param master: the final dict to send
-        @log_extras: the extras to append to the log output
-        @returns: True if successfully sent to kafka
-        '''
-        appid_topic = "{prefix}.outbound_{appid}".format(
-                                                    prefix=self.topic_prefix,
-                                                    appid=master['appid'])
-        firehose_topic = "{prefix}.outbound_firehose".format(
-                                                    prefix=self.topic_prefix)
-        try:
-            self.kafka_conn.ensure_topic_exists(appid_topic)
-            self.kafka_conn.ensure_topic_exists(firehose_topic)
-            # dont want logger in outbound kafka message
-            dump = json.dumps(master)
-            self.producer.send_messages(appid_topic, dump)
-            self.producer.send_messages(firehose_topic, dump)
-
-            return True
-        except Exception as ex:
-            print traceback.format_exc()
-            pass
-
-        return False
-
-    def _build_appid_info(self, master, dict):
-        '''
-        Builds the appid info object
-
-        @param master: the master dict
-        @param dict: the dict object received
-        @return: the appid info object
-        '''
-        master['total_crawlids'] = 0
-        master['total_pending'] = 0
-        master['total_domains'] = 0
-        master['crawlids'] = {}
-        master['appid'] = dict['appid']
-
-        match_string = '{sid}:queue'.format(sid=dict['spiderid'])
-
-        sortedDict = self._get_bin(match_string)
-
-        # now iterate through binned dict
-        for score in sortedDict:
-            for item in sortedDict[score]:
-                if 'meta' in item:
-                    item = item['meta']
-                if item['appid'] == dict['appid']:
-                    crawlid = item['crawlid']
-
-                    # add new crawlid to master dict
-                    if crawlid not in master['crawlids']:
-                        master['crawlids'][crawlid] = {}
-                        master['crawlids'][crawlid]['total'] = 0
-                        master['crawlids'][crawlid]['high_priority'] = -9999
-                        master['crawlids'][crawlid]['low_priority'] = 9999
-
-                        timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(
-                                    sid=dict['spiderid'],
-                                    aid=dict['appid'],
-                                    cid=crawlid)
-                        if self.redis_conn.exists(timeout_key):
-                            master['crawlids'][crawlid]['expires'] = self.redis_conn.get(timeout_key)
-
-                        master['total_crawlids'] = master['total_crawlids'] + 1
-
-                    if item['priority'] > master['crawlids'][crawlid]['high_priority']:
-                        master['crawlids'][crawlid]['high_priority'] = item['priority']
-
-                    if item['priority'] < master['crawlids'][crawlid]['low_priority']:
-                        master['crawlids'][crawlid]['low_priority'] = item['priority']
-
-                    master['crawlids'][crawlid]['total'] = master['crawlids'][crawlid]['total'] + 1
-                    master['total_pending'] = master['total_pending'] + 1
-
-        return master
-
-    def _get_bin(self, key):
-        '''
-        Returns a binned dictionary based on redis zscore
-
-        @return: The sorted dict
-        '''
-        # keys based on score
-        sortedDict = {}
-        # this doesnt return them in order, need to bin first
-        for item in self.redis_conn.zscan_iter(key):
-            my_item = pickle.loads(item[0])
-            # score is negated in redis
-            my_score = -item[1]
-
-            if my_score not in sortedDict:
-                sortedDict[my_score] = []
-
-            sortedDict[my_score].append(my_item)
-
-        return sortedDict
-
-    def _build_crawlid_info(self,master, dict):
-        '''
-        Builds the crawlid info object
-
-        @param master: the master dict
-        @param dict: the dict object received
-        @return: the crawlid info object
-        '''
-        master['total_pending'] = 0
-        master['appid'] = dict['appid']
-        master['crawlid'] = dict['crawlid']
-
-        timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(sid=dict['spiderid'],
-                                                        aid=dict['appid'],
-                                                        cid=dict['crawlid'])
-        if self.redis_conn.exists(timeout_key):
-            master['expires'] = self.redis_conn.get(timeout_key)
-
-        # get all domain queues
-        match_string = '{sid}:queue'.format(sid=dict['spiderid'])
-        sortedDict = self._get_bin(match_string)
-
-        # now iterate through binned dict
-        for score in sortedDict:
-            for item in sortedDict[score]:
-                if 'meta' in item:
-                    item = item['meta']
-                if item['appid'] == dict['appid'] and \
-                                item['crawlid'] == dict['crawlid']:
-
-                    if 'high_priority' not in master:
-                        master['high_priority'] = -99999
-
-                    if 'low_priority' not in master:
-                        master['low_priority'] = 99999
-
-                    if item['priority'] > master['high_priority']:
-                        master['high_priority'] = item['priority']
-
-                    if item['priority'] < master['low_priority']:
-                        master['low_priority'] = item['priority']
-
-                    master['total_pending'] = master['total_pending'] + 1
-
-        return master
-
-    def _do_expire(self):
-        '''
-        Processes expire requests
-        Very similar to _do_stop()
-        '''
-        for key in self.redis_conn.scan_iter(match="timeout:*:*:*"):
-            timeout = float(self.redis_conn.get(key))
-            curr_time = time.time()
-            if curr_time > timeout:
-                # break down key
-                elements = key.split(":")
-                spiderid = elements[1]
-                appid = elements[2]
-                crawlid = elements[3]
-
-                # add crawl to blacklist so it doesnt propagate
-                redis_key = spiderid + ":blacklist"
-                value = '{appid}||{crawlid}'.format(appid=appid,
-                                                crawlid=crawlid)
-                # add this to the blacklist set
-                self.redis_conn.sadd(redis_key, value)
-
-                # everything stored in the queue is now expired
-                result = self._purge_crawl(spiderid, appid, crawlid)
-
-                # item to send to kafka
-                extras = {}
-                extras['action'] = "expire"
-                extras['spiderid'] = spiderid
-                extras['appid'] = appid
-                extras['crawlid'] = crawlid
-                extras['total_expired'] = result
-
-                self.redis_conn.delete(key)
-
-                if self._send_to_kafka(extras):
-                    #print 'Sent expired ack to kafka'
-                    pass
-                else:
-                    print 'Failed to send expired ack to kafka'
-
-    def _do_stop(self):
-        '''
-        Processes stop action requests
-        '''
-        for key in self.redis_conn.scan_iter(match="stop:*:*:*"):
-            # break down key
-            elements = key.split(":")
-            spiderid = elements[1]
-            appid = elements[2]
-            crawlid = elements[3]
-            uuid = self.redis_conn.get(key)
-
-            redis_key = spiderid + ":blacklist"
-            value = '{appid}||{crawlid}'.format(appid=appid,
-                                                crawlid=crawlid)
-
-            # add this to the blacklist set
-            self.redis_conn.sadd(redis_key, value)
-
-            # purge crawlid from current set
-            result = self._purge_crawl(spiderid, appid, crawlid)
-
-            # item to send to kafka
-            extras = {}
-            extras['action'] = "stop"
-            extras['spiderid'] = spiderid
-            extras['appid'] = appid
-            extras['crawlid'] = crawlid
-            extras['total_purged'] = result
-
-            self.redis_conn.delete(key)
-
-            if self._send_to_kafka(extras):
-                # delete timeout for crawl (if needed) since stopped
-                timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(
-                                        sid=spiderid,
-                                        aid=appid,
-                                        cid=crawlid)
-                self.redis_conn.delete(timeout_key)
-                #print 'Sent stop ack to kafka'
-            else:
-                print 'Failed to send stop ack to kafka'
-
-    def _purge_crawl(self, spiderid, appid, crawlid):
-        '''
-        Wrapper for purging the crawlid from the queues
-
-        @param spiderid: the spider id
-        @param appid: the app id
-        @param crawlid: the crawl id
-        @return: The number of requests purged
-        '''
-        # purge three times to try to make sure everything is cleaned
-        total = self._mini_purge(spiderid, appid, crawlid)
-        total = total + self._mini_purge(spiderid, appid, crawlid)
-        total = total + self._mini_purge(spiderid, appid, crawlid)
-
-        return total
-
-    def _mini_purge(self, spiderid, appid, crawlid):
-        '''
-        Actually purges the crawlid from the queue
-
-        @param spiderid: the spider id
-        @param appid: the app id
-        @param crawlid: the crawl id
-        @return: The number of requests purged
-        '''
-        total_purged = 0
-
-        match_string = '{sid}:queue'.format(sid=spiderid)
-        # using scan for speed vs keys
-        for item in self.redis_conn.zscan_iter(match_string):
-            item_key = item[0]
-            item = pickle.loads(item_key)
-            if 'meta' in item:
-                item = item['meta']
-
-            if item['appid'] == appid and item['crawlid'] == crawlid:
-                self.redis_conn.zrem(match_string, item_key)
-                total_purged = total_purged + 1
-
-        return total_purged
-
 def main():
-    redis_monitor = RedisMonitor()
+    """redis-monitor: Monitor the Scrapy Cluster Redis instance.
+
+    Usage:
+        redis-monitor [--settings=<settings>]
+
+    Options:
+        -s --settings <settings>      The settings file to read from [default: settings.py].
+    """
+    args = docopt(main.__doc__)
+    redis_monitor = RedisMonitor(args['--settings'])
     redis_monitor.run()
 
 if __name__ == "__main__":

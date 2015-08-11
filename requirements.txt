@@ -6,3 +6,4 @@ docopt
 service_identity
 mock
 jsonschema
+tldextract

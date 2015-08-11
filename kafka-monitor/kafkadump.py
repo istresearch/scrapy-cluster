@@ -12,7 +12,7 @@ def main():
 
     Usage:
         kafkadump list --host=<host>
-        kafkadump dump <topic> --host=<host> [--consumer=<consumer>]
+        kafkadump dump <topic> --host=<host> [--consumer=<consumer>] [--from-beginning]
 
     Examples:
 
@@ -20,7 +20,7 @@ def main():
 
             python kafkadump.py list --host=<kafkahost>:9092
 
-        Dump the contents of a single topic starting from offset 0:
+        Dump the new contents of a single topic:
 
             python kafkadump.py dump test.crawled_firehose --host=<kafkahost>:9092
 
@@ -31,6 +31,7 @@ def main():
     Options:
         -h --host <host>            Kafka host name where Kafka cluster will be resolved
         -c --consumer <consumer>    Consumer group ID to use for reading messages
+        -b --from-beginning         Dump everything in the topic from the beginning
     """
     args = docopt(main.__doc__)
     host = args["--host"]
@@ -53,7 +54,11 @@ def main():
                             fetch_size_bytes=1024*100, # 100kb
                             max_buffer_size=None       # eliminate big message errors
                             )
-        consumer.seek(0, 0)
+        kafka.ensure_topic_exists(topic)
+        if args["--from-beginning"]:
+            consumer.seek(0, 0)
+        else:
+            consumer.seek(0, 2)
         num_records = 0
         total_bytes = 0
         item = None

@@ -13,8 +13,9 @@ from kafka import KafkaClient, SimpleProducer
 from crawling.items import RawResponseItem
 
 class KafkaPipeline(object):
-
-    """Pushes serialized item to appropriate Kafka topics."""
+    '''
+    Pushes a serialized item to appropriate Kafka topics.
+    '''
 
     def __init__(self, producer, topic_prefix, aKafka):
         self.producer = producer
