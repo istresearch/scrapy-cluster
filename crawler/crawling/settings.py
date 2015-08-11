@@ -8,6 +8,7 @@ KAFKA_TOPIC_PREFIX = 'demo'
 
 # Scrapy Settings
 # ~~~~~~~~~~~~~~~
+DOWNLOADER_CLIENTCONTEXTFACTORY = 'crawling.contextfactory.MyClientContextFactory'
 
 # Scrapy settings for distributed_crawling project
 #
