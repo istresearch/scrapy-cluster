@@ -47,6 +47,9 @@ DOWNLOADER_MIDDLEWARES = {
     # Handle timeout retries with the redis scheduler and logger
     'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware' : None,
     'crawling.redis_retry_middleware.RedisRetryMiddleware': 510,
+    # custom cookies to not persist across crawl requests
+    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware' : None,
+    'crawling.custom_cookies.CustomCookiesMiddleware' :700,
 }
 
 # Disable the built in logging in production
