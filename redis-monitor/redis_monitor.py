@@ -21,19 +21,19 @@ class RedisMonitor:
     }
 
     def __init__(self, settings):
-        self.setup(settings)
+        # dynamic import of settings file
+        # remove the .py from the filename
+        self.settings = importlib.import_module(settings[:-3])
+        self.redis_conn = None
 
     def setup(self, settings):
         '''
         Connection stuff here so we can mock it
         '''
-        # dynamic import of settings file
-        # remove the .py from the filename
-        self.settings = importlib.import_module(settings[:-3])
-
         self.redis_conn = redis.Redis(host=self.settings.REDIS_HOST,
                                       port=self.settings.REDIS_PORT)
         self._load_plugins()
+        self._run_setups()
 
     def import_class(self, cl):
         '''
@@ -48,7 +48,7 @@ class RedisMonitor:
 
     def _load_plugins(self):
         '''
-        Sets up all plugins, defaults and settings.py
+        Sets up all plugins and defaults
         '''
         try:
             loaded_plugins = self.settings.PLUGINS
@@ -64,7 +64,7 @@ class RedisMonitor:
             # valid plugin, import and setup
             the_class = self.import_class(key)
             instance = the_class()
-            instance.setup(self.settings)
+            # not loading settings b/c of potential connections
             # share the redis connection
             instance.redis_conn = self.redis_conn
 
@@ -73,14 +73,22 @@ class RedisMonitor:
             mini = {}
             mini['instance'] = instance
             if the_regex is None:
-                print "No regex found! throw error"
-                continue
+                raise ImportError()
+                #continue
             mini['regex'] = the_regex
 
             self.plugins_dict[self.default_plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
                                                 key=lambda t: t[0]))
+
+    def _run_setups(self):
+        '''
+        Runs the setups for all loaded classes, useful for skipping
+        connection loading
+        '''
+        for item in self.plugins_dict:
+            item['instance'].setup(self.settings)
 
     def run(self):
         '''
@@ -95,17 +103,25 @@ class RedisMonitor:
         while True:
             for plugin_key in self.plugins_dict:
                 obj = self.plugins_dict[plugin_key]
-                instance = obj['instance']
-                regex = obj['regex']
-                for key in self.redis_conn.scan_iter(match=regex):
-                    val = self.redis_conn.get(key)
-                    try:
-                        instance.handle(key, val)
-                    except Exception as e:
-                        print traceback.format_exc()
-                        pass
+                self._process_plugin(obj)
 
             time.sleep(0.1)
+
+    def _process_plugin(self, plugin):
+        '''
+        Logic to handle each plugin that is active
+
+        @param plugin: a plugin dict object
+        '''
+        instance = plugin['instance']
+        regex = plugin['regex']
+        for key in self.redis_conn.scan_iter(match=regex):
+            val = self.redis_conn.get(key)
+            try:
+                instance.handle(key, val)
+            except Exception as e:
+                print traceback.format_exc()
+                pass
 
 def main():
     """redis-monitor: Monitor the Scrapy Cluster Redis instance.
@@ -117,7 +133,8 @@ def main():
         -s --settings <settings>      The settings file to read from [default: settings.py].
     """
     args = docopt(main.__doc__)
-    redis_monitor = RedisMonitor(args['--settings'])
+    redis_monitor = RedisMonitor()
+    redis_monitor.setup(args['--settings'])
     redis_monitor.run()
 
 if __name__ == "__main__":

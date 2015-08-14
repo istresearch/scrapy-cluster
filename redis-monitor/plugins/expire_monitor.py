@@ -27,7 +27,7 @@ class ExpireMonitor(StopMonitor):
         curr_time = time.time()
         if curr_time > timeout:
             print "handling expire request"
-            # very similar to stpo
+            # very similar to stop
             # break down key
             elements = key.split(":")
             spiderid = elements[1]

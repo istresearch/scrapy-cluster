@@ -5,7 +5,7 @@ class BaseMonitor():
     a redis connection
     '''
     # override this with your own regex to look for in redis
-    regex = "NONE"
+    regex = None
 
     def setup(self, settings):
         '''
@@ -14,7 +14,7 @@ class BaseMonitor():
         @param settings: The loaded settings file
         @param redis_conn: The redis connection for further processing
         '''
-        if self.regex == "NONE":
+        if self.regex == None:
             raise NotImplementedError("Please specify a regex for the plugin")
 
     def handle(self, key, value):
