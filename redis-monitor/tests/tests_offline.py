@@ -238,65 +238,51 @@ class TestInfoPlugin(TestCase, RegexFixer):
         self.assertEquals(result, success)
 
 class TestStopPlugin(TestCase, RegexFixer):
+    def setUp(self):
+        self.plugin = StopMonitor()
+        self.plugin.redis_conn = MagicMock()
+
+    def test_stop_regex(self):
+        regex = self.fix_re(self.plugin.regex)
+        self.assertEquals(re.findall(regex, 'stop:spider:app:crawl'), ['stop:spider:app:crawl'])
+        self.assertEquals(re.findall(regex, 'stop:spider:app'), ['stop:spider:app'])
+        self.assertEquals(re.findall(regex, 'stop:stuff'), [])
+
     def test_stop_monitor_mini_purge(self):
-        pass
+        self.plugin.redis_conn.scan_iter = MagicMock(return_value=['link:istresearch.com:queue'])
+        self.plugin.redis_conn.zscan_iter = MagicMock(return_value=[
+            ["(dp0\nS'crawlid'\np1\nS'crawl'\np2\nsS'appid'\np3\nS'app'\np4\ns."],
+            ["(dp0\nS'crawlid'\np1\nS'crawl'\np2\nsS'appid'\np3\nS'foo'\np4\ns."],
+        ])
+
+        self.assertEquals(self.plugin._mini_purge("link", "app", "crawl"), 1)
 
 class TestExpirePlugin(TestCase, RegexFixer):
+    def setUp(self):
+        self.plugin = ExpireMonitor()
+        self.plugin.redis_conn = MagicMock()
+
+    def test_stop_regex(self):
+        regex = self.fix_re(self.plugin.regex)
+        self.assertEquals(re.findall(regex, 'timeout:blah1:blah2:bla3'), ['timeout:blah1:blah2:bla3'])
+        self.assertEquals(re.findall(regex, 'timeout:blah1:blah2'), [])
+
     def test_expire_monitor_time(self):
-        pass
+        # if the stop monitor passes then this is just testing whether
+        # the handler acts on the key only if it has expired
+        self.plugin._purge_crawl = MagicMock(side_effect=Exception("throw once"))
 
-#
-# class TestPlugins(TestCase):
-#
-#     def test_scrape_handler(self):
-#         valid = {
-#             "url":"www.stuff.com",
-#             "crawlid":"abc124",
-#             "appid":"testapp",
-#             "spiderid":"link",
-#             "priority":5,
-#         }
-#         handler = ScraperHandler()
-#         handler.extract = tldextract.TLDExtract()
-#         handler.redis_conn = MagicMock()
-#
-#         # check it is added to redis
-#         handler.redis_conn.zadd = MagicMock(side_effect=AssertionError("added"))
-#         try:
-#             handler.handle(valid)
-#             self.fail("Action not called")
-#         except AssertionError as e:
-#             self.assertEquals("added", e.message)
-#
-#         # check timeout is added
-#         handler.redis_conn.zadd = MagicMock()
-#         handler.redis_conn.set = MagicMock(side_effect=AssertionError("expires"))
-#         valid['expires'] = 124242
-#         try:
-#             handler.handle(valid)
-#             self.fail("Expires not called")
-#         except AssertionError as e:
-#             self.assertEquals("expires", e.message)
-#
-#     def test_action_handler(self):
-#         handler = ActionHandler()
-#         handler.redis_conn = MagicMock()
-#         handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
-#
-#         valid = {
-#             "uuid":"abaksdjb",
-#             "crawlid":"abc124",
-#             "appid":"testapp",
-#             "spiderid":"link",
-#             "action":"info",
-#         }
-#
-#         try:
-#             handler.handle(valid)
-#             self.fail("Added not called")
-#         except AssertionError as e:
-#             self.assertEquals("added", e.message)
+        self.plugin._get_current_time = MagicMock(return_value=5)
 
+        # not timed out
+        self.plugin.handle("key:stuff:blah:blah", 6)
+
+        # timed out
+        try:
+            self.plugin.handle("key:stuff:blah:blah", 4)
+            self.fail("Expire not called")
+        except BaseException as e:
+            self.assertEquals("throw once", e.message)
 
 if __name__ == '__main__':
     unittest.main()

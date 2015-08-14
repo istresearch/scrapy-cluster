@@ -1,4 +1,6 @@
-class BaseMonitor():
+import time
+
+class BaseMonitor(object):
     '''
     Base monitor for handling incoming requests seen within redis
     These classes have an implied redis_conn variable for manipulating
@@ -26,3 +28,15 @@ class BaseMonitor():
         @param value: The value associated with the key
         '''
         raise NotImplementedError("Please implement handle() for your handler class")
+
+    def get_current_time(self):
+        '''
+        @return: the current time stamp
+        '''
+        return self._get_current_time()
+
+    def _get_current_time(self):
+        '''
+        Split this way for unit testing
+        '''
+        return time.time()

@@ -1,6 +1,5 @@
 import re
 import pickle
-import time
 from kafka_base_monitor import KafkaBaseMonitor
 
 class InfoMonitor(KafkaBaseMonitor):
@@ -25,7 +24,7 @@ class InfoMonitor(KafkaBaseMonitor):
         master = {}
         master['uuid'] = value
         master['total_pending'] = 0
-        master['server_time'] = int(time.time())
+        master['server_time'] = int(self.get_current_time())
 
         # break down key
         elements = key.split(":")

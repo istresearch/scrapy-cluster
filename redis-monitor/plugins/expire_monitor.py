@@ -24,7 +24,7 @@ class ExpireMonitor(StopMonitor):
         @param value: The value associated with the key
         '''
         timeout = float(value)
-        curr_time = time.time()
+        curr_time = self.get_current_time()
         if curr_time > timeout:
             print "handling expire request"
             # very similar to stop
@@ -40,7 +40,7 @@ class ExpireMonitor(StopMonitor):
                                             crawlid=crawlid)
             # add this to the blacklist set
             self.redis_conn.sadd(redis_key, value)
-
+            print "PURGING"
             # everything stored in the queue is now expired
             result = self._purge_crawl(spiderid, appid, crawlid)
 

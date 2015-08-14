@@ -1,6 +1,5 @@
 import re
 import pickle
-import time
 from kafka_base_monitor import KafkaBaseMonitor
 
 class StopMonitor(KafkaBaseMonitor):
