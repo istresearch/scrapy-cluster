@@ -83,6 +83,7 @@ class InfoMonitor(KafkaBaseMonitor):
         master['total_domains'] = 0
         master['crawlids'] = {}
         master['appid'] = dict['appid']
+        master['spiderid'] = dict['spiderid']
 
         # get all domain queues
         match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
@@ -148,6 +149,7 @@ class InfoMonitor(KafkaBaseMonitor):
         master['total_domains'] = 0
         master['appid'] = dict['appid']
         master['crawlid'] = dict['crawlid']
+        master['spiderid'] = dict['spiderid']
         master['domains'] = {}
 
         timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(sid=dict['spiderid'],

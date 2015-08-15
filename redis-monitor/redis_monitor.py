@@ -26,7 +26,7 @@ class RedisMonitor:
         self.settings = importlib.import_module(settings[:-3])
         self.redis_conn = None
 
-    def setup(self, settings):
+    def setup(self):
         '''
         Connection stuff here so we can mock it
         '''
@@ -87,8 +87,9 @@ class RedisMonitor:
         Runs the setups for all loaded classes, useful for skipping
         connection loading
         '''
-        for item in self.plugins_dict:
-            item['instance'].setup(self.settings)
+        for key in self.plugins_dict:
+            obj = self.plugins_dict[key]
+            obj['instance'].setup(self.settings)
 
     def run(self):
         '''
@@ -133,8 +134,8 @@ def main():
         -s --settings <settings>      The settings file to read from [default: settings.py].
     """
     args = docopt(main.__doc__)
-    redis_monitor = RedisMonitor()
-    redis_monitor.setup(args['--settings'])
+    redis_monitor = RedisMonitor(args['--settings'])
+    redis_monitor.setup()
     redis_monitor.run()
 
 if __name__ == "__main__":

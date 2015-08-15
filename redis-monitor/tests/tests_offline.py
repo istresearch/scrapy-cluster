@@ -97,6 +97,16 @@ class TestRedisMonitor(TestCase):
         except Exception as e:
             self.fail("Normal Exception not handled")
 
+    def test_main_loop(self):
+        self.redis_monitor._load_plugins()
+        self.redis_monitor._process_plugin = MagicMock(side_effect=Exception("normal"))
+
+        try:
+            self.redis_monitor._main_loop()
+            self.fail("_process_plugin not called")
+        except BaseException as e:
+            self.assertEquals("normal", e.message)
+
 class TestBasePlugins(TestCase):
     def test_bad_plugins(self):
         class ForgotRegex(BaseMonitor):
@@ -183,6 +193,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
         success = {
             'server_time': 5,
             'crawlid': 'crawlIDHERE',
+            'spiderid': 'link',
             'total_pending': 1,
             'expires': 10,
             'total_domains': 1,
@@ -222,6 +233,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
             'total_domains': 1,
             'total_crawlids': 1,
             'appid': 'testapp',
+            'spiderid': 'link',
             'crawlids': {
                 'cool': {
                     'domains': {

@@ -40,7 +40,7 @@ class ExpireMonitor(StopMonitor):
                                             crawlid=crawlid)
             # add this to the blacklist set
             self.redis_conn.sadd(redis_key, value)
-            print "PURGING"
+
             # everything stored in the queue is now expired
             result = self._purge_crawl(spiderid, appid, crawlid)
 
