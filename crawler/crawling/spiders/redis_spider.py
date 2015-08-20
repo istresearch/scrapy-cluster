@@ -1,17 +1,14 @@
-#import redis
-
 from scrapy import signals
 from scrapy.exceptions import DontCloseSpider
-from scrapy.spider import Spider
-#from scrapy.conf import settings
+from scrapy.spiders import Spider
 
 class RedisSpider(Spider):
     '''
     Base Spider for doing distributed crawls coordinated through Redis
     '''
 
-    def set_crawler(self, crawler):
-        super(RedisSpider, self).set_crawler(crawler)
+    def _set_crawler(self, crawler):
+        super(RedisSpider, self)._set_crawler(crawler)
         self.crawler.signals.connect(self.spider_idle,
                                         signal=signals.spider_idle)
 

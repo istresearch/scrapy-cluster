@@ -32,10 +32,14 @@ Redis Monitor Changes
 
 - Added plugin functionality for easier extension creation
 
+- Added both offline and online unit tests
+
 Crawler Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
-- tdb
+- Upgraded Crawler to be compatible with Scrapy 1.0.3
+
+- Improved code structure for overriding url.encode in default LxmlParserLinkExtractor
 
 Scrapy Cluster 1.0
 ---------------------

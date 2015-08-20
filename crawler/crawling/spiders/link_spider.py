@@ -1,9 +1,9 @@
 import scrapy
-
-from scrapy.log import INFO
+import logging
+logger = logging.getLogger(__name__)
 
 from scrapy.http import Request
-from lxmlhtml import LxmlLinkExtractor as LinkExtractor
+from lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
@@ -23,15 +23,13 @@ class LinkSpider(RedisSpider):
         super(LinkSpider, self).__init__(*args, **kwargs)
 
     def parse(self, response):
-        self.log("crawled url {}".format(response.request.url), level=INFO)
-
+        self.log("crawled url {}".format(response.request.url))
         cur_depth = 0
         if 'curdepth' in response.meta:
             cur_depth = response.meta['curdepth']
 
         # capture raw response
         item = RawResponseItem()
-
         # populated from response.meta
         item['appid'] = response.meta['appid']
         item['crawlid'] = response.meta['crawlid']
@@ -42,7 +40,6 @@ class LinkSpider(RedisSpider):
         item["response_url"] = response.url
         item["status_code"] = response.status
         item["status_msg"] = "OK"
-
         item["response_headers"] = self.reconstruct_headers(response)
         item["request_headers"] = response.request.headers
         item["body"] = response.body
@@ -54,7 +51,7 @@ class LinkSpider(RedisSpider):
                 " cur_depth={} >= maxdepth={}".format(
                 response.url,
                 cur_depth,
-                response.meta['maxdepth']), level=INFO)
+                response.meta['maxdepth']))
         else:
             # we are spidering -- yield Request for each discovered link
             link_extractor = LinkExtractor(
@@ -62,10 +59,10 @@ class LinkSpider(RedisSpider):
                             allow=response.meta['allow_regex'],
                             deny=response.meta['deny_regex'],
                             deny_extensions=response.meta['deny_extensions'])
+
             for link in link_extractor.extract_links(response):
                 # link that was discovered
                 item["links"].append({"url": link.url,"text": link.text, })
-
                 req = Request(link.url,
                         callback=self.parse,
                         meta={
@@ -88,8 +85,7 @@ class LinkSpider(RedisSpider):
                 if response.meta['useragent'] is not None:
                     req.headers['User-Agent'] = response.meta['useragent']
 
-                self.log("Trying to follow link '{}'".format(req.url),
-                        level=INFO)
+                self.log("Trying to follow link '{}'".format(req.url))
                 yield req
 
         # raw response has been processed, yield to item pipeline
