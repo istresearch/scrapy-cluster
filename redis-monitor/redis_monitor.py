@@ -51,7 +51,6 @@ class RedisMonitor:
         Sets up all plugins and defaults
         '''
         try:
-            loaded_plugins = self.settings.PLUGINS
             self.default_plugins.update(self.settings.PLUGINS)
         except Exception as e:
             pass

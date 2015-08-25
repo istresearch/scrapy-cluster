@@ -2,3 +2,5 @@
 docs/_build
 docs/_build_html
 .DS_STORE
+kafka-monitor/logs/*
+redis-monitor/logs/*

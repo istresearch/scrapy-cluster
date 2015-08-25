@@ -7,3 +7,5 @@ service_identity
 mock
 jsonschema
 tldextract
+ConcurrentLogHandler
+python-json-logger

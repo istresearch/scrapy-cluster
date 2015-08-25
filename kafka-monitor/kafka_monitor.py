@@ -16,6 +16,8 @@ from jsonschema import Draft4Validator, validators
 
 from docopt import docopt
 
+from utils.log_factory import LogFactory
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -23,6 +25,7 @@ except ImportError:
 
 class KafkaMonitor:
 
+    # defaults
     plugin_dir = "plugins/"
     default_plugins = {
         'plugins.scraper_handler.ScraperHandler': 100,
@@ -34,7 +37,7 @@ class KafkaMonitor:
         # remove the .py from the filename
         self.settings = importlib.import_module(settings[:-3])
 
-    def import_class(self, cl):
+    def _import_class(self, cl):
         '''
         Imports a class from a string
 
@@ -50,7 +53,6 @@ class KafkaMonitor:
         Sets up all plugins, defaults and settings.py
         '''
         try:
-            loaded_plugins = self.settings.PLUGINS
             self.default_plugins.update(self.settings.PLUGINS)
         except Exception as e:
             pass
@@ -61,7 +63,7 @@ class KafkaMonitor:
             if self.default_plugins[key] is None:
                 continue
             # valid plugin, import and setup
-            the_class = self.import_class(key)
+            the_class = self._import_class(key)
             instance = the_class()
             instance.setup(self.settings)
 
@@ -88,6 +90,9 @@ class KafkaMonitor:
                                   iter_timeout=1.0)
 
         self.validator = self.extend_with_default(Draft4Validator)
+
+
+
         self._load_plugins()
 
     def extend_with_default(self, validator_class):
