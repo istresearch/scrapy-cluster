@@ -206,6 +206,7 @@ def main():
     args = docopt(main.__doc__)
 
     kafka_monitor = KafkaMonitor(args['--settings'])
+    kafka_monitor.setup()
 
     if args["run"]:
         return kafka_monitor.run()
