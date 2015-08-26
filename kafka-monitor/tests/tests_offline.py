@@ -23,7 +23,7 @@ from jsonschema import ValidationError
 from jsonschema import Draft4Validator
 import tldextract
 
-class ExampleHandler(object):
+class ExampleHandler(BaseHandler):
     schema = "crazy_schema.json"
 
     def setup(self, settings):
@@ -33,7 +33,7 @@ class TestKafkaMonitor(TestCase):
 
     def setUp(self):
         self.kafka_monitor = KafkaMonitor("settings.py")
-        self.defaults = copy.deepcopy(self.kafka_monitor.default_plugins)
+        self.kafka_monitor.settings = self.kafka_monitor.wrapper.load("settings.py")
 
     def test_load_plugins(self):
         # test loading default plugins
@@ -43,29 +43,28 @@ class TestKafkaMonitor(TestCase):
 
         # test removing a plugin from settings
         assert_keys = [200]
-        self.kafka_monitor.settings.PLUGINS = {
-            'plugins.scraper_handler.ScraperHandler': None,
-        }
+        self.kafka_monitor.settings['PLUGINS'] \
+            ['plugins.scraper_handler.ScraperHandler'] = None
         self.kafka_monitor._load_plugins()
         self.assertEqual(self.kafka_monitor.plugins_dict.keys(), assert_keys)
-        self.kafka_monitor.default_plugins['plugins.scraper_handler.ScraperHandler'] = 100
+        self.kafka_monitor.settings['PLUGINS'] \
+            ['plugins.scraper_handler.ScraperHandler'] = 100
 
         # fail if the class is not found
-        self.kafka_monitor.settings.PLUGINS = {
-            'plugins.crazy_class.CrazyHandler': 300,
-        }
+        self.kafka_monitor.settings['PLUGINS'] \
+            ['plugins.crazy_class.CrazyHandler'] = 300
         self.assertRaises(ImportError, self.kafka_monitor._load_plugins)
-        del self.kafka_monitor.default_plugins['plugins.crazy_class.CrazyHandler']
+        del self.kafka_monitor.settings['PLUGINS'] \
+            ['plugins.crazy_class.CrazyHandler']
 
         # Throw error if schema could not be found
-        self.kafka_monitor.settings.PLUGINS = {
-            'tests.tests_offline.ExampleHandler': 300,
-        }
-        self.kafka_monitor.default_plugins = copy.deepcopy(self.defaults)
+        self.kafka_monitor.settings['PLUGINS'] \
+            ['tests.tests_offline.ExampleHandler'] = 300,
+       # self.kafka_monitor.default_plugins = copy.deepcopy(self.defaults)
         self.assertRaises(IOError, self.kafka_monitor._load_plugins)
         # del self.kafka_monitor.default_plugins.pop('tests.tests_offline.ExampleHandler')
-        self.kafka_monitor.settings.PLUGINS = {}
-
+        del self.kafka_monitor.settings['PLUGINS'] \
+            ['tests.tests_offline.ExampleHandler']
 
     def test_process_messages(self):
         self.kafka_monitor.consumer = MagicMock()

@@ -21,6 +21,8 @@ PLUGINS = {
 LOGGER_NAME = 'sc-logger'
 LOG_DIR = 'logs'
 LOG_FILE = 'main.log'
-LOG_MAX_BYTES = '50MB'
+LOG_MAX_BYTES = '10MB'
 LOG_BACKUPS = 5
+LOG_STDOUT = True
+LOG_JSON = False
 

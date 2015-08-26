@@ -22,3 +22,11 @@ class BaseHandler():
         @param dict: The valid request object
         '''
         raise NotImplementedError("Please implement handle() for your handler class")
+
+    def _set_logger(self, logger):
+        '''
+        Set the logger
+
+        @param logger: The LogObject
+        '''
+        self.logger = logger

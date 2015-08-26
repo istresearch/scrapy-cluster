@@ -1,5 +1,4 @@
 import importlib
-from log_factory import LogFactory
 
 class SettingsWrapper(object):
     '''
@@ -19,36 +18,37 @@ class SettingsWrapper(object):
     def _init__(self):
         pass
 
-    def setup(self, **kwargs):
+    def load(self, name='settings.py'):
         '''
-        Sets up the SettingsWrapper
-        '''
-        self.logger = LogFactory.get_instance(**kwargs)
+        Load the settings dict
 
-    def load_defaults(self):
+        @param name: The settings filename to use
+        @return: A dict of the loaded settings
+        '''
+        self._load_defaults()
+        self._load_custom(name)
+
+        return self.my_settings
+
+    def _load_defaults(self):
         '''
         Load the default settings
         '''
-        self.logger.debug("Loading default settings")
         settings = importlib.import_module(self.default_settings)
         self.my_settings = self._convert_to_dict(settings)
 
-    def load_custom(self, settings_name='settings.py'):
+    def _load_custom(self, settings_name):
         '''
         Load the user defined settings, overriding the defaults
 
-        @param settings_name: The settings file to use
         '''
         if settings_name[-3:] == '.py':
             settings_name = settings_name[:-3]
 
-        self.logger.debug("Loading settings {name}".format(name=settings_name))
         settings = importlib.import_module(settings_name)
         new_settings = self._convert_to_dict(settings)
 
         for key in new_settings:
-            self.logger.debug('Override setting {k} : {v}'.format(
-                    k=key,v=new_settings[key]))
             if key in self.my_settings:
                 item = new_settings[key]
                 if isinstance(item, dict):

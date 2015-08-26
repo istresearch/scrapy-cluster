@@ -17,6 +17,7 @@ from jsonschema import Draft4Validator, validators
 from docopt import docopt
 
 from utils.log_factory import LogFactory
+from utils.settings_wrapper import SettingsWrapper
 
 try:
     import cPickle as pickle
@@ -25,17 +26,13 @@ except ImportError:
 
 class KafkaMonitor:
 
-    # defaults
-    plugin_dir = "plugins/"
-    default_plugins = {
-        'plugins.scraper_handler.ScraperHandler': 100,
-        'plugins.action_handler.ActionHandler': 200,
-    }
-
-    def __init__(self, settings):
-        # dynamic import of settings file
-        # remove the .py from the filename
-        self.settings = importlib.import_module(settings[:-3])
+    def __init__(self, settings_name):
+        '''
+        @param settings_name: the file name
+        '''
+        self.settings_name = settings_name
+        self.wrapper = SettingsWrapper()
+        self.logger = None
 
     def _import_class(self, cl):
         '''
@@ -52,46 +49,44 @@ class KafkaMonitor:
         '''
         Sets up all plugins, defaults and settings.py
         '''
-        try:
-            self.default_plugins.update(self.settings.PLUGINS)
-        except Exception as e:
-            pass
+        plugins = self.settings['PLUGINS']
 
         self.plugins_dict = {}
-        for key in self.default_plugins:
+        for key in plugins:
             # skip loading the plugin if its value is None
-            if self.default_plugins[key] is None:
+            if plugins[key] is None:
                 continue
             # valid plugin, import and setup
             the_class = self._import_class(key)
             instance = the_class()
             instance.setup(self.settings)
-
+            instance._set_logger(self.logger)
             the_schema = None
-            with open(self.plugin_dir + instance.schema) as the_file:
+            with open(self.settings['PLUGIN_DIR'] + instance.schema) as the_file:
                 the_schema = json.load(the_file)
 
             mini = {}
             mini['instance'] = instance
             mini['schema'] = the_schema
 
-            self.plugins_dict[self.default_plugins[key]] = mini
+            self.plugins_dict[plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
                                                 key=lambda t: t[0]))
 
     def setup(self):
-        self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
-        self.kafka_conn.ensure_topic_exists(self.settings.KAFKA_INCOMING_TOPIC)
+        self.settings = self.wrapper.load(self.settings_name)
+
+        self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+        self.kafka_conn.ensure_topic_exists(
+                self.settings['KAFKA_INCOMING_TOPIC'])
         self.consumer = SimpleConsumer(self.kafka_conn,
-                                  self.settings.KAFKA_GROUP,
-                                  self.settings.KAFKA_INCOMING_TOPIC,
+                                  self.settings['KAFKA_GROUP'],
+                                  self.settings['KAFKA_INCOMING_TOPIC'],
                                   auto_commit=True,
                                   iter_timeout=1.0)
 
         self.validator = self.extend_with_default(Draft4Validator)
-
-
 
         self._load_plugins()
 
@@ -170,8 +165,9 @@ class KafkaMonitor:
 
         @param json_item: The loaded json object
         '''
-        self.kafka_conn = KafkaClient(self.settings.KAFKA_HOSTS)
-        topic = self.settings.KAFKA_INCOMING_TOPIC
+        self.settings = self.wrapper.load(self.settings_name)
+        self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+        topic = self.settings['KAFKA_INCOMING_TOPIC']
         producer = SimpleProducer(self.kafka_conn)
         print "=> feeding JSON request into {0}...".format(topic)
         print json.dumps(json_item, indent=4)

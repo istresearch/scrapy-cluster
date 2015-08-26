@@ -12,8 +12,8 @@ class ActionHandler(BaseHandler):
         Setup redis and tldextract
         '''
         self.extract = tldextract.TLDExtract()
-        self.redis_conn = redis.Redis(host=settings.REDIS_HOST,
-                                      port=settings.REDIS_PORT)
+        self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
+                                      port=settings['REDIS_PORT'])
 
     def handle(self, dict):
         '''
