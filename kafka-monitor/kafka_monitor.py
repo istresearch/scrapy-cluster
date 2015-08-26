@@ -76,7 +76,6 @@ class KafkaMonitor:
 
     def setup(self):
         self.settings = self.wrapper.load(self.settings_name)
-
         self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
         self.kafka_conn.ensure_topic_exists(
                 self.settings['KAFKA_INCOMING_TOPIC'])
@@ -124,6 +123,7 @@ class KafkaMonitor:
         try:
             for message in self.consumer.get_messages():
                 if message is None:
+                    print "log no message"
                     break
                 try:
                     the_dict = json.loads(message.message.value)
@@ -151,12 +151,12 @@ class KafkaMonitor:
         except OffsetOutOfRangeError:
             # consumer has no idea where they are
             self.consumer.seek(0,2)
+            print "log offset out of range error"
 
     def run(self):
         '''
         Set up and run
         '''
-        self.setup()
         self._main_loop()
 
     def feed(self, json_item):
@@ -165,7 +165,6 @@ class KafkaMonitor:
 
         @param json_item: The loaded json object
         '''
-        self.settings = self.wrapper.load(self.settings_name)
         self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
         topic = self.settings['KAFKA_INCOMING_TOPIC']
         producer = SimpleProducer(self.kafka_conn)

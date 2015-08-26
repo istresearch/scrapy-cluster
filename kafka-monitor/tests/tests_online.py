@@ -28,16 +28,20 @@ class TestKafkaMonitor(TestCase):
 
     def setUp(self):
         self.kafka_monitor = KafkaMonitor("settings.py")
-        self.kafka_monitor.settings.KAFKA_INCOMING_TOPIC = "demo.incoming_test"
-        self.kafka_monitor.settings.PLUGINS = {
+        new_settings = self.kafka_monitor.wrapper.load("settings.py")
+        new_settings['KAFKA_INCOMING_TOPIC'] = "demo.incoming_test"
+        new_settings['PLUGINS'] = {
             'plugins.scraper_handler.ScraperHandler': None,
             'plugins.action_handler.ActionHandler': None,
             'tests.tests_online.CustomHandler':100,
         }
+
+        self.kafka_monitor.wrapper.load = MagicMock(return_value=new_settings)
         self.kafka_monitor.setup()
+
         self.redis_conn = redis.Redis(
-            host=self.kafka_monitor.settings.REDIS_HOST,
-            port=self.kafka_monitor.settings.REDIS_PORT)
+            host=self.kafka_monitor.settings['REDIS_HOST'],
+            port=self.kafka_monitor.settings['REDIS_PORT'])
 
     def test_feed(self):
         json_req = "{\"uuid\":\"mytestid\"," \

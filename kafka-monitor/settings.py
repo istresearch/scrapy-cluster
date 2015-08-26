@@ -1,3 +1,3 @@
 # Example Custom settings file
-REDIS_HOST = 'notlocalhost'
-KAFKA_HOSTS = 'somenode3:9092'
+REDIS_HOST = 'node4'
+KAFKA_HOSTS = 'node4:9092'
