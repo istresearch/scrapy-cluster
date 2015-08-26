@@ -10,11 +10,10 @@ import time
 import json
 import sys
 import importlib
+import argparse
 
 from jsonschema import ValidationError
 from jsonschema import Draft4Validator, validators
-
-from docopt import docopt
 
 from utils.log_factory import LogFactory
 from utils.settings_wrapper import SettingsWrapper
@@ -74,7 +73,16 @@ class KafkaMonitor:
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
                                                 key=lambda t: t[0]))
 
-    def setup(self):
+    def setup(self, level=None, log_file=None,
+        json=None):
+        '''
+        Load everything up. Note that any arg here will override both
+        default and custom settings
+
+        @param level: the log level
+        @param log_file: boolean t/f whether to log to a file, else stdout
+        @param json: boolean t/f whether to write the logs in json
+        '''
         self.settings = self.wrapper.load(self.settings_name)
         self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
         self.kafka_conn.ensure_topic_exists(
@@ -86,6 +94,13 @@ class KafkaMonitor:
                                   iter_timeout=1.0)
 
         self.validator = self.extend_with_default(Draft4Validator)
+
+        my_level = level if level else self.settings['LOG_LEVEL']
+        # negate because logger wants True for std out
+        my_output = not log_file if log_file else self.settings['LOG_STDOUT']
+        my_json = json if json else self.settings['LOG_JSON']
+        self.logger = LogFactory.get_instance(json=my_json,
+            stdout=my_output, level=my_level)
 
         self._load_plugins()
 
@@ -123,7 +138,7 @@ class KafkaMonitor:
         try:
             for message in self.consumer.get_messages():
                 if message is None:
-                    print "log no message"
+                    self.logger.debug("no log message")
                     break
                 try:
                     the_dict = json.loads(message.message.value)
@@ -144,14 +159,15 @@ class KafkaMonitor:
                         except ValidationError as ex:
                             pass
                     if not found_plugin:
-                        print "Did not find schema to validate request"
+                        self.logger.warn("Did not find schema to validate "\
+                            "request")
 
                 except ValueError:
-                        print "bad json recieved"
+                    self.logger.warn("Bad JSON recieved")
         except OffsetOutOfRangeError:
             # consumer has no idea where they are
             self.consumer.seek(0,2)
-            print "log offset out of range error"
+            self.logger.error("Kafka offset out of range error")
 
     def run(self):
         '''
@@ -168,54 +184,64 @@ class KafkaMonitor:
         self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
         topic = self.settings['KAFKA_INCOMING_TOPIC']
         producer = SimpleProducer(self.kafka_conn)
-        print "=> feeding JSON request into {0}...".format(topic)
-        print json.dumps(json_item, indent=4)
+        if not self.logger.json:
+            self.logger.info('Feeding JSON into {0}\n{1}'.format(
+                topic, json.dumps(json_item, indent=4)))
+        else:
+            self.logger.info('Feeding JSON into {0}\n'.format(topic),
+                extra={'value':json_item})
         self.kafka_conn.ensure_topic_exists(topic)
         producer.send_messages(topic, json.dumps(json_item))
-        print "=> done feeding request."
+        self.logger.info("Done feeding request.")
 
 def main():
-    """kafka-monitor: Monitor the Kafka topic for incoming URLs, validate the
-    input requests.
+    parser = argparse.ArgumentParser(
+        description='Kafka Monitor: Monitors and validates incoming Kafka ' \
+            'topic cluster requests\n',
+        usage='\nkafka_monitor.py -r [-h] [-s SETTINGS]\n' \
+                '    [-ll {DEBUG,INFO,WARNING,CRITICAL,ERROR}]\n' \
+                '    [-lf] [-lj]\n' \
+                '    Run the Kafka Monitor continuously\n\n' \
+                'kafka-monitor -f \'{"my_json":"value"}\' [-h] [-s SETTINGS]'\
+                '\n    [-ll {DEBUG,INFO,WARNING,CRITICAL,ERROR}]\n' \
+                '    [-lf] [-lj]\n' \
+                '    Feed a formatted json request into kafka\n\n' \
+                'NOTE: Command line logging arguments take precedence ' \
+                'over settings')
 
-    Usage:
-        kafka-monitor run [--settings=<settings>]
-        kafka-monitor feed [--settings=<settings>] <json_req>
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-r', '--run', action='store_const', const=True,
+        help='Run the Kafka Monitor')
+    group.add_argument('-f', '--feed', action='store',
+        help='Feed a JSON formatted request to be sent to Kafka')
 
-    Examples:
+    parser.add_argument('-s', '--settings', action='store', required=False,
+        help="The settings file to read from", default="settings.py")
+    parser.add_argument('-ll', '--log-level', action='store', required=False,
+        help="The log level", default=None,
+        choices=['DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'ERROR'])
+    parser.add_argument('-lf', '--log-file', action='store_const',
+        required=False, const=True, default=None,
+        help='Log the output to the file specified in settings.py. Otherwise '\
+        'logs to stdout')
+    parser.add_argument('-lj', '--log-json', action='store_const',
+        required=False, const=True, default=None,
+        help="Log the data in JSON format")
+    args = vars(parser.parse_args())
 
-       Run the monitor:
+    kafka_monitor = KafkaMonitor(args['settings'])
+    kafka_monitor.setup(level=args['log_level'], log_file=args['log_file'],
+        json=args['log_json'])
 
-            python kafka-monitor.py run
-
-        It'll sit there. In a separate terminal, feed it some data:
-
-            python kafka-monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
-
-        For longer crawls, retrieve some information:
-
-            python kafka-monitor.py feed '{"action":"info", "appid":"testapp", "crawlid":"ABC123", "uuid":"someuuid", "spiderid":"link"}'
-
-        That message will be inserted into the Kafka topic. You should then see the
-        monitor terminal pick it up and insert the data into Redis. Or, if you
-        made a typo, you'll see a json or jsonschema validation error.
-
-    Options:
-        -s --settings <settings>      The settings file to read from [default: settings.py].
-    """
-    args = docopt(main.__doc__)
-
-    kafka_monitor = KafkaMonitor(args['--settings'])
-    kafka_monitor.setup()
-
-    if args["run"]:
+    if args['run']:
+        pass
         return kafka_monitor.run()
-    if args["feed"]:
-        json_req = args["<json_req>"]
+    if args['feed']:
+        json_req = args['feed']
         try:
             parsed = json.loads(json_req)
         except ValueError:
-            print "json failed to parse"
+            kafka_monitor.logger.info("JSON failed to parse")
             return 1
         else:
             return kafka_monitor.feed(parsed)

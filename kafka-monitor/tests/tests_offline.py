@@ -34,6 +34,7 @@ class TestKafkaMonitor(TestCase):
     def setUp(self):
         self.kafka_monitor = KafkaMonitor("settings.py")
         self.kafka_monitor.settings = self.kafka_monitor.wrapper.load("settings.py")
+        self.kafka_monitor.logger = MagicMock()
 
     def test_load_plugins(self):
         # test loading default plugins

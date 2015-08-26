@@ -57,6 +57,8 @@ class LogObject(object):
         # set up logger
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
+        self.log_level = level
+        self.json = json
 
         if stdout:
             # set up to std out
@@ -65,7 +67,7 @@ class LogObject(object):
             formatter = self._get_formatter(json)
             stream_handler.setFormatter(formatter)
             self.logger.addHandler(stream_handler)
-            self.logger.debug("Logging to stdout")
+            self.debug("Logging to stdout")
         else:
             # set up to file
             file_handler = ConcurrentRotatingFileHandler(dir + '/' + file,
@@ -74,11 +76,8 @@ class LogObject(object):
             formatter = self._get_formatter(json)
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
-            self.logger.debug("Logging to file: {file}".format(
+            self.debug("Logging to file: {file}".format(
                     file=dir+'/'+file))
-
-        self.log_level = level
-        self.json = json
 
     def _get_formatter(self, json):
         '''
