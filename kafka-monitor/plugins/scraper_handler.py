@@ -2,6 +2,8 @@ from base_handler import BaseHandler
 import tldextract
 import redis
 import pickle
+import sys
+from redis.exceptions import ConnectionError
 
 class ScraperHandler(BaseHandler):
 
@@ -14,6 +16,14 @@ class ScraperHandler(BaseHandler):
         self.extract = tldextract.TLDExtract()
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
                                       port=settings['REDIS_PORT'])
+
+        try:
+            self.redis_conn.info()
+            self.logger.debug("Connected to Redis in ScraperHandler")
+        except ConnectionError as ex:
+            self.logger.error("Failed to connect to Redis in ScraperHandler")
+            # plugin is essential to functionality
+            sys.exit(1)
 
     def handle(self, dict):
         '''

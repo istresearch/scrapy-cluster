@@ -32,7 +32,7 @@ class ExampleHandler(BaseHandler):
 class TestKafkaMonitor(TestCase):
 
     def setUp(self):
-        self.kafka_monitor = KafkaMonitor("settings.py")
+        self.kafka_monitor = KafkaMonitor("settings.py", True)
         self.kafka_monitor.settings = self.kafka_monitor.wrapper.load("settings.py")
         self.kafka_monitor.logger = MagicMock()
 

@@ -9,6 +9,8 @@ REDIS_PORT = 6379
 KAFKA_HOSTS = 'localhost:9092'
 KAFKA_INCOMING_TOPIC = 'demo.incoming'
 KAFKA_GROUP = 'demo-group'
+KAFKA_FEED_TIMEOUT = 5
+KAFKA_CONN_TIMEOUT = 5
 
 # plugin setup
 PLUGIN_DIR = 'plugins/'

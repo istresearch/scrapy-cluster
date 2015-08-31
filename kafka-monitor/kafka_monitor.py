@@ -5,6 +5,7 @@ from kafka.consumer import SimpleConsumer
 from kafka.producer import SimpleProducer
 from kafka.common import OffsetOutOfRangeError
 from collections import OrderedDict
+from kafka.common import KafkaUnavailableError
 
 import time
 import json
@@ -17,6 +18,7 @@ from jsonschema import Draft4Validator, validators
 
 from utils.log_factory import LogFactory
 from utils.settings_wrapper import SettingsWrapper
+from utils.method_timer import MethodTimer
 
 try:
     import cPickle as pickle
@@ -25,13 +27,14 @@ except ImportError:
 
 class KafkaMonitor:
 
-    def __init__(self, settings_name):
+    def __init__(self, settings_name, unit_test=False):
         '''
         @param settings_name: the file name
         '''
         self.settings_name = settings_name
         self.wrapper = SettingsWrapper()
         self.logger = None
+        self.unit_test = unit_test
 
     def _import_class(self, cl):
         '''
@@ -58,8 +61,9 @@ class KafkaMonitor:
             # valid plugin, import and setup
             the_class = self._import_class(key)
             instance = the_class()
-            instance.setup(self.settings)
             instance._set_logger(self.logger)
+            if not self.unit_test:
+                instance.setup(self.settings)
             the_schema = None
             with open(self.settings['PLUGIN_DIR'] + instance.schema) as the_file:
                 the_schema = json.load(the_file)
@@ -73,8 +77,7 @@ class KafkaMonitor:
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
                                                 key=lambda t: t[0]))
 
-    def setup(self, level=None, log_file=None,
-        json=None):
+    def setup(self, level=None, log_file=None, json=None):
         '''
         Load everything up. Note that any arg here will override both
         default and custom settings
@@ -84,16 +87,6 @@ class KafkaMonitor:
         @param json: boolean t/f whether to write the logs in json
         '''
         self.settings = self.wrapper.load(self.settings_name)
-        self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
-        self.kafka_conn.ensure_topic_exists(
-                self.settings['KAFKA_INCOMING_TOPIC'])
-        self.consumer = SimpleConsumer(self.kafka_conn,
-                                  self.settings['KAFKA_GROUP'],
-                                  self.settings['KAFKA_INCOMING_TOPIC'],
-                                  auto_commit=True,
-                                  iter_timeout=1.0)
-
-        self.validator = self.extend_with_default(Draft4Validator)
 
         my_level = level if level else self.settings['LOG_LEVEL']
         # negate because logger wants True for std out
@@ -102,7 +95,38 @@ class KafkaMonitor:
         self.logger = LogFactory.get_instance(json=my_json,
             stdout=my_output, level=my_level)
 
-        self._load_plugins()
+        self.validator = self.extend_with_default(Draft4Validator)
+
+    def _setup_kafka(self):
+        '''
+        Sets up kafka connections
+        '''
+        @MethodTimer.timeout(self.settings['KAFKA_CONN_TIMEOUT'], False)
+        def _hidden_setup():
+            try:
+                self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+                self.kafka_conn.ensure_topic_exists(
+                        self.settings['KAFKA_INCOMING_TOPIC'])
+                self.consumer = SimpleConsumer(self.kafka_conn,
+                                          self.settings['KAFKA_GROUP'],
+                                          self.settings['KAFKA_INCOMING_TOPIC'],
+                                          auto_commit=True,
+                                          iter_timeout=1.0)
+            except KafkaUnavailableError as ex:
+                message = "An exception '{0}' occured. Arguments:\n{1!r}" \
+                    .format(type(ex).__name__, ex.args)
+                self.logger.error(message)
+                sys.exit(1)
+            return True
+        ret_val = _hidden_setup()
+
+        if ret_val:
+            self.logger.debug("Successfully connected to Kafka")
+        else:
+            self.logger.error("Failed to set up Kafka Connection within"\
+                "timeout")
+            # this is essential to running the kafka monitor
+            sys.exit(1)
 
     def extend_with_default(self, validator_class):
         '''
@@ -173,6 +197,8 @@ class KafkaMonitor:
         '''
         Set up and run
         '''
+        self._setup_kafka()
+        self._load_plugins()
         self._main_loop()
 
     def feed(self, json_item):
@@ -181,18 +207,26 @@ class KafkaMonitor:
 
         @param json_item: The loaded json object
         '''
-        self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
-        topic = self.settings['KAFKA_INCOMING_TOPIC']
-        producer = SimpleProducer(self.kafka_conn)
-        if not self.logger.json:
-            self.logger.info('Feeding JSON into {0}\n{1}'.format(
-                topic, json.dumps(json_item, indent=4)))
+        @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
+        def _feed(json_item):
+            self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+            topic = self.settings['KAFKA_INCOMING_TOPIC']
+            producer = SimpleProducer(self.kafka_conn)
+            if not self.logger.json:
+                self.logger.info('Feeding JSON into {0}\n{1}'.format(
+                    topic, json.dumps(json_item, indent=4)))
+            else:
+                self.logger.info('Feeding JSON into {0}\n'.format(topic),
+                    extra={'value':json_item})
+            self.kafka_conn.ensure_topic_exists(topic)
+            producer.send_messages(topic, json.dumps(json_item))
+            return True
+        result = _feed(json_item)
+
+        if result:
+            self.logger.info("Successly fed item to Kafka")
         else:
-            self.logger.info('Feeding JSON into {0}\n'.format(topic),
-                extra={'value':json_item})
-        self.kafka_conn.ensure_topic_exists(topic)
-        producer.send_messages(topic, json.dumps(json_item))
-        self.logger.info("Done feeding request.")
+            self.logger.error("Failed to feed item into Kafka")
 
 def main():
     parser = argparse.ArgumentParser(
