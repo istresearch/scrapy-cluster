@@ -124,7 +124,7 @@ class KafkaMonitor:
             self.logger.debug("Successfully connected to Kafka")
         else:
             self.logger.error("Failed to set up Kafka Connection within"\
-                "timeout")
+                " timeout")
             # this is essential to running the kafka monitor
             sys.exit(1)
 
@@ -154,6 +154,7 @@ class KafkaMonitor:
         Continuous loop that reads from a kafka topic and tries to validate
         incoming messages
         '''
+        self.logger.debug("Processing messages")
         while True:
             self._process_messages()
             time.sleep(.01)
@@ -166,7 +167,6 @@ class KafkaMonitor:
                     break
                 try:
                     the_dict = json.loads(message.message.value)
-
                     found_plugin = False
                     for key in self.plugins_dict:
                         obj = self.plugins_dict[key]
@@ -183,11 +183,20 @@ class KafkaMonitor:
                         except ValidationError as ex:
                             pass
                     if not found_plugin:
+                        extras = {}
+                        extras['parsed'] = True
+                        extras['valid'] = False
+                        extras['data'] = the_dict
                         self.logger.warn("Did not find schema to validate "\
-                            "request")
+                            "request", extra=extras)
 
                 except ValueError:
-                    self.logger.warn("Bad JSON recieved")
+                    extras = {}
+                    extras['parsed'] = False
+                    extras['valid'] = False
+                    extras['data'] = message.message.value
+                    self.logger.warning('Unparseable JSON Received',
+                                    extra=extras)
         except OffsetOutOfRangeError:
             # consumer has no idea where they are
             self.consumer.seek(0,2)

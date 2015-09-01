@@ -50,3 +50,8 @@ class ScraperHandler(BaseHandler):
                             appid=dict['appid'],
                             crawlid=dict['crawlid'])
             self.redis_conn.set(key, dict['expires'])
+
+        # log success
+        dict['parsed'] = True
+        dict['valid'] = True
+        self.logger.info('Added crawl to Redis', extra=dict)

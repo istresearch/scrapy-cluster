@@ -41,3 +41,7 @@ class ActionHandler(BaseHandler):
             key = key + ":" + dict['crawlid']
 
         self.redis_conn.set(key, dict['uuid'])
+
+        dict['parsed'] = True
+        dict['valid'] = True
+        self.logger.info('Added action to Redis', extra=dict)
