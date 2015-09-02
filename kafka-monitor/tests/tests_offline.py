@@ -17,7 +17,6 @@ from plugins.base_handler import BaseHandler
 from plugins.action_handler import ActionHandler
 import copy
 
-import settings
 from kafka.common import OffsetOutOfRangeError
 from jsonschema import ValidationError
 from jsonschema import Draft4Validator

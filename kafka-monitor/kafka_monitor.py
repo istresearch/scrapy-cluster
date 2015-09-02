@@ -262,7 +262,7 @@ def main():
         help="The settings file to read from", default="settings.py")
     parser.add_argument('-ll', '--log-level', action='store', required=False,
         help="The log level", default=None,
-        choices=['DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'ERROR'])
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
     parser.add_argument('-lf', '--log-file', action='store_const',
         required=False, const=True, default=None,
         help='Log the output to the file specified in settings.py. Otherwise '\

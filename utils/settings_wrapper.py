@@ -28,16 +28,26 @@ class SettingsWrapper(object):
         self._load_defaults()
         self._load_custom(name)
 
+        return self.settings()
+
+    def settings(self):
+        '''
+        Returns the current settings dictionary
+        '''
         return self.my_settings
 
     def _load_defaults(self):
         '''
         Load the default settings
         '''
-        settings = importlib.import_module(self.default_settings)
-        self.my_settings = self._convert_to_dict(settings)
+        self.my_settings = {}
+        try:
+            settings = importlib.import_module(self.default_settings)
+            self.my_settings = self._convert_to_dict(settings)
+        except ImportError as ex:
+            print "No default settings found"
 
-    def _load_custom(self, settings_name):
+    def _load_custom(self, settings_name='settings.py'):
         '''
         Load the user defined settings, overriding the defaults
 
@@ -45,15 +55,20 @@ class SettingsWrapper(object):
         if settings_name[-3:] == '.py':
             settings_name = settings_name[:-3]
 
-        settings = importlib.import_module(settings_name)
-        new_settings = self._convert_to_dict(settings)
+        new_settings = {}
+        try:
+            settings = importlib.import_module(settings_name)
+            new_settings = self._convert_to_dict(settings)
+        except ImportError as ex:
+            print "No override settings found"
 
         for key in new_settings:
             if key in self.my_settings:
                 item = new_settings[key]
-                if isinstance(item, dict):
-                    for key in item:
-                        self.my_settings[key] = item[key]
+                if isinstance(item, dict) and \
+                        isinstance(self.my_settings[key], dict):
+                    for key2 in item:
+                        self.my_settings[key][key2] = item[key2]
                 else:
                     self.my_settings[key] = item
             else:

@@ -30,8 +30,8 @@ class LogObject(object):
         "INFO":1,
         "WARN":2,
         "WARNING":2,
-        "CRITICAL":3,
-        "ERROR":4,
+        "ERROR":3,
+        "CRITICAL":4,
     }
 
     format_string = '[%(asctime)s] %(levelname)s: %(message)s'
@@ -132,17 +132,6 @@ class LogObject(object):
             extras = self.add_extras(extra, "WARNING")
             self._write_message(message, extras)
 
-    def critical(self, message, extra={}):
-        '''
-        Writes a critical message to the log
-
-        @param message: The message to write
-        @param extra: The extras object to pass in
-        '''
-        if self.level_dict['CRITICAL'] >= self.level_dict[self.log_level]:
-            extras = self.add_extras(extra, "CRITICAL")
-            self._write_message(message, extras)
-
     def error(self, message, extra={}):
         '''
         Writes an error message to the log
@@ -152,6 +141,17 @@ class LogObject(object):
         '''
         if self.level_dict['ERROR'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "ERROR")
+            self._write_message(message, extras)
+
+    def critical(self, message, extra={}):
+        '''
+        Writes a critical message to the log
+
+        @param message: The message to write
+        @param extra: The extras object to pass in
+        '''
+        if self.level_dict['CRITICAL'] >= self.level_dict[self.log_level]:
+            extras = self.add_extras(extra, "CRITICAL")
             self._write_message(message, extras)
 
     def _write_message(self, message, extra):
@@ -172,16 +172,17 @@ class LogObject(object):
         @param message: The message to write
         @param extra: The object to pull defaults from
         '''
+        print extra
         if extra['level'] == 'INFO':
             self.logger.info(message)
         elif extra['level'] == 'DEBUG':
             self.logger.debug(message)
         elif extra['level'] == 'WARNING':
             self.logger.warning(message)
-        elif extra['level'] == 'CRITICAL':
-            self.logger.critical(message)
         elif extra['level'] == 'ERROR':
             self.logger.error(message)
+        elif extra['level'] == 'CRITICAL':
+            self.logger.critical(message)
         else:
             self.logger.debug(message)
 
@@ -192,9 +193,13 @@ class LogObject(object):
         @param message: The message to write
         @param extra: The object to write
         '''
+        print "JSON", extra, self._get_time()
         self.logger.info(message, extra=extra);
 
     def name(self):
+        '''
+        Returns the logger name
+        '''
         return self.logger.name
 
     def add_extras(self, dict, level):
@@ -204,5 +209,11 @@ class LogObject(object):
         if 'level' not in dict:
             dict['level'] = level
         if 'timestamp' not in dict:
-            dict['timestamp'] = time.time()
+            dict['timestamp'] = self._get_time()
         return dict
+
+    def _get_time(self):
+        '''
+        Returns the system time
+        '''
+        return time.time()
