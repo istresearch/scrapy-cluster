@@ -5,7 +5,7 @@ if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1
 fi
-cd kafka-monitor
+cd ../kafka-monitor
 python tests/tests_offline.py -v
 if [ $? -eq 1 ]; then
     echo "kafka-monitor tests failed"
