@@ -30,6 +30,7 @@ class KafkaMonitor:
     def __init__(self, settings_name, unit_test=False):
         '''
         @param settings_name: the file name
+        @param unit_test: whether running unit tests or not
         '''
         self.settings_name = settings_name
         self.wrapper = SettingsWrapper()
@@ -59,6 +60,8 @@ class KafkaMonitor:
             if plugins[key] is None:
                 continue
             # valid plugin, import and setup
+            self.logger.debug("Trying to load plugin {cls}" \
+                .format(cls=key))
             the_class = self._import_class(key)
             instance = the_class()
             instance._set_logger(self.logger)
