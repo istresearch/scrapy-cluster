@@ -50,15 +50,11 @@ class LogObject(object):
         @param level: The logging level string
 
         '''
-        # check for valid log level
-        #if level not in self.level_dict.keys():
-        #    raise SyntaxError("Unknown log level {lev}".format(lev=level))
-
         # set up logger
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
-        self.log_level = level
         self.json = json
+        self.log_level = level
 
         if stdout:
             # set up to std out
@@ -67,6 +63,7 @@ class LogObject(object):
             formatter = self._get_formatter(json)
             stream_handler.setFormatter(formatter)
             self.logger.addHandler(stream_handler)
+            self._check_log_level(level)
             self.debug("Logging to stdout")
         else:
             # set up to file
@@ -76,8 +73,20 @@ class LogObject(object):
             formatter = self._get_formatter(json)
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
+            self._check_log_level(level)
             self.debug("Logging to file: {file}".format(
                     file=dir+'/'+file))
+
+    def _check_log_level(self, level):
+        '''
+        Ensures a valid log level
+
+        @param level: the asked for level
+        '''
+        if level not in self.level_dict.keys():
+            self.log_level = 'DEBUG'
+            self.logger.warn("Unknown log level '{lev}', defaulting to DEBUG" \
+                .format(lev=level))
 
     def _get_formatter(self, json):
         '''

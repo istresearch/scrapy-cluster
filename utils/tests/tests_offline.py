@@ -162,7 +162,6 @@ class TestLogJSONFile(TestCase):
                 dir='tests', level='INFO', stdout=False, file='test.log')
         self.test_file = 'tests/test'
 
-
     def test_log_file_json(self):
         self.logger._get_time = MagicMock(return_value=5)
         self.logger.info("Test log")
@@ -173,7 +172,6 @@ class TestLogJSONFile(TestCase):
             self.assertEqual(the_dict,{"message": "Test log", "level": "INFO"})
 
     def tearDown(self):
-        pass
         os.remove(self.test_file + '.log')
         os.remove(self.test_file + '.lock')
 
