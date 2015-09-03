@@ -16,9 +16,9 @@ class KafkaBaseMonitor(BaseMonitor):
         @param settings: The loaded settings file
         '''
         # set up kafka
-        self.kafka_conn = KafkaClient(settings.KAFKA_HOSTS)
+        self.kafka_conn = KafkaClient(settings['KAFKA_HOSTS'])
         self.producer = SimpleProducer(self.kafka_conn)
-        self.topic_prefix = settings.KAFKA_TOPIC_PREFIX
+        self.topic_prefix = settings['KAFKA_TOPIC_PREFIX']
 
     def _send_to_kafka(self, master):
         '''

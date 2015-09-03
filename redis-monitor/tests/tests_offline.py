@@ -26,7 +26,9 @@ import re
 class TestRedisMonitor(TestCase):
 
     def setUp(self):
-        self.redis_monitor = RedisMonitor("settings.py")
+        self.redis_monitor = RedisMonitor("settings.py", True)
+        self.redis_monitor.settings = self.redis_monitor.wrapper.load("settings.py")
+        self.redis_monitor.logger = MagicMock()
 
     def test_load_plugins(self):
         # test loading default plugins
@@ -36,20 +38,21 @@ class TestRedisMonitor(TestCase):
 
         # test removing a plugin from settings
         assert_keys = [100,300]
-        self.redis_monitor.settings.PLUGINS = {
-            'plugins.stop_monitor.StopMonitor': None,
-        }
+        self.redis_monitor.settings['PLUGINS'] \
+            ['plugins.stop_monitor.StopMonitor'] = None
         self.redis_monitor._load_plugins()
         self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
-        self.redis_monitor.default_plugins['plugins.stop_monitor.StopMonitor'] = 200
+        self.redis_monitor.settings['PLUGINS'] \
+            ['plugins.stop_monitor.StopMonitor'] = 200
 
         # fail if the class is not found
-        self.redis_monitor.settings.PLUGINS = {
-            'plugins.crazy_class.CrazyHandler': 400,
-        }
+        self.redis_monitor.settings['PLUGINS'] \
+            ['plugins.crazy_class.CrazyHandler'] = 400,
+
         self.assertRaises(ImportError, self.redis_monitor._load_plugins)
-        del self.redis_monitor.default_plugins['plugins.crazy_class.CrazyHandler']
-        self.redis_monitor.settings.PLUGINS = {}
+        del self.redis_monitor.settings['PLUGINS'] \
+            ['plugins.crazy_class.CrazyHandler']
+        self.redis_monitor.settings['PLUGINS'] = {}
 
     def test_active_plugins(self):
         # test that exceptions are caught within each plugin

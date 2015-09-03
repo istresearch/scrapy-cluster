@@ -7,33 +7,44 @@ import pickle
 import traceback
 import json
 import importlib
+import argparse
 
-from docopt import docopt
 from collections import OrderedDict
+from utils.log_factory import LogFactory
+from utils.settings_wrapper import SettingsWrapper
 
 class RedisMonitor:
 
-    plugin_dir = "plugins/"
-    default_plugins = {
-        'plugins.info_monitor.InfoMonitor': 100,
-        'plugins.stop_monitor.StopMonitor': 200,
-        'plugins.expire_monitor.ExpireMonitor': 300,
-    }
-
-    def __init__(self, settings):
+    def __init__(self, settings_name, unit_test=False):
         # dynamic import of settings file
         # remove the .py from the filename
-        self.settings = importlib.import_module(settings[:-3])
+        self.settings_name = settings_name
         self.redis_conn = None
+        self.wrapper = SettingsWrapper()
+        self.logger = None
+        self.unit_test = unit_test
 
-    def setup(self):
+    def setup(self, level=None, log_file=None, json=None):
         '''
-        Connection stuff here so we can mock it
+        Load everything up. Note that any arg here will override both
+        default and custom settings
+
+        @param level: the log level
+        @param log_file: boolean t/f whether to log to a file, else stdout
+        @param json: boolean t/f whether to write the logs in json
         '''
-        self.redis_conn = redis.Redis(host=self.settings.REDIS_HOST,
-                                      port=self.settings.REDIS_PORT)
+        self.settings = self.wrapper.load(self.settings_name)
+
+        my_level = level if level else self.settings['LOG_LEVEL']
+        # negate because logger wants True for std out
+        my_output = not log_file if log_file else self.settings['LOG_STDOUT']
+        my_json = json if json else self.settings['LOG_JSON']
+        self.logger = LogFactory.get_instance(json=my_json,
+            stdout=my_output, level=my_level)
+
+        self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
+                                      port=self.settings['REDIS_PORT'])
         self._load_plugins()
-        self._run_setups()
 
     def import_class(self, cl):
         '''
@@ -50,23 +61,20 @@ class RedisMonitor:
         '''
         Sets up all plugins and defaults
         '''
-        try:
-            self.default_plugins.update(self.settings.PLUGINS)
-        except Exception as e:
-            pass
+        plugins = self.settings['PLUGINS']
 
         self.plugins_dict = {}
-        for key in self.default_plugins:
+        for key in plugins:
             # skip loading the plugin if its value is None
-            if self.default_plugins[key] is None:
+            if plugins[key] is None:
                 continue
             # valid plugin, import and setup
             the_class = self.import_class(key)
             instance = the_class()
-            # not loading settings b/c of potential connections
-            # share the redis connection
             instance.redis_conn = self.redis_conn
-
+            instance._set_logger(self.logger)
+            if not self.unit_test:
+                instance.setup(self.settings)
             the_regex = instance.regex
 
             mini = {}
@@ -76,19 +84,10 @@ class RedisMonitor:
                 #continue
             mini['regex'] = the_regex
 
-            self.plugins_dict[self.default_plugins[key]] = mini
+            self.plugins_dict[plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
                                                 key=lambda t: t[0]))
-
-    def _run_setups(self):
-        '''
-        Runs the setups for all loaded classes, useful for skipping
-        connection loading
-        '''
-        for key in self.plugins_dict:
-            obj = self.plugins_dict[key]
-            obj['instance'].setup(self.settings)
 
     def run(self):
         '''
@@ -124,17 +123,27 @@ class RedisMonitor:
                 pass
 
 def main():
-    """redis-monitor: Monitor the Scrapy Cluster Redis instance.
+    parser = argparse.ArgumentParser(
+        description='Redis Monitor: Monitor the Scrapy Cluster Redis ' \
+            'instance.\n')
 
-    Usage:
-        redis-monitor [--settings=<settings>]
+    parser.add_argument('-s', '--settings', action='store', required=False,
+        help="The settings file to read from", default="settings.py")
+    parser.add_argument('-ll', '--log-level', action='store', required=False,
+        help="The log level", default=None,
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+    parser.add_argument('-lf', '--log-file', action='store_const',
+        required=False, const=True, default=None,
+        help='Log the output to the file specified in settings.py. Otherwise '\
+        'logs to stdout')
+    parser.add_argument('-lj', '--log-json', action='store_const',
+        required=False, const=True, default=None,
+        help="Log the data in JSON format")
+    args = vars(parser.parse_args())
 
-    Options:
-        -s --settings <settings>      The settings file to read from [default: settings.py].
-    """
-    args = docopt(main.__doc__)
-    redis_monitor = RedisMonitor(args['--settings'])
-    redis_monitor.setup()
+    redis_monitor = RedisMonitor(args['settings'])
+    redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
+        json=args['log_json'])
     redis_monitor.run()
 
 if __name__ == "__main__":

@@ -42,16 +42,22 @@ class TestRedisMonitor(TestCase):
 
     def setUp(self):
         self.redis_monitor = RedisMonitor("settings.py")
-        self.redis_monitor.settings.KAFKA_TOPIC_PREFIX = "demo_test"
-        self.redis_monitor.settings.PLUGINS = {
+        self.redis_monitor.settings = self.redis_monitor.wrapper.load("settings.py")
+        self.redis_monitor.logger = MagicMock()
+        self.redis_monitor.settings['KAFKA_TOPIC_PREFIX'] = "demo_test"
+        self.redis_monitor.settings['PLUGINS'] = {
             'plugins.info_monitor.InfoMonitor': None,
             'plugins.stop_monitor.StopMonitor': None,
             'plugins.expire_monitor.ExpireMonitor': None,
             'tests.tests_online.CustomMonitor':100,
         }
-        self.redis_monitor.setup()
+        self.redis_monitor.redis_conn = redis.Redis(
+            host=self.redis_monitor.settings['REDIS_HOST'],
+            port=self.redis_monitor.settings['REDIS_PORT'])
 
-        self.kafka_conn = KafkaClient(self.redis_monitor.settings.KAFKA_HOSTS)
+        self.redis_monitor._load_plugins()
+
+        self.kafka_conn = KafkaClient(self.redis_monitor.settings['KAFKA_HOSTS'])
         self.consumer = SimpleConsumer(
             self.kafka_conn,
             "demo-id",

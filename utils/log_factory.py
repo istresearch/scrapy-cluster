@@ -172,7 +172,6 @@ class LogObject(object):
         @param message: The message to write
         @param extra: The object to pull defaults from
         '''
-        print extra
         if extra['level'] == 'INFO':
             self.logger.info(message)
         elif extra['level'] == 'DEBUG':
@@ -193,7 +192,6 @@ class LogObject(object):
         @param message: The message to write
         @param extra: The object to write
         '''
-        print "JSON", extra, self._get_time()
         self.logger.info(message, extra=extra);
 
     def name(self):

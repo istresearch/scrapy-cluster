@@ -40,3 +40,11 @@ class BaseMonitor(object):
         Split this way for unit testing
         '''
         return time.time()
+
+    def _set_logger(self, logger):
+        '''
+        Set the logger
+
+        @param logger: The LogObject
+        '''
+        self.logger = logger
