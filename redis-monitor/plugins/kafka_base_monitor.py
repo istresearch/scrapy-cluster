@@ -1,8 +1,12 @@
 from base_monitor import BaseMonitor
 from kafka import KafkaClient, SimpleProducer
+from kafka.common import KafkaUnavailableError
 from base_monitor import BaseMonitor
+from utils.method_timer import MethodTimer
+
 import traceback
 import json
+import sys
 
 class KafkaBaseMonitor(BaseMonitor):
     '''
@@ -15,10 +19,29 @@ class KafkaBaseMonitor(BaseMonitor):
 
         @param settings: The loaded settings file
         '''
-        # set up kafka
-        self.kafka_conn = KafkaClient(settings['KAFKA_HOSTS'])
-        self.producer = SimpleProducer(self.kafka_conn)
-        self.topic_prefix = settings['KAFKA_TOPIC_PREFIX']
+        @MethodTimer.timeout(settings['KAFKA_CONN_TIMEOUT'], False)
+        def _hidden_setup():
+            try:
+                # set up kafka
+                self.kafka_conn = KafkaClient(settings['KAFKA_HOSTS'])
+                self.producer = SimpleProducer(self.kafka_conn)
+                self.topic_prefix = settings['KAFKA_TOPIC_PREFIX']
+            except KafkaUnavailableError as ex:
+                message = "An exception '{0}' occured while setting up kafka. "\
+                    "Arguments:\n{1!r}".format(type(ex).__name__, ex.args)
+                self.logger.error(message)
+                return False
+            return True
+        ret_val = _hidden_setup()
+
+        if ret_val:
+            self.logger.debug("Successfully connected to Kafka in {name}" \
+                .format(name=self.__class__.__name__))
+        else:
+            self.logger.error("Failed to set up Kafka Connection in {name} " \
+                "within timeout".format(name=self.__class__.__name__))
+            # this is essential to running the redis monitor
+            sys.exit(1)
 
     def _send_to_kafka(self, master):
         '''
@@ -41,8 +64,10 @@ class KafkaBaseMonitor(BaseMonitor):
 
             return True
         except Exception as ex:
-            print traceback.format_exc()
-            pass
+            message = "An exception '{0}' occured while sending a message " \
+                "to kafka. Arguments:\n{1!r}" \
+                .format(type(ex).__name__, ex.args)
+            self.logger.error(message)
 
         return False
 

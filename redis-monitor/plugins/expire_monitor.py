@@ -26,13 +26,17 @@ class ExpireMonitor(StopMonitor):
         timeout = float(value)
         curr_time = self.get_current_time()
         if curr_time > timeout:
-            print "handling expire request"
             # very similar to stop
             # break down key
             elements = key.split(":")
             spiderid = elements[1]
             appid = elements[2]
             crawlid = elements[3]
+
+            # log ack of expire
+            extras = self.get_log_dict('expire', spiderid,
+                                            appid, crawlid=crawlid)
+            self.logger.info("Expiring crawl found", extra=extras)
 
             # add crawl to blacklist so it doesnt propagate
             redis_key = spiderid + ":blacklist"
@@ -44,18 +48,15 @@ class ExpireMonitor(StopMonitor):
             # everything stored in the queue is now expired
             result = self._purge_crawl(spiderid, appid, crawlid)
 
-            # item to send to kafka
-            extras = {}
-            extras['action'] = "expire"
-            extras['spiderid'] = spiderid
-            extras['appid'] = appid
-            extras['crawlid'] = crawlid
+            # add result to our dict
             extras['total_expired'] = result
 
             if self._send_to_kafka(extras):
-                #print 'Sent expired ack to kafka'
-                pass
+                extras['success'] = True
+                self.logger.info('Sent expired ack to kafka', extra=extras)
             else:
-                print 'Failed to send expired ack to kafka'
+                extras['success'] = False
+                self.logger.error('Failed to send expired ack to kafka',
+                                    extra=extras)
 
             self.redis_conn.delete(key)

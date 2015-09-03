@@ -4,6 +4,7 @@ REDIS_PORT = 6379
 
 KAFKA_HOSTS = 'localhost:9092'
 KAFKA_TOPIC_PREFIX = 'demo'
+KAFKA_CONN_TIMEOUT = 5
 
 PLUGIN_DIR = "plugins/"
 PLUGINS = {

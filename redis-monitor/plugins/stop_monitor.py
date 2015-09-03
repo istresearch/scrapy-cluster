@@ -19,18 +19,22 @@ class StopMonitor(KafkaBaseMonitor):
         @param key: The key that matched the request
         @param value: The value associated with the key
         '''
-        print "handling stop request"
         # break down key
         elements = key.split(":")
 
         if len(elements) != 4:
-            print "Stop requests need a crawlid and appid"
+            self.logger.warn("Stop requests need a crawlid and appid")
             return
 
         spiderid = elements[1]
         appid = elements[2]
         crawlid = elements[3]
         uuid = value
+
+        # log we received the stop message
+        extras = self.get_log_dict('stop', spiderid,
+                                    appid, uuid, crawlid)
+        self.logger.info('Received stop request', extra=extras)
 
         redis_key = spiderid + ":blacklist"
         value = '{appid}||{crawlid}'.format(appid=appid,
@@ -57,9 +61,11 @@ class StopMonitor(KafkaBaseMonitor):
                                     aid=appid,
                                     cid=crawlid)
             self.redis_conn.delete(timeout_key)
-            #print 'Sent stop ack to kafka'
+            extras['success'] = True
+            self.logger.info('Sent stop ack to kafka', extra=extras)
         else:
-            print 'Failed to send stop ack to kafka'
+            extras['success'] = False
+            self.logger.error('Failed to send stop ack to kafka', extra=extras)
 
         self.redis_conn.delete(key)
 

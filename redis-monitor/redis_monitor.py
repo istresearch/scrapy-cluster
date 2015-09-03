@@ -12,12 +12,15 @@ import argparse
 from collections import OrderedDict
 from utils.log_factory import LogFactory
 from utils.settings_wrapper import SettingsWrapper
+from redis.exceptions import ConnectionError
 
 class RedisMonitor:
 
     def __init__(self, settings_name, unit_test=False):
-        # dynamic import of settings file
-        # remove the .py from the filename
+        '''
+        @param settings_name: the file name
+        @param unit_test: whether running unit tests or not
+        '''
         self.settings_name = settings_name
         self.redis_conn = None
         self.wrapper = SettingsWrapper()
@@ -44,6 +47,14 @@ class RedisMonitor:
 
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'])
+        try:
+            self.redis_conn.info()
+            self.logger.debug("Successfully connected to Redis")
+        except ConnectionError as ex:
+            self.logger.error("Failed to connect to Redis")
+            # essential to functionality
+            sys.exit(1)
+
         self._load_plugins()
 
     def import_class(self, cl):
@@ -69,6 +80,8 @@ class RedisMonitor:
             if plugins[key] is None:
                 continue
             # valid plugin, import and setup
+            self.logger.debug("Trying to load plugin {cls}" \
+                .format(cls=key))
             the_class = self.import_class(key)
             instance = the_class()
             instance.redis_conn = self.redis_conn
@@ -99,6 +112,7 @@ class RedisMonitor:
         '''
         The internal while true main loop for the redis monitor
         '''
+        self.logger.debug("Running main loop")
         while True:
             for plugin_key in self.plugins_dict:
                 obj = self.plugins_dict[plugin_key]
@@ -119,7 +133,7 @@ class RedisMonitor:
             try:
                 instance.handle(key, val)
             except Exception as e:
-                print traceback.format_exc()
+                self.logger.error(traceback.format_exc())
                 pass
 
 def main():

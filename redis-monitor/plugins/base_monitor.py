@@ -48,3 +48,23 @@ class BaseMonitor(object):
         @param logger: The LogObject
         '''
         self.logger = logger
+
+    def get_log_dict(self, action, spiderid, appid, uuid=None, crawlid = None):
+        '''
+        Returns a basic dictionary for logging
+        @param action: the action taken by the redis monitor
+        @param spiderid: the spider id
+        @param appid: the application id
+        @param uuid: a unique id of the request
+        @param crawlid: a unique crawl id of the request
+        '''
+        extras = {}
+        extras['action'] = action
+        extras['spiderid'] = spiderid
+        extras['appid'] = appid
+        if uuid is not None:
+            extras['uuid'] = uuid
+        if crawlid is not None:
+            extras['crawlid'] = crawlid
+
+        return extras

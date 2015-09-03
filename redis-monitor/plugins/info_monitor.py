@@ -19,7 +19,8 @@ class InfoMonitor(KafkaBaseMonitor):
         @param key: The key that matched the request
         @param value: The value associated with the key
         '''
-        print "handling info request"
+
+
         # the master dict to return
         master = {}
         master['uuid'] = value
@@ -32,8 +33,16 @@ class InfoMonitor(KafkaBaseMonitor):
         dict['spiderid'] = elements[1]
         dict['appid'] = elements[2]
 
+        # log we received the info message
+        extras = self.get_log_dict('info', dict['spiderid'],
+                                    dict['appid'], master['uuid'])
+
         if len(elements) == 4:
             dict['crawlid'] = elements[3]
+            extras = self._get_log_dict('info', dict['spiderid'],
+                                    dict['appid'], master['uuid'],
+                                    elements[3])
+        self.logger.info('Received info request', extra=extras)
 
         # generate the information requested
         if 'crawlid' in dict:
@@ -42,10 +51,12 @@ class InfoMonitor(KafkaBaseMonitor):
             master = self._build_appid_info(master, dict)
 
         if self._send_to_kafka(master):
-            pass
-            #print 'Sent info to kafka'
+            extras['success'] = True
+            self.logger.info('Sent info to kafka', extra=extras)
         else:
-            print 'Failed to send info to kafka'
+            extras['success'] = False
+            self.logger.error('Failed to send info to kafka',
+                                extra=extras)
 
         self.redis_conn.delete(key)
 

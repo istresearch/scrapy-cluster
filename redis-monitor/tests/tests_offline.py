@@ -158,6 +158,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
     def setUp(self):
         self.plugin = InfoMonitor()
         self.plugin.redis_conn = MagicMock()
+        self.plugin.logger = MagicMock()
 
     def test_info_regex(self):
         regex = self.fix_re(self.plugin.regex)
@@ -256,6 +257,7 @@ class TestStopPlugin(TestCase, RegexFixer):
     def setUp(self):
         self.plugin = StopMonitor()
         self.plugin.redis_conn = MagicMock()
+        self.plugin.logger = MagicMock()
 
     def test_stop_regex(self):
         regex = self.fix_re(self.plugin.regex)
@@ -276,6 +278,7 @@ class TestExpirePlugin(TestCase, RegexFixer):
     def setUp(self):
         self.plugin = ExpireMonitor()
         self.plugin.redis_conn = MagicMock()
+        self.plugin.logger = MagicMock()
 
     def test_stop_regex(self):
         regex = self.fix_re(self.plugin.regex)
