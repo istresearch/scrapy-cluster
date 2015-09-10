@@ -53,6 +53,7 @@ class StopMonitor(KafkaBaseMonitor):
         extras['appid'] = appid
         extras['crawlid'] = crawlid
         extras['total_purged'] = result
+        extras['server_time'] = int(self.get_current_time())
 
         if self._send_to_kafka(extras):
             # delete timeout for crawl (if needed) since stopped

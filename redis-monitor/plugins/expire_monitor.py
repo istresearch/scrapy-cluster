@@ -49,14 +49,20 @@ class ExpireMonitor(StopMonitor):
             result = self._purge_crawl(spiderid, appid, crawlid)
 
             # add result to our dict
-            extras['total_expired'] = result
+            master = {}
+            master['server_time'] = int(self.get_current_time())
+            master['crawlid'] = crawlid
+            master['spiderid'] = spiderid
+            master['appid'] = appid
+            master['total_expired'] = result
+            master['action'] = 'expired'
 
-            if self._send_to_kafka(extras):
-                extras['success'] = True
-                self.logger.info('Sent expired ack to kafka', extra=extras)
+            if self._send_to_kafka(master):
+                master['success'] = True
+                self.logger.info('Sent expired ack to kafka', extra=master)
             else:
-                extras['success'] = False
+                master['success'] = False
                 self.logger.error('Failed to send expired ack to kafka',
-                                    extra=extras)
+                                    extra=master)
 
             self.redis_conn.delete(key)

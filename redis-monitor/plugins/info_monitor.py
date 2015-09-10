@@ -39,7 +39,7 @@ class InfoMonitor(KafkaBaseMonitor):
 
         if len(elements) == 4:
             dict['crawlid'] = elements[3]
-            extras = self._get_log_dict('info', dict['spiderid'],
+            extras = self.get_log_dict('info', dict['spiderid'],
                                     dict['appid'], master['uuid'],
                                     elements[3])
         self.logger.info('Received info request', extra=extras)
@@ -96,6 +96,9 @@ class InfoMonitor(KafkaBaseMonitor):
         master['appid'] = dict['appid']
         master['spiderid'] = dict['spiderid']
 
+        # used for finding total count of domains
+        domain_dict = {}
+
         # get all domain queues
         match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
         for key in self.redis_conn.scan_iter(match=match_string):
@@ -134,7 +137,8 @@ class InfoMonitor(KafkaBaseMonitor):
                             master['crawlids'][crawlid]['domains'][domain]['high_priority'] = -9999
                             master['crawlids'][crawlid]['domains'][domain]['low_priority'] = 9999
                             master['crawlids'][crawlid]['distinct_domains'] = master['crawlids'][crawlid]['distinct_domains'] + 1
-                            master['total_domains'] = master['total_domains'] + 1
+                            domain_dict[domain] = True
+
 
                         master['crawlids'][crawlid]['domains'][domain]['total'] = master['crawlids'][crawlid]['domains'][domain]['total'] + 1
 
@@ -145,6 +149,8 @@ class InfoMonitor(KafkaBaseMonitor):
                             master['crawlids'][crawlid]['domains'][domain]['low_priority'] = item['priority']
 
                         master['total_pending'] = master['total_pending'] + 1
+
+        master['total_domains'] = len(domain_dict)
 
         return master
 
