@@ -11,7 +11,7 @@ import urllib
 import re
 
 from redis_dupefilter import RFPDupeFilter
-from redis_queue import RedisPriorityQueue
+from utils.redis_queue import RedisPriorityQueue
 
 try:
     import cPickle as pickle

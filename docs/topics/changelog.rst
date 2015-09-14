@@ -14,7 +14,7 @@ Date: ??/??/????
 
 - Modified demo incoming kafka topic from ``demo.incoming_urls`` to just ``demo.incoming`` as now all crawl/info/stop requests are serviced through a single topic
 
-- Added new ``utils`` folder for accessing modules across different components
+- Added new ``utils`` folder for accessing modules across different components.
 
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
@@ -29,12 +29,16 @@ Kafka Monitor Changes
 
 - Added both offline and online unit tests
 
+- Improved logging
+
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
 - Added plugin functionality for easier extension creation
 
 - Added both offline and online unit tests
+
+- Improved logging
 
 Crawler Changes
 ^^^^^^^^^^^^^^^^^^^^^
