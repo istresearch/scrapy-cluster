@@ -5,6 +5,7 @@ import unittest
 from unittest import TestCase
 import mock
 from mock import MagicMock
+import time
 
 import sys
 from os import path
@@ -13,6 +14,14 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from redis_queue import RedisQueue
 from redis_queue import RedisPriorityQueue
 from redis_queue import RedisStack
+
+from stats_collector import ThreadedCounter
+from stats_collector import TimeWindow
+from stats_collector import RollingTimeWindow
+from stats_collector import Counter
+from stats_collector import UniqueCounter
+from stats_collector import HyperLogLogCounter
+from stats_collector import BitMapCounter
 
 from redis.exceptions import WatchError
 import redis
@@ -83,6 +92,269 @@ class TestRedisStack(QueueMixin, TestCase):
         self.assertEqual(item2, self.queue.pop())
         self.assertEqual(item1, self.queue.pop())
 
+class TestStatsThreaded(RedisMixin, TestCase):
+
+    def test_set_key(self):
+        tc = ThreadedCounter(start_time=1442671176)
+        self.assertEqual('default_counter', tc.get_key())
+
+        tc.roll = True
+        tc.key = 'myKey'
+        tc._set_key()
+        self.assertEqual('myKey:2015-09-19_09:59:36', tc.get_key())
+
+    def test_is_expired(self):
+        # test rolling the key we are using
+        tc = ThreadedCounter(start_time=1442671176, window=5)
+        tc._time = MagicMock(return_value=1442671177)
+        self.assertFalse(tc.is_expired())
+
+        tc._time = MagicMock(return_value=1442671182)
+        self.assertTrue(tc.is_expired())
+
+    def test_threading(self):
+        # this test ensures the thread can start and stop
+        tc = ThreadedCounter(start_time=1442671176, cycle_time=1)
+        tc.expire = MagicMock()
+        tc.setup(redis_conn=self.redis_conn)
+        time.sleep(1)
+        tc.stop()
+
+    def test_purge_old(self):
+        # test removing old keys
+        tc = ThreadedCounter(keep_max=1)
+        tc.keep_max = 1
+        tc.redis_conn = self.redis_conn
+        self.redis_conn.set('default_counter:2015-09', 'stuff')
+        self.redis_conn.set('default_counter:2015-10', 'stuff2')
+
+        tc.purge_old()
+        self.assertEqual(['default_counter:2015-10'],
+            self.redis_conn.keys(tc.get_key() + ':*'))
+
+        self.redis_conn.delete('default_counter:2015-10')
+
+    def tearDown(self):
+        keys = self.redis_conn.keys('default_counter:*')
+        while len(keys) > 0:
+            key = keys.pop()
+            self.redis_conn.delete(key)
+
+class CleanMixin(object):
+
+    def clean_keys(self, key):
+        keys = self.redis_conn.keys(key + '*')
+        while len(keys) > 0:
+            key = keys.pop()
+            self.redis_conn.delete(key)
+
+class TestStatsTimeWindow(RedisMixin, TestCase, CleanMixin):
+
+    def test_window(self):
+        counter = TimeWindow(key='test_key', cycle_time=.1, window=1)
+        counter.setup(self.redis_conn)
+        counter.increment()
+        counter.increment()
+        counter.increment()
+        time.sleep(1.1)
+        counter.increment()
+        counter.stop()
+        self.assertEqual(counter.value(), 3)
+
+        self.clean_keys(counter.key)
+
+    def test_roll_window(self):
+        counter = TimeWindow(key='test_key', cycle_time=.01, window=1,
+            roll=True)
+        counter.setup(self.redis_conn)
+        counter.increment()
+        counter.increment()
+        counter.increment()
+        time.sleep(1.5)
+        counter.increment()
+        counter.increment()
+        counter.stop()
+
+        keys = self.redis_conn.keys('test_key:*')
+        keys.sort()
+        self.assertEqual(len(keys), 2)
+        self.assertEqual(self.redis_conn.zcard(keys[0]), 3)
+        self.assertEqual(counter.value(), 2)
+        counter.stop()
+        self.clean_keys(counter.key)
+
+class TestStatsRollingTimeWindow(RedisMixin, TestCase, CleanMixin):
+
+    def test_rolling_window(self):
+        # rough sleep to get us back on track
+        time.sleep(5 - (int(time.time()) % 5))
+        counter = RollingTimeWindow(key='test_key', cycle_time=.01, window=5)
+        counter.setup(self.redis_conn)
+        counter.increment()
+        counter.increment()
+        time.sleep(3)
+        counter.increment()
+        counter.increment()
+        time.sleep(3)
+        # at this point the first 2 counts have expired
+        counter.increment()
+        self.assertEqual(counter.value(), 3)
+        time.sleep(5.1)
+        # now everything has expired
+        self.assertEqual(counter.value(), 0)
+        # check to ensure counter is still working
+        counter.increment()
+        self.assertEqual(counter.value(), 1)
+        counter.stop()
+        self.clean_keys(counter.key)
+
+class TestStatsCounter(RedisMixin, TestCase, CleanMixin):
+
+    def test_generic_counter(self):
+        counter = Counter(key='test_key')
+        counter.setup(redis_conn=self.redis_conn)
+        i = 0
+        while i < 10000:
+            counter.increment()
+            i += 1
+
+        self.assertEqual(10000, counter.value())
+        counter.stop()
+        self.clean_keys(counter.key)
+
+    def test_roll_generic_counter(self):
+        # rough sleep to get us back on track
+        time.sleep(2 - (int(time.time()) % 2))
+        counter = Counter(key='test_key', window=2, cycle_time=.1, roll=True)
+        counter.setup(redis_conn=self.redis_conn)
+        i = 0
+        while i < 100:
+            counter.increment()
+            i += 1
+        self.assertEqual(counter.value(), 100)
+        time.sleep(3)
+        # now the counter should have rolled
+        i = 0
+        while i < 50:
+            counter.increment()
+            i += 1
+        self.assertEqual(counter.value(), 50)
+        counter.stop()
+        self.clean_keys(counter.key)
+
+class TestStatsUniqueCounter(RedisMixin, TestCase, CleanMixin):
+
+    def test_uniques(self):
+        counter = UniqueCounter(key='test_key')
+        counter.setup(redis_conn=self.redis_conn)
+
+        i = 0
+        while i < 1000:
+            counter.increment(i % 100)
+            i += 1
+        self.assertEqual(counter.value(), 100)
+        counter.stop()
+        self.clean_keys(counter.key)
+
+    def test_roll_uniques(self):
+        # rough sleep to get us back on track
+        time.sleep(2 - (int(time.time()) % 2))
+        counter = UniqueCounter(key='test_key', window=2, cycle_time=.1,
+            roll=True)
+        counter.setup(redis_conn=self.redis_conn)
+        i = 0
+        while i < 100:
+            counter.increment(i % 10)
+            i += 1
+        self.assertEqual(counter.value(), 10)
+        time.sleep(3)
+        # now the counter should have rolled
+        i = 0
+        while i < 50:
+            counter.increment(i % 10)
+            i += 1
+        self.assertEqual(counter.value(), 10)
+        counter.stop()
+        self.clean_keys(counter.key)
+
+class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
+
+    tolerance = 2 # percent
+
+    def check_tolerance(self, value, actual):
+        result = abs(actual - value) / ((value + actual) / 2.0) * 100.0
+        if result > self.tolerance:
+            print "This is going to fail, probably because the roll time " \
+                "didn't happen perfectly since HLL's are fairly slow."
+            print value, actual, result
+        return result <= self.tolerance
+
+    def test_hll_counter(self):
+        counter = HyperLogLogCounter(key='test_key')
+        counter.setup(redis_conn=self.redis_conn)
+        for n in range(3):
+            i = 0
+            while i < 10010 * (n + 1):
+                counter.increment(i % (5000 * (n + 1)))
+                i += 1
+            self.assertTrue(self.check_tolerance((5000 * (n + 1)), counter.value()))
+            self.clean_keys(counter.key)
+
+        counter.stop()
+
+    def test_roll_hll_counter(self):
+        # rough sleep to get us back on track
+        time.sleep(5.0 - (time.time() % 5.0))
+        counter = HyperLogLogCounter(key='test_key', window=5, roll=True,
+            cycle_time=.1,)
+        counter.setup(redis_conn=self.redis_conn)
+        i = 0
+        while i < 5010:
+            counter.increment(i % 1010)
+            i += 1
+        self.assertTrue(self.check_tolerance(1010, counter.value()))
+        self.clean_keys(counter.key)
+        time.sleep(5.1)
+        # we should be on to a new counter window by now
+        i = 0
+        while i < 5010:
+            counter.increment(i % 3010)
+            i += 1
+        self.assertTrue(self.check_tolerance(3010, counter.value()))
+        counter.stop()
+        self.clean_keys(counter.key)
+
+class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
+
+    def test_bitmap_counter(self):
+        counter = BitMapCounter(key='test_key')
+        counter.setup(redis_conn=self.redis_conn)
+
+        counter.increment(0)
+        counter.increment(1)
+        counter.increment(5)
+        counter.increment(0)
+        self.assertEqual(3, counter.value())
+        counter.stop()
+        self.clean_keys(counter.key)
+
+    def test_roll_bitmap_counter(self):
+        # rough sleep to get us back on track
+        time.sleep(2 - (int(time.time()) % 2))
+        counter = BitMapCounter(key='test_key', window=2, cycle_time=.1,
+            roll=True)
+        counter.setup(redis_conn=self.redis_conn)
+
+        counter.increment(0)
+        counter.increment(1)
+        counter.increment(0)
+        self.assertEqual(2, counter.value())
+        time.sleep(3)
+        counter.increment(0)
+        self.assertEqual(1, counter.value())
+        counter.stop()
+        self.clean_keys(counter.key)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Online depployement Test"\
                                      " Script for Utils")
@@ -99,5 +371,29 @@ if __name__ == '__main__':
     suite.addTest(TestRedisFifoQueue('test_fifo_queue', redis_conn))
     suite.addTest(TestRedisPriorityQueue('test_priority_queue', redis_conn))
     suite.addTest(TestRedisStack('test_stack', redis_conn))
+
+    suite.addTest(TestStatsThreaded('test_set_key', redis_conn))
+    suite.addTest(TestStatsThreaded('test_is_expired', redis_conn))
+    suite.addTest(TestStatsThreaded('test_threading', redis_conn))
+    suite.addTest(TestStatsThreaded('test_purge_old', redis_conn))
+
+    suite.addTest(TestStatsTimeWindow('test_window', redis_conn))
+    suite.addTest(TestStatsTimeWindow('test_roll_window', redis_conn))
+
+    suite.addTest(TestStatsRollingTimeWindow('test_rolling_window', redis_conn))
+
+    suite.addTest(TestStatsCounter('test_generic_counter', redis_conn))
+    suite.addTest(TestStatsCounter('test_roll_generic_counter', redis_conn))
+
+    suite.addTest(TestStatsUniqueCounter('test_uniques', redis_conn))
+    suite.addTest(TestStatsUniqueCounter('test_roll_uniques', redis_conn))
+
+    suite.addTest(TestStatsHyperLogLogCounter('test_hll_counter', redis_conn))
+    suite.addTest(TestStatsHyperLogLogCounter('test_roll_hll_counter', redis_conn))
+
+    suite.addTest(TestStatsBitMapCounter('test_bitmap_counter', redis_conn))
+    suite.addTest(TestStatsBitMapCounter('test_roll_bitmap_counter', redis_conn))
+
+
 
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -21,6 +21,8 @@ from log_factory import LogFactory
 from log_factory import LogObject
 from settings_wrapper import SettingsWrapper
 
+from stats_collector import AbstractCounter
+
 class TestMethodTimer(TestCase):
 
     def test_under(self):
@@ -174,6 +176,43 @@ class TestLogJSONFile(TestCase):
     def tearDown(self):
         os.remove(self.test_file + '.log')
         os.remove(self.test_file + '.lock')
+
+class TestStatsAbstract(TestCase):
+
+    def test_default_key(self):
+        ac = AbstractCounter()
+        self.assertEqual('default_counter', ac.get_key())
+
+    def test_overloaded_key(self):
+        ac = AbstractCounter('aKey')
+        self.assertEqual('aKey', ac.get_key())
+
+    def test_not_implemented(self):
+        ac = AbstractCounter()
+
+        try:
+            ac.increment()
+            self.fail("increment should be abstract")
+        except NotImplementedError as e:
+            pass
+
+        try:
+            ac.value()
+            self.fail("value should be abstract")
+        except NotImplementedError as e:
+            pass
+
+        try:
+            ac.expire()
+            self.fail("expire should be abstract")
+        except NotImplementedError as e:
+            pass
+
+        try:
+            ac.increment()
+            self.fail("increment should be abstract")
+        except NotImplementedError as e:
+            pass
 
 if __name__ == '__main__':
     unittest.main()
