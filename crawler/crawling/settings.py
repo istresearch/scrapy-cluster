@@ -62,6 +62,9 @@ RETRY_TIMES = 3
 
 DOWNLOAD_TIMEOUT = 10
 
+# Avoid in-memory DNS cache. See Advanced topics of docs for info
+DNSCACHE_ENABLED = False
+
 # Local Overrides
 # ~~~~~~~~~~~~~~~
 
