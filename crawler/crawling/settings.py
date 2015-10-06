@@ -73,6 +73,9 @@ SC_LOG_MAX_BYTES = '10MB'
 SC_LOG_JSON = False
 SC_LOG_LEVEL = 'DEBUG'
 
+# Avoid in-memory DNS cache. See Advanced topics of docs for info
+DNSCACHE_ENABLED = False
+
 # Local Overrides
 # ~~~~~~~~~~~~~~~
 
