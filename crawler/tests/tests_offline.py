@@ -64,10 +64,9 @@ class TestRedisRetryMiddleware(TestCase):
 
 class ThrottleMixin(object):
 
-    @mock.patch('crawling.distributed_scheduler.DistributedScheduler' \
-                '.setup')
-    def setUp(self, a):
-        self.scheduler = DistributedScheduler(MagicMock(), False, 10, 3)
+    def setUp(self):
+        self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
+            MagicMock())
         self.scheduler.open(MagicMock())
         self.scheduler.spider.name = 'link'
         self.req = None
@@ -165,6 +164,7 @@ class TestLinkSpider(TestCase):
 
     def setUp(self):
         self.spider = LinkSpider()
+        self.spider._logger = MagicMock()
 
     def get_meta(self):
         item = {}

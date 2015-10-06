@@ -44,7 +44,7 @@ class ScraperHandler(BaseHandler):
         self.redis_conn.zadd(key, val, -dict['priority'])
 
         # if timeout crawl, add value to redis
-        if 'expires' in dict:
+        if 'expires' in dict and dict['expires'] != 0:
             key = "timeout:{sid}:{appid}:{crawlid}".format(
                             sid=dict['spiderid'],
                             appid=dict['appid'],

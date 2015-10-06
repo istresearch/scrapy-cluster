@@ -16,3 +16,5 @@ class RawResponseItem(Item):
     body = Field()
     links = Field()
     attrs = Field()
+    success = Field()
+    exception = Field()

@@ -35,6 +35,8 @@ SCHEUDLER_ITEM_RETRIES = 3
 # Store scraped item in redis for post-processing.
 ITEM_PIPELINES = {
     'crawling.pipelines.KafkaPipeline': 100,
+    'crawling.pipelines.LoggingBeforePipeline': 1,
+    'crawling.pipelines.LoggingAfterPipeline': 101,
 }
 
 SPIDER_MIDDLEWARES = {
@@ -47,6 +49,8 @@ DOWNLOADER_MIDDLEWARES = {
     # Handle timeout retries with the redis scheduler and logger
     'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware' : None,
     'crawling.redis_retry_middleware.RedisRetryMiddleware': 510,
+    # exceptions processed in reverse order
+    'crawling.log_retry_middleware.LogRetryMiddleware': 520,
     # custom cookies to not persist across crawl requests
     'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware' : None,
     'crawling.custom_cookies.CustomCookiesMiddleware' :700,
@@ -61,6 +65,13 @@ HTTPERROR_ALLOW_ALL = True
 RETRY_TIMES = 3
 
 DOWNLOAD_TIMEOUT = 10
+
+SC_LOG_STDOUT = True
+SC_LOG_DIR = 'logs'
+SC_LOG_FILE = 'main.log'
+SC_LOG_MAX_BYTES = '10MB'
+SC_LOG_JSON = False
+SC_LOG_LEVEL = 'DEBUG'
 
 # Local Overrides
 # ~~~~~~~~~~~~~~~

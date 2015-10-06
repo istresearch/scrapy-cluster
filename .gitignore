@@ -4,3 +4,6 @@ docs/_build_html
 .DS_STORE
 kafka-monitor/logs/*
 redis-monitor/logs/*
+crawler/logs/*
+crawler/main.log
+localsettings.py

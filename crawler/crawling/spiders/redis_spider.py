@@ -1,6 +1,7 @@
 from scrapy import signals
 from scrapy.exceptions import DontCloseSpider
 from scrapy.spiders import Spider
+#from crawler.utils.log_factory import LogFactory
 
 class RedisSpider(Spider):
     '''
@@ -22,6 +23,14 @@ class RedisSpider(Spider):
         @param response: The response object of the scrape
         '''
         raise NotImplementedError("Please implement parse() for your spider")
+
+    def set_logger(self, logger):
+        '''
+        Set the logger for the spider, different than the default Scrapy one
+
+        @param logger: the logger from the scheduler
+        '''
+        self._logger = logger
 
     def reconstruct_headers(self, response):
         """

@@ -1,6 +1,4 @@
 import scrapy
-import logging
-logger = logging.getLogger(__name__)
 
 from scrapy.http import Request
 from lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
@@ -23,7 +21,7 @@ class LinkSpider(RedisSpider):
         super(LinkSpider, self).__init__(*args, **kwargs)
 
     def parse(self, response):
-        self.log("crawled url {}".format(response.request.url))
+        self._logger.debug("crawled url {}".format(response.request.url))
         cur_depth = 0
         if 'curdepth' in response.meta:
             cur_depth = response.meta['curdepth']
@@ -47,7 +45,7 @@ class LinkSpider(RedisSpider):
 
         # determine whether to continue spidering
         if cur_depth >= response.meta['maxdepth']:
-            self.log("Not spidering links in '{}' because" \
+            self._logger.debug("Not spidering links in '{}' because" \
                 " cur_depth={} >= maxdepth={}".format(
                 response.url,
                 cur_depth,
@@ -63,29 +61,20 @@ class LinkSpider(RedisSpider):
             for link in link_extractor.extract_links(response):
                 # link that was discovered
                 item["links"].append({"url": link.url,"text": link.text, })
-                req = Request(link.url,
-                        callback=self.parse,
-                        meta={
-                            "allowed_domains": response.meta['allowed_domains'],
-                            "allow_regex": response.meta['allow_regex'],
-                            "deny_regex": response.meta['deny_regex'],
-                            "deny_extensions": response.meta['deny_extensions'],
-                            "maxdepth": response.meta['maxdepth'],
-                            "curdepth": cur_depth + 1,
-                            "appid": response.meta['appid'],
-                            "crawlid": response.meta['crawlid'],
-                            "attrs": response.meta['attrs'],
-                            "spiderid": self.name,
-                            "expires": response.meta['expires'],
-                            "priority": response.meta['priority'] - 10,
-                            "useragent": response.meta['useragent'],
-                            "cookie": response.meta['cookie']
-                        },
-                        )
-                if response.meta['useragent'] is not None:
+                req = Request(link.url, callback=self.parse)
+
+                # pass along all known meta fields
+                for key in response.meta.keys():
+                    req.meta[key] = response.meta[key]
+
+                req.meta['priority'] = response.meta['priority'] - 10
+                req.meta['curdepth'] = response.meta['curdepth'] + 1
+
+                if 'useragent' in response.meta and \
+                        response.meta['useragent'] is not None:
                     req.headers['User-Agent'] = response.meta['useragent']
 
-                self.log("Trying to follow link '{}'".format(req.url))
+                self._logger.debug("Trying to follow link '{}'".format(req.url))
                 yield req
 
         # raw response has been processed, yield to item pipeline

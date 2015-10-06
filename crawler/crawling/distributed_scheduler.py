@@ -12,6 +12,7 @@ import re
 
 from redis_dupefilter import RFPDupeFilter
 from utils.redis_queue import RedisPriorityQueue
+from utils.log_factory import LogFactory
 
 try:
     import cPickle as pickle
@@ -35,7 +36,7 @@ class DistributedScheduler(object):
     extract = None # the tld extractor
     item_retries = 0 # the number of extra tries to get an item
 
-    def __init__(self, server, persist, update_int, timeout, retries):
+    def __init__(self, server, persist, update_int, timeout, retries, logger):
         '''
         Initialize the scheduler
         '''
@@ -45,6 +46,7 @@ class DistributedScheduler(object):
         self.update_interval = update_int
         self.rfp_timeout = timeout
         self.item_retires = retries
+        self.logger = logger
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
@@ -69,7 +71,18 @@ class DistributedScheduler(object):
         timeout = settings.get('DUPEFILTER_TIMEOUT', 600)
         retries = settings.get('SCHEDULER_ITEM_RETRIES', 3)
 
-        return cls(server, persist, up_int, timeout, retries)
+        my_level = settings.get('SC_LOG_LEVEL', 'INFO')
+        my_output = settings.get('SC_LOG_STDOUT', True)
+        my_json = settings.get('SC_LOG_JSON', False)
+        my_dir = settings.get('SC_LOG_DIR', 'logs')
+        my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
+        my_file = settings.get('SC_LOG_FILE', 'main.log')
+
+        logger = LogFactory.get_instance(json=my_json,
+            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
+            bytes=my_bytes)
+
+        return cls(server, persist, up_int, timeout, retries, logger)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -77,6 +90,7 @@ class DistributedScheduler(object):
 
     def open(self, spider):
         self.spider = spider
+        self.spider.set_logger(self.logger)
         self.update_queues()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
                             self.spider.name + ':dupefilter', self.rfp_timeout)
@@ -102,6 +116,7 @@ class DistributedScheduler(object):
         Pushes a request from the spider into the proper queue
         '''
         if not request.dont_filter and self.dupefilter.request_seen(request):
+            self.logger.debug("Request not added back to redis")
             return
         req_dict = self.request_to_dict(request)
 
@@ -129,6 +144,17 @@ class DistributedScheduler(object):
                     # they call update_queues
                     self.redis_conn.zadd(key, pickle.dumps(req_dict, protocol=-1),
                                         -req_dict['meta']['priority'])
+                self.logger.debug("Crawlid: '{id}' Appid: '{appid}' added to queue"
+                    .format(appid=req_dict['meta']['appid'],
+                            id=req_dict['meta']['crawlid']))
+            else:
+                self.logger.debug("Crawlid: '{id}' Appid: '{appid}' expired".format(
+                    appid=req_dict['meta']['appid'],
+                    id=req_dict['meta']['crawlid']))
+        else:
+            self.logger.debug("Crawlid: '{id}' Appid: '{appid}' blacklisted".format(
+                    appid=req_dict['meta']['appid'],
+                    id=req_dict['meta']['crawlid']))
 
     def request_to_dict(self, request):
         '''
@@ -186,6 +212,7 @@ class DistributedScheduler(object):
 
         item = self.find_item()
         if item:
+            self.logger.debug("Found url to crawl {url}".format(url=item['url']))
             try:
                 req = Request(item['url'])
             except ValueError:
@@ -196,42 +223,19 @@ class DistributedScheduler(object):
             if 'meta' in item:
                 item = item['meta']
 
-            # defaults
-            if "attrs" not in item:
-                item["attrs"] = {}
-            if "allowed_domains" not in item:
-                item["allowed_domains"] = ()
-            if "allow_regex" not in item:
-                item["allow_regex"] = ()
-            if "deny_regex" not in item:
-                item["deny_regex"] = ()
-            if "deny_extensions" not in item:
-                item["deny_extensions"] = None
+            # defaults not in schema
             if 'curdepth' not in item:
                 item['curdepth'] = 0
-            if "maxdepth" not in item:
-                item["maxdepth"] = 0
-            if "priority" not in item:
-                item['priority'] = 0
             if "retry_times" not in item:
                 item['retry_times'] = 0
-            if "expires" not in item:
-                item['expires'] = 0
-            if "useragent" not in item:
-                item['useragent'] = None
-            if "cookie" not in item:
-                item['cookie'] = None
 
-            for key in ('attrs', 'allowed_domains', 'curdepth', 'maxdepth',
-                    'appid', 'crawlid', 'spiderid', 'priority', 'retry_times',
-                    'expires', 'allow_regex', 'deny_regex', 'deny_extensions',
-                    'useragent', 'cookie'):
+            for key in item.keys():
                 req.meta[key] = item[key]
 
             # extra check to add items to request
-            if item['useragent'] is not None:
+            if 'useragent' in item and item['useragent'] is not None:
                 req.headers['User-Agent'] = item['useragent']
-            if item['cookie'] is not None:
+            if 'cookie' in item and item['cookie'] is not None:
                 if isinstance(item['cookie'], dict):
                     req.cookies = item['cookie']
                 elif isinstance(item['cookie'], basestring):
