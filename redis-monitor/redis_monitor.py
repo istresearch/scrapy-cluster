@@ -142,7 +142,7 @@ def main():
             'instance.\n')
 
     parser.add_argument('-s', '--settings', action='store', required=False,
-        help="The settings file to read from", default="settings.py")
+        help="The settings file to read from", default="localsettings.py")
     parser.add_argument('-ll', '--log-level', action='store', required=False,
         help="The log level", default=None,
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])

@@ -5,7 +5,7 @@ class SettingsWrapper(object):
     Wrapper for loading settings files and merging them with overrides
     '''
 
-    default_settings = "default_settings"
+    default_settings = "settings"
     my_settings = {}
     ignore = [
         '__builtins__',
@@ -47,7 +47,7 @@ class SettingsWrapper(object):
         except ImportError as ex:
             print "No default settings found"
 
-    def _load_custom(self, settings_name='settings.py'):
+    def _load_custom(self, settings_name='localsettings.py'):
         '''
         Load the user defined settings, overriding the defaults
 
