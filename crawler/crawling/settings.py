@@ -1,3 +1,6 @@
+# This file houses all default settings for the Crawler
+# to override please use a custom localsettings.py file
+
 # Specify the host and port to use when connecting to Redis.
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'

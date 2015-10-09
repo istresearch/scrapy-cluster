@@ -1,5 +1,5 @@
 # This file houses all default settings for the Kafka Monitor
-# to override please use a custom settings.py file
+# to override please use a custom localsettings.py file
 
 # Redis host information
 REDIS_HOST = 'localhost'

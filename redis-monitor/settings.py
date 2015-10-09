@@ -1,3 +1,6 @@
+# This file houses all default settings for the Redis Monitor
+# to override please use a custom localsettings.py file
+
 # Redis host configuration
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
