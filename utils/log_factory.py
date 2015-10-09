@@ -34,11 +34,10 @@ class LogObject(object):
         "CRITICAL":4,
     }
 
-    format_string = '[%(asctime)s] %(levelname)s: %(message)s'
-
     def __init__(self, json=False, stdout=True, name='scrapy-cluster',
-                dir='logs', file='main.log',
-                bytes=25000000, backups=5, level='INFO'):
+                dir='logs', file='main.log', bytes=25000000, backups=5,
+                level='INFO',
+                format='%(asctime)s [%(name)s] %(levelname)s: %(message)s'):
         '''
         @param stdout: Flag to write logs to stdout or file
         @param json: Flag to write json logs with objects or just the messages
@@ -56,6 +55,7 @@ class LogObject(object):
         self.logger.propagate = False
         self.json = json
         self.log_level = level
+        self.format_string = format
 
         if stdout:
             # set up to std out

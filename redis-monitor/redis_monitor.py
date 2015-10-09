@@ -43,7 +43,7 @@ class RedisMonitor:
         my_output = not log_file if log_file else self.settings['LOG_STDOUT']
         my_json = json if json else self.settings['LOG_JSON']
         self.logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level)
+            stdout=my_output, level=my_level, name='redis-monitor')
 
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'])

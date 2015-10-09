@@ -96,7 +96,7 @@ class KafkaMonitor:
         my_output = not log_file if log_file else self.settings['LOG_STDOUT']
         my_json = json if json else self.settings['LOG_JSON']
         self.logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level)
+            stdout=my_output, level=my_level, name='kafka-monitor')
 
         self.validator = self.extend_with_default(Draft4Validator)
 
