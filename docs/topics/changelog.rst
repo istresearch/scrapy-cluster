@@ -31,6 +31,8 @@ Kafka Monitor Changes
 
 - Improved logging
 
+- Added defaults to ``scraper_schema.json``
+
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -46,6 +48,14 @@ Crawler Changes
 - Upgraded Crawler to be compatible with Scrapy 1.0.3
 
 - Improved code structure for overriding url.encode in default LxmlParserLinkExtractor
+
+- Improved logging
+
+- Added ability for the crawling rate to be controlled in a manner that will rate limit the whole crawling cluster based upon the domain, spider type, and public ip address the crawlers have.
+
+- Added ability for the crawl rate to be explicitly defined per domain in Zookeeper, with the ability to dynamically update them on the fly
+
+- Created manual crawler Zookeeper configuration pusher
 
 Scrapy Cluster 1.0
 ---------------------
