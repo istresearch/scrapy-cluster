@@ -64,11 +64,12 @@ class KafkaPipeline(object):
     Pushes a serialized item to appropriate Kafka topics.
     '''
 
-    def __init__(self, producer, topic_prefix, aKafka, logger):
+    def __init__(self, producer, topic_prefix, aKafka, logger, appids):
         self.producer = producer
         self.topic_prefix = topic_prefix
         self.topic_list = []
         self.kafka = aKafka
+        self.appid_topics = appids
         self.logger = logger
         self.logger.debug("Setup kafka pipeline")
 
@@ -84,12 +85,13 @@ class KafkaPipeline(object):
         my_dir = settings.get('SC_LOG_DIR', 'logs')
         my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
         my_file = settings.get('SC_LOG_FILE', 'main.log')
+        my_appids = settings.get('KAFKA_APPID_TOPICS', False)
 
         logger = LogFactory.get_instance(json=my_json,
             stdout=my_output, level=my_level, dir=my_dir, file=my_file,
             bytes=my_bytes)
 
-        return cls(producer, topic_prefix, kafka, logger)
+        return cls(producer, topic_prefix, kafka, logger, appids=my_appids)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -101,19 +103,22 @@ class KafkaPipeline(object):
             datum = dict(item)
             datum["timestamp"] = dt.datetime.utcnow().isoformat()
             prefix = self.topic_prefix
-            appid_topic = "{prefix}.crawled_{appid}".format(prefix=prefix,
-                                                           appid=datum["appid"])
-            firehose_topic = "{prefix}.crawled_firehose".format(prefix=prefix)
+
             try:
                 message = json.dumps(datum)
             except:
                 message = 'json failed to parse'
 
-            self.checkTopic(appid_topic)
+            firehose_topic = "{prefix}.crawled_firehose".format(prefix=prefix)
             self.checkTopic(firehose_topic)
-
-            self.producer.send_messages(appid_topic, message)
             self.producer.send_messages(firehose_topic, message)
+
+            if self.appid_topics:
+                appid_topic = "{prefix}.crawled_{appid}".format(
+                        prefix=prefix, appid=datum["appid"])
+                self.checkTopic(appid_topic)
+                self.producer.send_messages(appid_topic, message)
+
             item['success'] = True
         except Exception as ex:
             item['success'] = False

@@ -5,6 +5,7 @@ REDIS_PORT = '6379'
 # Kafka server information
 KAFKA_HOSTS = 'locahost:9092'
 KAFKA_TOPIC_PREFIX = 'demo'
+KAFKA_APPID_TOPICS = False
 
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'

@@ -446,7 +446,6 @@ class DistributedScheduler(object):
                 elif isinstance(item['cookie'], basestring):
                     req.cookies = self.parse_cookie(item['cookie'])
 
-            self.logger.debug("Returned new Request")
             return req
 
         return None
