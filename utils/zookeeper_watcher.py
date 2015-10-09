@@ -126,7 +126,6 @@ class ZookeeperWatcher():
             # which will cause the sessions to be wiped and re established.
             # Used b/c of massive connection pool issues
             self.zoo_client.stop()
-            print "after?"
 
     def is_valid(self):
         '''

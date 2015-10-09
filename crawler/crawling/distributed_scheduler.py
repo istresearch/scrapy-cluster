@@ -7,11 +7,19 @@ import json
 import random
 import time
 import tldextract
-import urllib
+import urllib2
 import re
+import yaml
 
 from redis_dupefilter import RFPDupeFilter
+
+from kazoo.client import KazooClient
+from kazoo.client import KazooState
+from kazoo.exceptions import ZookeeperError
+
+from utils.zookeeper_watcher import ZookeeperWatcher
 from utils.redis_queue import RedisPriorityQueue
+from utils.redis_throttled_queue import RedisThrottledQueue
 from utils.log_factory import LogFactory
 
 try:
@@ -21,7 +29,7 @@ except ImportError:
 
 class DistributedScheduler(object):
     '''
-    Scrapy request scheduler that utilizes Priority Queues
+    Scrapy request scheduler that utilizes Redis Throttled Priority Queues
     to moderate different domain scrape requests within a distributed scrapy
     cluster
     '''
@@ -32,11 +40,27 @@ class DistributedScheduler(object):
     queue_class = None # the class to use for the queue
     dupefilter = None # the redis dupefilter
     update_time = 0 # the last time the queues were updated
+    update_ip_time = 0 # the last time the ip was updated
     update_interval = 0 # how often to update the queues
     extract = None # the tld extractor
+    hits = 0 # default number of hits for a queue
+    window = 0 # default window to calculate number of hits
+    my_ip = None # the ip address of the scheduler (if needed)
+    old_ip = None # the old ip for logging
+    ip_update_interval = 0 # the interval to update the ip address
+    add_type = None # add spider type to redis throttle queue key
+    add_ip = None # add spider public ip to redis throttle queue key
     item_retries = 0 # the number of extra tries to get an item
+    # Zookeeper Dynamic Config Vars
+    domain_config = {} # The list of domains and their configs
+    my_id = None # The id used to read the throttle config
+    config_flag = False # Flag to reload queues if settings are wiped too
+    assign_path = None # The base assigned configuration path to read
+    zoo_client = None # The KazooClient to manage the config
+    my_assignment = None # Zookeeper path to read actual yml config
 
-    def __init__(self, server, persist, update_int, timeout, retries, logger):
+    def __init__(self, server, persist, update_int, timeout, retries, logger, hits,
+                window, mod, ip_refresh, add_type, add_ip):
         '''
         Initialize the scheduler
         '''
@@ -44,23 +68,187 @@ class DistributedScheduler(object):
         self.persist = persist
         self.queue_dict = {}
         self.update_interval = update_int
+        self.hits = hits
+        self.window = window
+        self.moderated = mod
         self.rfp_timeout = timeout
+        self.ip_update_interval = ip_refresh
+        self.add_type = add_type
+        self.add_ip = add_ip
         self.item_retires = retries
         self.logger = logger
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
 
+        self.update_ipaddress()
+
+    def setup_zookeeper(self):
+        self.assign_path = settings.get('ZOOKEEPER_ASSIGN_PATH', "")
+        self.my_id = settings.get('ZOOKEEPER_ID', 'all')
+        self.zoo_watcher = ZookeeperWatcher(
+                            hosts=settings.get('ZOOKEEPER_HOSTS'),
+                            filepath=self.assign_path + self.my_id,
+                            config_handler=self.change_config,
+                            error_handler=self.error_config,
+                            pointer=False, ensure=True)
+
+        if self.zoo_watcher.ping():
+            self.logger.debug("Set up Zookeeper connection")
+        else:
+            self.logger.error("Could not connect to Zookeeper")
+
+    def change_config(self, config_string):
+        if config_string and len(config_string) > 0:
+            loaded_config = yaml.safe_load(config_string)
+            self.logger.info("Zookeeper config changed", extra=loaded_config)
+            self.setup_domains(loaded_config)
+        elif config_string is None or len(config_string) == 0:
+            self.error_config("Zookeeper config wiped")
+
+        self.update_queues()
+
+    def setup_domains(self, loaded_config):
+        '''
+        Loads the domain_config and sets up queue_dict
+        @param loaded_config: the yaml loaded config dict from zookeeper
+        '''
+        self.domain_config = {}
+        # vetting process to ensure correct configs
+        if loaded_config and 'domains' in loaded_config:
+            for domain in loaded_config['domains']:
+                item = loaded_config['domains'][domain]
+                # check valid
+                if 'window' in item and 'hits' in item:
+                    self.logger.debug("Added domain {dom} to loaded config" \
+                            .format(dom=domain))
+                    self.domain_config[domain] = item
+
+        # check to update existing queues already in memory
+        # new queues are created elsewhere
+        for key in self.domain_config:
+            final_key = "{name}:{domain}:queue".format(
+                    name=self.spider.name,
+                    domain=key)
+            # we already have a throttled queue for this domain, update it to new settings
+            if final_key in self.queue_dict:
+                self.queue_dict[final_key].window = float(self.domain_config[key]['window'])
+                self.logger.debug("Updated queue {q} with new config" \
+                            .format(q=final_key))
+                # if scale is applied, scale back; otherwise use updated hits
+                if 'scale' in self.domain_config[key]:
+                    # round to int
+                    hits = int(self.domain_config[key]['hits'] * self.fit_scale(self.domain_config[key]['scale']))
+                    self.queue_dict[final_key].limit = float(hits)
+                else:
+                    self.queue_dict[final_key].limit = float(self.domain_config[key]['hits'])
+
+        self.config_flag = True
+
+    def error_config(self, message):
+        extras = {}
+        extras['message'] = message
+        extras['revert_window'] = self.window
+        extras['revert_hits'] = self.hits
+        self.logger.info("Lost config from Zookeeper", extra=extras)
+        # lost connection to zookeeper, reverting back to defaults
+        for key in self.domain_config:
+            final_key = "{name}:{domain}:queue".format(
+                    name=self.spider.name,
+                    domain=key)
+            self.queue_dict[final_key].window = self.window
+            self.queue_dict[final_key].limit = self.hits
+
+        self.domain_config = {}
+
+    def fit_scale(self, scale):
+        '''
+        @return: a scale >= 0 and <= 1
+        '''
+        if scale >= 1:
+            return 1.0
+        elif scale <= 0:
+            return 0.0
+        else:
+            return scale
+
     def update_queues(self):
         '''
         Updates the in memory list of the redis queues
-        Creates new queue instances if it does not have them
+        Creates new throttled queue instances if it does not have them
         '''
+        # new config could have loaded between scrapes
+        newConf = self.check_config()
+
         self.queue_keys = self.redis_conn.keys(self.spider.name + ":*:queue")
 
         for key in self.queue_keys:
-            if key not in self.queue_dict:
-                self.queue_dict[key] = RedisPriorityQueue(self.redis_conn, key)
+            # build final queue key, depending on type and ip bools
+            throttle_key = ""
+
+            if self.add_type:
+                throttle_key = self.spider.name + ":"
+            if self.add_ip:
+                throttle_key = throttle_key + self.my_ip + ":"
+
+            # add the tld from the key `type:tld:queue`
+            the_domain = re.split(':', key)[1]
+            throttle_key = throttle_key + the_domain
+
+            if key not in self.queue_dict or newConf:
+                self.logger.debug("Added new Throttled Queue {q}" \
+                            .format(q=key))
+                q = RedisPriorityQueue(self.redis_conn, key)
+
+                # use default window and hits
+                if the_domain not in self.domain_config:
+                    self.queue_dict[key] = RedisThrottledQueue(self.redis_conn,
+                    q, self.window, self.hits, self.moderated, throttle_key,
+                    throttle_key)
+                # use custom window and hits
+                else:
+                    window = self.domain_config[the_domain]['window']
+                    hits = self.domain_config[the_domain]['hits']
+
+                    # adjust the crawl rate based on the scale if exists
+                    if 'scale' in self.domain_config[the_domain]:
+                        hits = int(hits * self.fit_scale(self.domain_config[the_domain]['scale']))
+
+                    self.queue_dict[key] = RedisThrottledQueue(self.redis_conn,
+                    q, window, hits, self.moderated, throttle_key,
+                    throttle_key)
+
+    def check_config(self):
+        '''
+        Controls configuration for the scheduler
+        @return: True if there is a new configuration
+        '''
+        if self.config_flag:
+            self.config_flag = False
+            return True
+
+        return False
+
+    def update_ipaddress(self):
+        '''
+        Updates the scheduler so it knows its own ip address
+        '''
+        # assign local ip in case of exception
+        self.old_ip = self.my_ip
+        self.my_ip = '127.0.0.1'
+        try:
+            obj = urllib2.urlopen(settings.get('PUBLIC_IP_URL', 'http://ip.42.pl/raw'))
+            self.my_ip = obj.read()
+            obj.close()
+            self.logger.debug("Current public ip: {ip}" \
+                            .format(ip=self.my_ip))
+        except IOError:
+            self.logger.error("Could not reach out to get public ip")
+            pass
+
+        if self.old_ip != self.my_ip:
+            self.logger.info("Changed Public IP: {old} -> {new}" \
+                            .format(old=self.old_ip, new=self.my_ip))
 
     @classmethod
     def from_settings(cls, settings):
@@ -68,8 +256,14 @@ class DistributedScheduler(object):
                                             port=settings.get('REDIS_PORT'))
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
+        hits = settings.get('QUEUE_HITS', 10)
+        window = settings.get('QUEUE_WINDOW', 60)
+        mod = settings.get('QUEUE_MODERATED', False)
         timeout = settings.get('DUPEFILTER_TIMEOUT', 600)
-        retries = settings.get('SCHEDULER_ITEM_RETRIES', 3)
+        ip_refresh = settings.get('SCHEDULER_IP_REFRESH', 60)
+        add_type = settings.get('SCHEDULER_TYPE_ENABLED', False)
+        add_ip = settings.get('SCHEDULER_IP_ENABLED', False)
+        retries = settings.get('SCHEUDLER_ITEM_RETRIES', 3)
 
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_output = settings.get('SC_LOG_STDOUT', True)
@@ -82,7 +276,8 @@ class DistributedScheduler(object):
             stdout=my_output, level=my_level, dir=my_dir, file=my_file,
             bytes=my_bytes)
 
-        return cls(server, persist, up_int, timeout, retries, logger)
+        return cls(server, persist, up_int, timeout, retries, logger, hits,
+                window, mod, ip_refresh, add_type, add_ip)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -92,13 +287,17 @@ class DistributedScheduler(object):
         self.spider = spider
         self.spider.set_logger(self.logger)
         self.update_queues()
+        self.setup_zookeeper()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
                             self.spider.name + ':dupefilter', self.rfp_timeout)
 
     def close(self, reason):
+        self.logger.info("Closing Spider")
         if not self.persist:
+            self.logger.warning("Clearing crawl queues")
             self.dupefilter.clear()
-            self.queue.clear()
+            for key in self.queue_keys:
+                self.queue_dict[key].clear()
 
     def is_blacklisted(self, appid, crawlid):
         '''
@@ -113,7 +312,7 @@ class DistributedScheduler(object):
 
     def enqueue_request(self, request):
         '''
-        Pushes a request from the spider into the proper queue
+        Pushes a request from the spider into the proper throttled queue
         '''
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
@@ -180,7 +379,7 @@ class DistributedScheduler(object):
 
     def find_item(self):
         '''
-        Finds an item from the queues
+        Finds an item from the throttled queues
         '''
         random.shuffle(self.queue_keys)
         count = 0
@@ -210,9 +409,15 @@ class DistributedScheduler(object):
             self.update_time = t
             self.update_queues()
 
+        # update the ip address every so often
+        if t - self.update_ip_time > self.ip_update_interval:
+            self.update_ip_time = t
+            self.update_ipaddress()
+
         item = self.find_item()
         if item:
-            self.logger.debug("Found url to crawl {url}".format(url=item['url']))
+            self.logger.debug("Found url to crawl {url}" \
+                    .format(url=item['url']))
             try:
                 req = Request(item['url'])
             except ValueError:
@@ -241,6 +446,7 @@ class DistributedScheduler(object):
                 elif isinstance(item['cookie'], basestring):
                     req.cookies = self.parse_cookie(item['cookie'])
 
+            self.logger.debug("Returned new Request")
             return req
 
         return None

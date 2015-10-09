@@ -53,6 +53,7 @@ class LogObject(object):
         # set up logger
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
+        self.logger.propagate = False
         self.json = json
         self.log_level = level
 

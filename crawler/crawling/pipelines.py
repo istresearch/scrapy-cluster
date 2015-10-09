@@ -5,6 +5,7 @@
 import json
 import datetime as dt
 import time
+import traceback
 
 from kafka import KafkaClient, SimpleProducer
 
@@ -41,6 +42,7 @@ class LoggingBeforePipeline(object):
         return cls.from_settings(crawler.settings)
 
     def process_item(self, item, spider):
+        self.logger.debug("Processing item in LoggingBeforePipeline")
         if isinstance(item, RawResponseItem):
             # make duplicate item, but remove unneeded keys
             item_copy = dict(item)
@@ -62,18 +64,32 @@ class KafkaPipeline(object):
     Pushes a serialized item to appropriate Kafka topics.
     '''
 
-    def __init__(self, producer, topic_prefix, aKafka):
+    def __init__(self, producer, topic_prefix, aKafka, logger):
         self.producer = producer
         self.topic_prefix = topic_prefix
         self.topic_list = []
         self.kafka = aKafka
+        self.logger = logger
+        self.logger.debug("Setup kafka pipeline")
 
     @classmethod
     def from_settings(cls, settings):
         kafka = KafkaClient(settings['KAFKA_HOSTS'])
         producer = SimpleProducer(kafka)
         topic_prefix = settings['KAFKA_TOPIC_PREFIX']
-        return cls(producer, topic_prefix, kafka)
+
+        my_level = settings.get('SC_LOG_LEVEL', 'INFO')
+        my_output = settings.get('SC_LOG_STDOUT', True)
+        my_json = settings.get('SC_LOG_JSON', False)
+        my_dir = settings.get('SC_LOG_DIR', 'logs')
+        my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
+        my_file = settings.get('SC_LOG_FILE', 'main.log')
+
+        logger = LogFactory.get_instance(json=my_json,
+            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
+            bytes=my_bytes)
+
+        return cls(producer, topic_prefix, kafka, logger)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -81,6 +97,7 @@ class KafkaPipeline(object):
 
     def process_item(self, item, spider):
         try:
+            self.logger.debug("Processing item in KafkaPipeline")
             datum = dict(item)
             datum["timestamp"] = dt.datetime.utcnow().isoformat()
             prefix = self.topic_prefix
@@ -119,7 +136,6 @@ class LoggingAfterPipeline(object):
         self.logger = logger
         self.logger.debug("Setup after pipeline")
 
-
     @classmethod
     def from_settings(cls, settings):
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
@@ -140,6 +156,7 @@ class LoggingAfterPipeline(object):
         return cls.from_settings(crawler.settings)
 
     def process_item(self, item, spider):
+        self.logger.debug("Processing item in LoggingAfterPipeline")
         if isinstance(item, RawResponseItem):
             # make duplicate item, but remove unneeded keys
             item_copy = dict(item)

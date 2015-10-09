@@ -10,3 +10,5 @@ tldextract
 ConcurrentLogHandler
 python-json-logger
 testfixtures
+pyyaml
+kazoo
