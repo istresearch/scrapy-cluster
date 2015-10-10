@@ -22,6 +22,9 @@ from log_factory import LogObject
 from settings_wrapper import SettingsWrapper
 
 from stats_collector import AbstractCounter
+from redis_throttled_queue import RedisThrottledQueue
+
+from redis.exceptions import WatchError
 
 class TestMethodTimer(TestCase):
 
@@ -102,7 +105,7 @@ class TestSettingsWrapper(TestCase):
 class TestLogFactory(TestCase):
     def setUp(self):
         self.logger = LogFactory.get_instance(name='test',
-                dir='./', level='DEBUG')
+                dir='./', level='DEBUG', propagate=True)
 
     def test_debug_log(self):
         self.logger.log_level = 'DEBUG'
@@ -130,10 +133,10 @@ class TestLogFactory(TestCase):
         with LogCapture() as l:
             self.logger.info('info message')
             self.logger.warn('warn message')
-            self.logger.critical('critical message')
+            self.logger.error('error message')
         l.check(
             ('test','WARNING','warn message'),
-            ('test','CRITICAL','critical message'),
+            ('test','ERROR','error message'),
         )
 
     def test_error_log(self):
@@ -213,6 +216,48 @@ class TestStatsAbstract(TestCase):
             self.fail("increment should be abstract")
         except NotImplementedError as e:
             pass
+
+class TestUnmoderatedRedisThrottledQueue(TestCase):
+
+    def setUp(self):
+        # limit is 2 hits in the window
+        self.queue = RedisThrottledQueue(MagicMock(), MagicMock(), 1, 2)
+
+    def test_unmoderated(self):
+        # an unmoderated queue is really just testing the number
+        # of hits in a given window
+        self.queue.redis_conn.zcard = MagicMock(return_value=0)
+        self.assertTrue(self.queue.allowed())
+
+        self.queue.redis_conn.zcard = MagicMock(return_value=1)
+        self.assertTrue(self.queue.allowed())
+
+        self.queue.redis_conn.zcard = MagicMock(return_value=2)
+        self.assertFalse(self.queue.allowed())
+
+        # mock exception raised even with good hits
+        self.queue.redis_conn.zcard = MagicMock(return_value=0,
+                                                side_effect=WatchError)
+        self.assertFalse(self.queue.allowed())
+
+class TestModeratedRedisThrottledQueue(TestCase):
+
+    def setUp(self):
+        self.queue = RedisThrottledQueue(MagicMock(), MagicMock(), 4, 2, True)
+
+    def test_moderated(self):
+        # a moderated queue should pop ~ every x seconds
+        # we already tested the window limit in the unmoderated test
+        self.queue.is_moderated = MagicMock(return_value = True)
+        self.assertFalse(self.queue.allowed())
+
+        self.queue.is_moderated = MagicMock(return_value = False)
+        self.queue.test_hits = MagicMock(return_value = True)
+        self.assertTrue(self.queue.allowed())
+
+        # mock exception raised even with good moderation
+        self.queue.test_hits = MagicMock(side_effect=WatchError)
+        self.assertFalse(self.queue.allowed())
 
 if __name__ == '__main__':
     unittest.main()

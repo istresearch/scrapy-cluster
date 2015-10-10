@@ -1,4 +1,4 @@
-from scrapy.contrib.downloadermiddleware.retry import RetryMiddleware
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
 
 class RedisRetryMiddleware(RetryMiddleware):
 

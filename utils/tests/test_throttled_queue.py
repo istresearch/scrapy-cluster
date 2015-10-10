@@ -12,10 +12,10 @@ def main():
     from os import path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-    from crawling.redis_queue import RedisPriorityQueue
-    from crawling.redis_queue import RedisStack
-    from crawling.redis_queue import RedisQueue
-    from crawling.redis_throttled_queue import RedisThrottledQueue
+    from redis_queue import RedisPriorityQueue
+    from redis_queue import RedisStack
+    from redis_queue import RedisQueue
+    from redis_throttled_queue import RedisThrottledQueue
 
     parser = argparse.ArgumentParser(description="Throttled Queue Test Script."\
                 " Start either a single or multiple processes to see the " \

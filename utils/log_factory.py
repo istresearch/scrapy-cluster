@@ -37,7 +37,8 @@ class LogObject(object):
     def __init__(self, json=False, stdout=True, name='scrapy-cluster',
                 dir='logs', file='main.log', bytes=25000000, backups=5,
                 level='INFO',
-                format='%(asctime)s [%(name)s] %(levelname)s: %(message)s'):
+                format='%(asctime)s [%(name)s] %(levelname)s: %(message)s',
+                propagate=False):
         '''
         @param stdout: Flag to write logs to stdout or file
         @param json: Flag to write json logs with objects or just the messages
@@ -47,12 +48,14 @@ class LogObject(object):
         @param bytes: The max file size in bytes
         @param backups: The number of backups to keep of the file
         @param level: The logging level string
+        @param format: The log format
+        @param propagate: Allow the log to propagate to other ancestor loggers
 
         '''
         # set up logger
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
-        self.logger.propagate = False
+        self.logger.propagate = propagate
         self.json = json
         self.log_level = level
         self.format_string = format

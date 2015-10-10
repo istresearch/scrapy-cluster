@@ -59,8 +59,8 @@ class DistributedScheduler(object):
     zoo_client = None # The KazooClient to manage the config
     my_assignment = None # Zookeeper path to read actual yml config
 
-    def __init__(self, server, persist, update_int, timeout, retries, logger, hits,
-                window, mod, ip_refresh, add_type, add_ip):
+    def __init__(self, server, persist, update_int, timeout, retries, logger,
+                hits, window, mod, ip_refresh, add_type, add_ip):
         '''
         Initialize the scheduler
         '''
