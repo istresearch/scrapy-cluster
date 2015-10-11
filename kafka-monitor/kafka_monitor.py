@@ -221,18 +221,26 @@ class KafkaMonitor:
         '''
         @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
         def _feed(json_item):
-            self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
-            topic = self.settings['KAFKA_INCOMING_TOPIC']
-            producer = SimpleProducer(self.kafka_conn)
+            try:
+                self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+                topic = self.settings['KAFKA_INCOMING_TOPIC']
+                producer = SimpleProducer(self.kafka_conn)
+            except KafkaUnavailableError as ex:
+                self.logger.error("Unable to connect to Kafka")
+                return False
+
             if not self.logger.json:
                 self.logger.info('Feeding JSON into {0}\n{1}'.format(
                     topic, json.dumps(json_item, indent=4)))
             else:
                 self.logger.info('Feeding JSON into {0}\n'.format(topic),
                     extra={'value':json_item})
+
             self.kafka_conn.ensure_topic_exists(topic)
             producer.send_messages(topic, json.dumps(json_item))
+
             return True
+
         result = _feed(json_item)
 
         if result:
