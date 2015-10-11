@@ -25,7 +25,7 @@ class ZookeeperWatcher():
 
     def __init__(self, hosts, filepath, valid_handler = None,
                 config_handler = None, error_handler = None, pointer = False,
-                ensure = False):
+                ensure = False, valid_init = True):
         '''
         Zookeeper file watcher, used to tell a program their zookeeper file has
         changed. Can be used to watch a single file, or both a file and path of
@@ -39,6 +39,7 @@ class ZookeeperWatcher():
         @param pointer: Set to true if the file contents are actually a path to
                         another zookeeper file, where the real config resides
         @param ensure: Set to true for the ZooWatcher to create the watched file
+        @param valid_init: Ensure the client can connect to Zookeeper first try
 
         Ex 1. /stuff/A: "stuff I care about"
         Ex 2. /stuff/A: "/other/stuff", /other/stuff: "contents I care about"
@@ -60,47 +61,57 @@ class ZookeeperWatcher():
         self.config_handler = config_handler
         self.error_handler = error_handler
 
-        self.threaded_start()
+        if valid_init:
+            # this will throw an exception if it can't start right away
+            self.zoo_client = KazooClient(hosts=self.hosts)
+            self.zoo_client.start()
 
-    def threaded_start(self):
+        self.threaded_start(no_init=True)
+
+    def threaded_start(self, no_init=False):
         '''
         Spawns a worker thread to set up the zookeeper connection
         '''
-        thread = Thread(target=self.init_connections)
+        thread = Thread(target=self.init_connections, kwargs={'no_init':no_init})
         thread.setDaemon(True)
         thread.start()
         thread.join()
 
-    def init_connections(self):
+    def init_connections(self, no_init=False):
         '''
         Sets up the initial Kazoo Client and watches
         '''
         success = False
         self.set_valid(False)
 
-        if self.zoo_client:
-            self.zoo_client.remove_listener(self.state_listener)
-            self.old_data = ''
-            self.old_pointed = ''
+        if not no_init:
+            if self.zoo_client:
+                self.zoo_client.remove_listener(self.state_listener)
+                self.old_data = ''
+                self.old_pointed = ''
 
-        while not success:
-            try:
-                if self.zoo_client is None:
-                    self.zoo_client = KazooClient(hosts=self.hosts)
-                    self.zoo_client.start()
-                else:
-                    #self.zoo_client.stop()
-                    self.zoo_client._connection.connection_stopped.set()
-                    self.zoo_client.close()
-                    self.zoo_client = KazooClient(hosts=self.hosts)
-                    self.zoo_client.start()
-            except Exception, e:
-                print e
-                sleep(1)
-                continue
+            while not success:
+                try:
+                    if self.zoo_client is None:
+                        self.zoo_client = KazooClient(hosts=self.hosts)
+                        self.zoo_client.start()
+                    else:
+                        #self.zoo_client.stop()
+                        self.zoo_client._connection.connection_stopped.set()
+                        self.zoo_client.close()
+                        self.zoo_client = KazooClient(hosts=self.hosts)
+                        self.zoo_client.start()
+                except Exception, e:
+                    print "ZKWatcher Exception:", e
+                    sleep(1)
+                    continue
+
+                self.setup()
+                success = self.update_file(self.my_file)
+                sleep(5)
+        else:
             self.setup()
-            success = self.update_file(self.my_file)
-            sleep(5)
+            self.update_file(self.my_file)
 
     def setup(self):
         '''
@@ -302,6 +313,9 @@ def main():
                         help="The file contents point to another file")
     parser.add_argument('-s', '--sleep', nargs='?', const=1, default=1,
                         type=int, help="The time to sleep between poll checks")
+    parser.add_argument('-v', '--valid-init', action='store_false',
+                        help="Do not ensure zookeeper is up upon initial setup",
+                        default=True)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--poll', action='store_true', help="Polling example")
     group.add_argument('--event', action='store_true',
@@ -315,6 +329,7 @@ def main():
     sleep_time = args['sleep']
     poll = args['poll']
     event = args['event']
+    valid = args['valid_init']
 
     def valid_file(state):
         print "The valid state is now", state
@@ -332,7 +347,7 @@ def main():
                                             valid_handler=valid_file,
                                             config_handler=change_file,
                                             error_handler=error_file,
-                                            pointer=True)
+                                            pointer=True, valid_init=valid)
     else:
         if poll:
             zoo_watcher = ZookeeperWatcher(hosts, file)
@@ -340,7 +355,8 @@ def main():
             zoo_watcher = ZookeeperWatcher(hosts, file,
                                             valid_handler=valid_file,
                                             config_handler=change_file,
-                                            error_handler=error_file)
+                                            error_handler=error_file,
+                                            valid_init=valid)
 
     try:
         while True:
