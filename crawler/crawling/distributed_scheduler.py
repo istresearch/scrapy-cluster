@@ -10,12 +10,14 @@ import tldextract
 import urllib2
 import re
 import yaml
+import sys
 
 from redis_dupefilter import RFPDupeFilter
 
 from kazoo.client import KazooClient
 from kazoo.client import KazooState
 from kazoo.exceptions import ZookeeperError
+from kazoo.handlers.threading import KazooTimeoutError
 
 from utils.zookeeper_watcher import ZookeeperWatcher
 from utils.redis_queue import RedisPriorityQueue
@@ -86,17 +88,23 @@ class DistributedScheduler(object):
     def setup_zookeeper(self):
         self.assign_path = settings.get('ZOOKEEPER_ASSIGN_PATH', "")
         self.my_id = settings.get('ZOOKEEPER_ID', 'all')
-        self.zoo_watcher = ZookeeperWatcher(
-                            hosts=settings.get('ZOOKEEPER_HOSTS'),
-                            filepath=self.assign_path + self.my_id,
-                            config_handler=self.change_config,
-                            error_handler=self.error_config,
-                            pointer=False, ensure=True)
+        self.logger.debug("Trying to establish Zookeeper connection")
+        try:
+            self.zoo_watcher = ZookeeperWatcher(
+                                hosts=settings.get('ZOOKEEPER_HOSTS'),
+                                filepath=self.assign_path + self.my_id,
+                                config_handler=self.change_config,
+                                error_handler=self.error_config,
+                                pointer=False, ensure=True, valid_init=True)
+        except KazooTimeoutError as e:
+            self.logger.error("Could not connect to Zookeeper")
+            sys.exit(1)
 
         if self.zoo_watcher.ping():
-            self.logger.debug("Set up Zookeeper connection")
+            self.logger.debug("Successfully set up Zookeeper connection")
         else:
-            self.logger.error("Could not connect to Zookeeper")
+            self.logger.error("Could not ping Zookeeper")
+            sys.exit(1)
 
     def change_config(self, config_string):
         if config_string and len(config_string) > 0:
