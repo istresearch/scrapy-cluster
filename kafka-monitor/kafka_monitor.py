@@ -288,8 +288,10 @@ def main():
         json=args['log_json'])
 
     if args['run']:
-        pass
-        return kafka_monitor.run()
+        try:
+            kafka_monitor.run()
+        except KeyboardInterrupt as e:
+            kafka_monitor.logger.info("Closing Kafka Monitor")
     if args['feed']:
         json_req = args['feed']
         try:

@@ -158,7 +158,10 @@ def main():
     redis_monitor = RedisMonitor(args['settings'])
     redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
         json=args['log_json'])
-    redis_monitor.run()
+    try:
+        redis_monitor.run()
+    except KeyboardInterrupt as e:
+        redis_monitor.logger.info("Closing Redis Monitor")
 
 if __name__ == "__main__":
     sys.exit(main())
