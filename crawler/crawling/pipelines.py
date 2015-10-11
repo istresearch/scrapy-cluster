@@ -5,9 +5,11 @@
 import json
 import datetime as dt
 import time
+import sys
 import traceback
 
 from kafka import KafkaClient, SimpleProducer
+from kafka.common import KafkaUnavailableError
 
 from crawling.items import RawResponseItem
 from crawling.utils.log_factory import LogFactory
@@ -75,10 +77,6 @@ class KafkaPipeline(object):
 
     @classmethod
     def from_settings(cls, settings):
-        kafka = KafkaClient(settings['KAFKA_HOSTS'])
-        producer = SimpleProducer(kafka)
-        topic_prefix = settings['KAFKA_TOPIC_PREFIX']
-
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_output = settings.get('SC_LOG_STDOUT', True)
         my_json = settings.get('SC_LOG_JSON', False)
@@ -90,6 +88,16 @@ class KafkaPipeline(object):
         logger = LogFactory.get_instance(json=my_json,
             stdout=my_output, level=my_level, dir=my_dir, file=my_file,
             bytes=my_bytes)
+
+        try:
+            kafka = KafkaClient(settings['KAFKA_HOSTS'])
+            producer = SimpleProducer(kafka)
+        except KafkaUnavailableError as ex:
+                logger.error("Unable to connect to Kafka in Pipeline"\
+                    ", raising exit flag.")
+                # this is critical so we choose to exit
+                sys.exit(1)
+        topic_prefix = settings['KAFKA_TOPIC_PREFIX']
 
         return cls(producer, topic_prefix, kafka, logger, appids=my_appids)
 
