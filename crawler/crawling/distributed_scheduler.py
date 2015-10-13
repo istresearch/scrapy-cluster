@@ -110,13 +110,14 @@ class DistributedScheduler(object):
         if config_string and len(config_string) > 0:
             loaded_config = yaml.safe_load(config_string)
             self.logger.info("Zookeeper config changed", extra=loaded_config)
-            self.setup_domains(loaded_config)
+            self.load_domain_config(loaded_config)
+            self.update_domain_queues()
         elif config_string is None or len(config_string) == 0:
             self.error_config("Zookeeper config wiped")
 
         self.update_queues()
 
-    def setup_domains(self, loaded_config):
+    def load_domain_config(self, loaded_config):
         '''
         Loads the domain_config and sets up queue_dict
         @param loaded_config: the yaml loaded config dict from zookeeper
@@ -132,8 +133,13 @@ class DistributedScheduler(object):
                             .format(dom=domain))
                     self.domain_config[domain] = item
 
-        # check to update existing queues already in memory
-        # new queues are created elsewhere
+        self.config_flag = True
+
+    def update_domain_queues(self):
+        '''
+        Check to update existing queues already in memory
+        new queues are created elsewhere
+        '''
         for key in self.domain_config:
             final_key = "{name}:{domain}:queue".format(
                     name=self.spider.name,
@@ -150,8 +156,6 @@ class DistributedScheduler(object):
                     self.queue_dict[final_key].limit = float(hits)
                 else:
                     self.queue_dict[final_key].limit = float(self.domain_config[key]['hits'])
-
-        self.config_flag = True
 
     def error_config(self, message):
         extras = {}

@@ -20,6 +20,8 @@ from scrapy.http import HtmlResponse
 from scrapy.http import Request
 from crawling.items import RawResponseItem
 
+from crawling.utils.redis_throttled_queue import RedisThrottledQueue
+
 import Queue
 import time
 
@@ -216,7 +218,7 @@ class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
         bad_string2 = None
         bad_string3 = ""
 
-        self.scheduler.setup_domains = MagicMock(side_effect=Exception("1"))
+        self.scheduler.load_domain_config = MagicMock(side_effect=Exception("1"))
         self.scheduler.error_config = MagicMock(side_effect=Exception("2"))
         self.scheduler.update_queues = MagicMock(side_effect=Exception("3"))
 
@@ -244,23 +246,115 @@ class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
         except Exception as error:
             self.assertEqual(error.message, "2")
 
-class TestDistributedSchedulerSetupDomains(ThrottleMixin, TestCase):
+class TestDistributedSchedulerLoadDomainConfig(ThrottleMixin, TestCase):
 
-    def test_setup_domains(self):
-        self.fail('No test')
-        pass
+    def test_load_domain_config(self):
+        good_yaml_dict = {
+            "domains":{
+                "ex1.com": {
+                    "window": 60,
+                    "hits": 10,
+                    "scale": 1
+                },
+                "ex2.com": {
+                    "window": 60,
+                    "hits": 10
+                }
+            }
+        }
+        bad_yaml_dict1 = {
+            "blarg": ['stuff']
+        }
+        bad_yaml_dict2 = {
+            "domains": {
+                "stuff.com": {
+                    "window": 60
+                },
+                "stuff2.com": {
+                    "hits": 10
+                }
+            }
+        }
+        result_yaml = {}
+        result_yaml['ex1.com'] = good_yaml_dict['domains']['ex1.com']
+        result_yaml['ex2.com'] = good_yaml_dict['domains']['ex2.com']
+
+        # correctly loaded
+        self.scheduler.load_domain_config(good_yaml_dict)
+        self.assertEqual(self.scheduler.domain_config, result_yaml)
+
+        # both are not correct yaml setups
+        self.scheduler.load_domain_config(bad_yaml_dict1)
+        self.assertEqual(self.scheduler.domain_config, {})
+
+        self.scheduler.load_domain_config(bad_yaml_dict2)
+        self.assertEqual(self.scheduler.domain_config, {})
+
+class TestDistributedSchedulerUpdateDomainQueues(ThrottleMixin, TestCase):
+
+    def test_update_domain_queues(self):
+        # test without scale factor
+        self.scheduler.domain_config = {
+            "ex1.com": {
+                "window": 50,
+                "hits": 10,
+                "scale": 1
+            }
+        }
+        q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
+        self.scheduler.queue_dict = {'link:ex1.com:queue':q}
+
+        self.scheduler.update_domain_queues()
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].window, 50)
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].limit, 10)
+
+        # test with scale factor
+        self.scheduler.domain_config = {
+            "ex2.com": {
+                "window": 50,
+                "hits": 10,
+                "scale": 0.5
+            }
+        }
+        q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
+        self.scheduler.queue_dict = {'link:ex2.com:queue':q}
+
+        self.scheduler.update_domain_queues()
+        self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'].window, 50)
+        # the scale factor effects the limit only
+        self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'].limit, 5)
 
 class TestDistributedSchedulerErrorConfig(ThrottleMixin, TestCase):
 
     def test_error_config(self):
-        self.fail('No test')
-        pass
+        self.scheduler.domain_config = {
+            "ex1.com": {
+                "window": 50,
+                "hits": 10
+            }
+        }
+        self.scheduler.window = 7
+        self.scheduler.hits = 5
+        q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
+        self.scheduler.queue_dict = {'link:ex1.com:queue':q}
+
+        self.scheduler.error_config('stuff')
+
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].window, 7)
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].limit, 5)
+        self.assertEqual(self.scheduler.domain_config, {})
 
 class TestDistributedSchedulerFitScale(ThrottleMixin, TestCase):
 
     def test_fit_scale(self):
-        self.fail('No test')
-        pass
+        # assert max
+        self.assertEqual(self.scheduler.fit_scale(1.1), 1.0)
+
+        # assert min
+        self.assertEqual(self.scheduler.fit_scale(-1.9), 0.0)
+
+        # assert normal
+        self.assertEqual(self.scheduler.fit_scale(0.51), 0.51)
 
 class TestDistributedSchedulerUpdateQueues(ThrottleMixin, TestCase):
 
