@@ -167,7 +167,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         # test update queues
         self.scheduler.update_time = 1
         self.scheduler.update_interval = 2
-        self.scheduler.update_queues = MagicMock(side_effect=KeyError("q"))
+        self.scheduler.create_queues = MagicMock(side_effect=KeyError("q"))
         try:
             self.scheduler.next_request()
             # this should not be reached
@@ -220,7 +220,7 @@ class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
 
         self.scheduler.load_domain_config = MagicMock(side_effect=Exception("1"))
         self.scheduler.error_config = MagicMock(side_effect=Exception("2"))
-        self.scheduler.update_queues = MagicMock(side_effect=Exception("3"))
+        self.scheduler.create_queues = MagicMock(side_effect=Exception("3"))
 
         try:
             self.scheduler.change_config(good_string)
@@ -356,14 +356,14 @@ class TestDistributedSchedulerFitScale(ThrottleMixin, TestCase):
         # assert normal
         self.assertEqual(self.scheduler.fit_scale(0.51), 0.51)
 
-class TestDistributedSchedulerUpdateQueues(ThrottleMixin, TestCase):
+class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
 
-    def test_update_queues(self):
+    def test_create_queues(self):
         queues = ['link:ex1:queue', 'link:ex2:queue', 'link:ex3:queue']
         self.scheduler.redis_conn.keys = MagicMock(return_value=queues)
 
         # test basic
-        self.scheduler.update_queues()
+        self.scheduler.create_queues()
         expected = ['ex1:throttle_window',
                     'ex2:throttle_window',
                     'ex3:throttle_window']
@@ -377,7 +377,7 @@ class TestDistributedSchedulerUpdateQueues(ThrottleMixin, TestCase):
         expected = ['link:ex1:throttle_window',
                     'link:ex2:throttle_window',
                     'link:ex3:throttle_window']
-        self.scheduler.update_queues()
+        self.scheduler.create_queues()
         for key in self.scheduler.queue_dict:
             self.assertTrue(self.scheduler.queue_dict[key].window_key
                             in expected)
@@ -389,7 +389,7 @@ class TestDistributedSchedulerUpdateQueues(ThrottleMixin, TestCase):
         expected = ['ip:ex1:throttle_window',
                     'ip:ex2:throttle_window',
                     'ip:ex3:throttle_window']
-        self.scheduler.update_queues()
+        self.scheduler.create_queues()
         for key in self.scheduler.queue_dict:
             self.assertTrue(self.scheduler.queue_dict[key].window_key
                             in expected)
@@ -401,7 +401,7 @@ class TestDistributedSchedulerUpdateQueues(ThrottleMixin, TestCase):
         expected = ['link:ip:ex1:throttle_window',
                     'link:ip:ex2:throttle_window',
                     'link:ip:ex3:throttle_window']
-        self.scheduler.update_queues()
+        self.scheduler.create_queues()
         for key in self.scheduler.queue_dict:
             self.assertTrue(self.scheduler.queue_dict[key].window_key
                             in expected)

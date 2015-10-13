@@ -115,7 +115,7 @@ class DistributedScheduler(object):
         elif config_string is None or len(config_string) == 0:
             self.error_config("Zookeeper config wiped")
 
-        self.update_queues()
+        self.create_queues()
 
     def load_domain_config(self, loaded_config):
         '''
@@ -184,7 +184,7 @@ class DistributedScheduler(object):
         else:
             return scale
 
-    def update_queues(self):
+    def create_queues(self):
         '''
         Updates the in memory list of the redis queues
         Creates new throttled queue instances if it does not have them
@@ -298,7 +298,7 @@ class DistributedScheduler(object):
     def open(self, spider):
         self.spider = spider
         self.spider.set_logger(self.logger)
-        self.update_queues()
+        self.create_queues()
         self.setup_zookeeper()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
                             self.spider.name + ':dupefilter', self.rfp_timeout)
@@ -352,7 +352,7 @@ class DistributedScheduler(object):
                 else:
                     # shoving into a new redis queue, negative b/c of sorted sets
                     # this will populate ourself and other schedulers when
-                    # they call update_queues
+                    # they call create_queues
                     self.redis_conn.zadd(key, pickle.dumps(req_dict, protocol=-1),
                                         -req_dict['meta']['priority'])
                 self.logger.debug("Crawlid: '{id}' Appid: '{appid}' added to queue"
@@ -419,7 +419,7 @@ class DistributedScheduler(object):
         # update the redis queues every so often
         if t - self.update_time > self.update_interval:
             self.update_time = t
-            self.update_queues()
+            self.create_queues()
 
         # update the ip address every so often
         if t - self.update_ip_time > self.ip_update_interval:
