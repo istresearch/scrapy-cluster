@@ -29,7 +29,7 @@ class KafkaMonitor:
 
     def __init__(self, settings_name, unit_test=False):
         '''
-        @param settings_name: the file name
+        @param settings_name: the local settings file name
         @param unit_test: whether running unit tests or not
         '''
         self.settings_name = settings_name

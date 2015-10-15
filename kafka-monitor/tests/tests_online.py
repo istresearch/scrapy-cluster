@@ -27,8 +27,8 @@ class CustomHandler(ActionHandler):
 class TestKafkaMonitor(TestCase):
 
     def setUp(self):
-        self.kafka_monitor = KafkaMonitor("settings.py")
-        new_settings = self.kafka_monitor.wrapper.load("settings.py")
+        self.kafka_monitor = KafkaMonitor("localsettings.py")
+        new_settings = self.kafka_monitor.wrapper.load("localsettings.py")
         new_settings['KAFKA_INCOMING_TOPIC'] = "demo.incoming_test"
         new_settings['PLUGINS'] = {
             'plugins.scraper_handler.ScraperHandler': None,

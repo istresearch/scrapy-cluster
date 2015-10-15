@@ -41,8 +41,8 @@ class TestRedisMonitor(TestCase):
     queue_key = "link:istresearch.com:queue"
 
     def setUp(self):
-        self.redis_monitor = RedisMonitor("settings.py")
-        self.redis_monitor.settings = self.redis_monitor.wrapper.load("settings.py")
+        self.redis_monitor = RedisMonitor("localsettings.py")
+        self.redis_monitor.settings = self.redis_monitor.wrapper.load("localsettings.py")
         self.redis_monitor.logger = MagicMock()
         self.redis_monitor.settings['KAFKA_TOPIC_PREFIX'] = "demo_test"
         self.redis_monitor.settings['PLUGINS'] = {
@@ -58,6 +58,8 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._load_plugins()
 
         self.kafka_conn = KafkaClient(self.redis_monitor.settings['KAFKA_HOSTS'])
+        self.kafka_conn.ensure_topic_exists("demo_test.outbound_firehose")
+
         self.consumer = SimpleConsumer(
             self.kafka_conn,
             "demo-id",

@@ -18,11 +18,11 @@ class SettingsWrapper(object):
     def _init__(self):
         pass
 
-    def load(self, name='settings.py'):
+    def load(self, name='localsettings.py'):
         '''
         Load the settings dict
 
-        @param name: The settings filename to use
+        @param name: The local settings filename to use
         @return: A dict of the loaded settings
         '''
         self._load_defaults()
