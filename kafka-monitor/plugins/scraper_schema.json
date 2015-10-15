@@ -13,9 +13,6 @@
         },
         "spiderid": {
             "type": "string",
-            "enum": [
-                "link"
-            ],
             "default": "link"
         },
         "url": {
