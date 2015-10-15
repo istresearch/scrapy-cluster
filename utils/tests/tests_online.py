@@ -281,13 +281,8 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
 
     tolerance = 2 # percent
 
-    def check_tolerance(self, value, actual):
-        result = abs(actual - value) / ((value + actual) / 2.0) * 100.0
-        if result > self.tolerance:
-            print "This is going to fail, probably because the roll time " \
-                "didn't happen perfectly since HLL's are fairly slow."
-            print value, actual, result
-        return result <= self.tolerance
+    def get_percent_diff(self, value, actual):
+        return abs(actual - value) / ((value + actual) / 2.0) * 100.0
 
     def test_hll_counter(self):
         counter = HyperLogLogCounter(key='test_key')
@@ -297,7 +292,11 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
             while i < 10010 * (n + 1):
                 counter.increment(i % (5000 * (n + 1)))
                 i += 1
-            self.assertTrue(self.check_tolerance((5000 * (n + 1)), counter.value()))
+
+            value = 5000 * (n + 1)
+            actual = counter.value()
+            diff = self.get_percent_diff(value, actual)
+            self.assertLessEqual(diff, self.tolerance)
             self.clean_keys(counter.key)
 
         counter.stop()
@@ -312,15 +311,22 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
         while i < 5010:
             counter.increment(i % 1010)
             i += 1
-        self.assertTrue(self.check_tolerance(1010, counter.value()))
+        value = 1010
+        actual = counter.value()
+        diff = self.get_percent_diff(value, actual)
+        self.assertLessEqual(diff, self.tolerance)
         self.clean_keys(counter.key)
-        time.sleep(5.1)
+        # rough sleep to get us back on track
+        time.sleep(5.0 - (time.time() % 5.0))
         # we should be on to a new counter window by now
         i = 0
         while i < 5010:
             counter.increment(i % 3010)
             i += 1
-        self.assertTrue(self.check_tolerance(3010, counter.value()))
+        value = 3010
+        actual = counter.value()
+        diff = self.get_percent_diff(value, actual)
+        self.assertLessEqual(diff, self.tolerance)
         counter.stop()
         self.clean_keys(counter.key)
 
@@ -368,6 +374,11 @@ if __name__ == '__main__':
 
     # build testing suite
     suite = unittest.TestSuite()
+
+    # moved to the top to help get better consistency
+    suite.addTest(TestStatsHyperLogLogCounter('test_hll_counter', redis_conn))
+    suite.addTest(TestStatsHyperLogLogCounter('test_roll_hll_counter', redis_conn))
+
     suite.addTest(TestRedisFifoQueue('test_fifo_queue', redis_conn))
     suite.addTest(TestRedisPriorityQueue('test_priority_queue', redis_conn))
     suite.addTest(TestRedisStack('test_stack', redis_conn))
@@ -388,12 +399,7 @@ if __name__ == '__main__':
     suite.addTest(TestStatsUniqueCounter('test_uniques', redis_conn))
     suite.addTest(TestStatsUniqueCounter('test_roll_uniques', redis_conn))
 
-    suite.addTest(TestStatsHyperLogLogCounter('test_hll_counter', redis_conn))
-    suite.addTest(TestStatsHyperLogLogCounter('test_roll_hll_counter', redis_conn))
-
     suite.addTest(TestStatsBitMapCounter('test_bitmap_counter', redis_conn))
     suite.addTest(TestStatsBitMapCounter('test_roll_bitmap_counter', redis_conn))
-
-
 
     unittest.TextTestRunner(verbosity=2).run(suite)
