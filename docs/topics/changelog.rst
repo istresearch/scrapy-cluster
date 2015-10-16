@@ -57,7 +57,7 @@ Crawler Changes
 
 - Created manual crawler Zookeeper configuration pusher
 
-- Updated offline unit tests
+- Updated offline and added online unit tests
 
 Scrapy Cluster 1.0
 ---------------------
