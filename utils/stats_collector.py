@@ -23,6 +23,7 @@ class StatsCollector():
     '''
     # Easy to use time variables
     SECONDS_1_MINUTE = 60
+    SECONDS_15_MINUTE = SECONDS_1_MINUTE * 15
     SECONDS_30_MINUTE = SECONDS_1_MINUTE * 30
     SECONDS_1_HOUR = SECONDS_1_MINUTE * 60
     SECONDS_2_HOUR = SECONDS_1_HOUR * 2
@@ -35,6 +36,7 @@ class StatsCollector():
     SECONDS_2_DAY = SECONDS_1_DAY * 2
     SECONDS_3_DAY = SECONDS_1_DAY * 3
     SECONDS_7_DAY = SECONDS_1_DAY * 7
+    SECONDS_1_WEEK = SECONDS_7_DAY
     SECONDS_30_DAY = SECONDS_1_DAY * 30
 
     @classmethod
