@@ -7,3 +7,6 @@ redis-monitor/logs/*
 crawler/logs/*
 crawler/main.log
 localsettings.py
+# Vagrant test VM
+Vagrantfile
+.vagrant
