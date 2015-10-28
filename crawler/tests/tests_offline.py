@@ -20,7 +20,7 @@ from scrapy.http import HtmlResponse
 from scrapy.http import Request
 from crawling.items import RawResponseItem
 
-from crawling.utils.redis_throttled_queue import RedisThrottledQueue
+from scutils.redis_throttled_queue import RedisThrottledQueue
 
 import Queue
 import time

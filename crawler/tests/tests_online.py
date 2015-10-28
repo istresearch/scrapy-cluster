@@ -20,7 +20,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 from scrapy.crawler import CrawlerRunner
-from crawling.utils.method_timer import MethodTimer
+from scutils.method_timer import MethodTimer
 from kafka import KafkaClient, SimpleConsumer
 
 class CustomSpider(LinkSpider):

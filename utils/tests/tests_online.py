@@ -11,17 +11,11 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from redis_queue import RedisQueue
-from redis_queue import RedisPriorityQueue
-from redis_queue import RedisStack
+from scutils.redis_queue import RedisQueue, RedisPriorityQueue, RedisStack
 
-from stats_collector import ThreadedCounter
-from stats_collector import TimeWindow
-from stats_collector import RollingTimeWindow
-from stats_collector import Counter
-from stats_collector import UniqueCounter
-from stats_collector import HyperLogLogCounter
-from stats_collector import BitMapCounter
+from scutils.stats_collector import (ThreadedCounter, TimeWindow,
+                                    RollingTimeWindow, Counter, UniqueCounter,
+                                    HyperLogLogCounter, BitMapCounter)
 
 from redis.exceptions import WatchError
 import redis
