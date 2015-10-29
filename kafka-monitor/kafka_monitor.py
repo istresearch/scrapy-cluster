@@ -12,6 +12,9 @@ import json
 import sys
 import importlib
 import argparse
+import redis
+
+from redis.exceptions import ConnectionError
 
 from jsonschema import ValidationError
 from jsonschema import Draft4Validator, validators
@@ -19,6 +22,7 @@ from jsonschema import Draft4Validator, validators
 from utils.log_factory import LogFactory
 from utils.settings_wrapper import SettingsWrapper
 from utils.method_timer import MethodTimer
+from utils.stats_collector import StatsCollector
 
 try:
     import cPickle as pickle
@@ -100,6 +104,106 @@ class KafkaMonitor:
 
         self.validator = self.extend_with_default(Draft4Validator)
 
+    def _setup_stats(self):
+        '''
+        Sets up the stats collection
+        '''
+        self.stats_dict = {}
+
+        redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
+                                      port=self.settings['REDIS_PORT'])
+
+        try:
+            redis_conn.info()
+            self.logger.debug("Connected to Redis in StatsCollector Setup")
+        except ConnectionError as ex:
+            self.logger.warn("Failed to connect to Redis in StatsCollector"\
+                    " Setup, no stats will be collected")
+            return
+
+        if self.settings['STATS_TOTAL']:
+            self._setup_stats_total(redis_conn)
+
+        if self.settings['STATS_PLUGINS']:
+            self._setup_stats_plugins(redis_conn)
+
+    def _setup_stats_total(self, redis_conn):
+        '''
+        Sets up the total stats collectors
+
+        @param redis_conn: the redis connection
+        '''
+        self.stats_dict['total'] = {}
+        self.stats_dict['fail'] = {}
+        for item in self.settings['STATS_TIMES']:
+            try:
+                time = getattr(StatsCollector, item)
+                temp_key1 = 'stats:kafka-monitor:total'
+                temp_key2 = 'stats:kafka-monitor:fail'
+                self.stats_dict['total'][time] = StatsCollector \
+                        .get_rolling_time_window(
+                                redis_conn=redis_conn,
+                                key='{k}:{t}'.format(k=temp_key1, t=time),
+                                window=time,
+                                cycle_time=self.settings['STATS_CYCLE'])
+                self.stats_dict['fail'][time] = StatsCollector \
+                        .get_rolling_time_window(
+                                redis_conn=redis_conn,
+                                key='{k}:{t}'.format(k=temp_key2, t=time),
+                                window=time,
+                                cycle_time=self.settings['STATS_CYCLE'])
+                self.logger.debug("Set up total/fail Stats Collector '{i}'"\
+                        .format(i=item))
+            except AttributeError as e:
+                self.logger.warning("Unable to find Stats Time '{s}'"\
+                        .format(s=item))
+        total1 = StatsCollector.get_hll_counter(redis_conn=redis_conn,
+                        key='{k}:lifetime'.format(k=temp_key1),
+                        cycle_time=self.settings['STATS_CYCLE'],
+                        roll=False)
+        total2 = StatsCollector.get_hll_counter(redis_conn=redis_conn,
+                        key='{k}:lifetime'.format(k=temp_key2),
+                        cycle_time=self.settings['STATS_CYCLE'],
+                        roll=False)
+        self.logger.debug("Set up total/fail Stats Collector 'lifetime'"\
+                        .format(i=item))
+        self.stats_dict['total'][0] = total1
+        self.stats_dict['fail'][0] = total2
+
+    def _setup_stats_plugins(self, redis_conn):
+        '''
+        Sets up the total stats collectors
+
+        @param redis_conn: the redis connection
+        '''
+        self.stats_dict['plugins'] = {}
+        for key in self.plugins_dict:
+            plugin_name = self.plugins_dict[key]['instance'].__class__.__name__
+            self.stats_dict['plugins'][plugin_name] = {}
+            for item in self.settings['STATS_TIMES']:
+                try:
+                    time = getattr(StatsCollector, item)
+                    temp_key = 'stats:kafka-monitor:{p}'\
+                            .format(p=plugin_name)
+                    self.stats_dict['plugins'][plugin_name][time] = StatsCollector \
+                            .get_rolling_time_window(
+                                    redis_conn=redis_conn,
+                                    key='{k}:{t}'.format(k=temp_key, t=time),
+                                    window=time,
+                                    cycle_time=self.settings['STATS_CYCLE'])
+                    self.logger.debug("Set up {p} plugin Stats Collector '{i}'"\
+                            .format(p=plugin_name, i=item))
+                except AttributeError as e:
+                    self.logger.warning("Unable to find Stats Time '{s}'"\
+                            .format(s=item))
+            total = StatsCollector.get_hll_counter(redis_conn=redis_conn,
+                            key='{k}:lifetime'.format(k=temp_key),
+                            cycle_time=self.settings['STATS_CYCLE'],
+                            roll=False)
+            self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
+                            .format(p=plugin_name, i=item))
+            self.stats_dict['plugins'][plugin_name][0] = total
+
     def _setup_kafka(self):
         '''
         Sets up kafka connections
@@ -158,27 +262,38 @@ class KafkaMonitor:
         incoming messages
         '''
         self.logger.debug("Processing messages")
+        old_time = 0
         while True:
             self._process_messages()
+            if self.settings['STATS_DUMP'] != 0:
+                new_time = int(time.time() / self.settings['STATS_DUMP'])
+                # only log every X seconds
+                if new_time != old_time:
+                    self._dump_stats()
+                    old_time = new_time
+
             time.sleep(.01)
 
     def _process_messages(self):
         try:
             for message in self.consumer.get_messages():
                 if message is None:
-                    self.logger.debug("no log message")
+                    self.logger.debug("no message")
                     break
                 try:
+                    self._increment_total_stat(message.message.value)
                     the_dict = json.loads(message.message.value)
                     found_plugin = False
                     for key in self.plugins_dict:
                         obj = self.plugins_dict[key]
                         instance = obj['instance']
                         schema = obj['schema']
-
                         try:
                             self.validator(schema).validate(the_dict)
                             found_plugin = True
+                            self._increment_plugin_stat(
+                                    instance.__class__.__name__,
+                                    the_dict)
                             ret = instance.handle(the_dict)
                             # break if nothing is returned
                             if ret is None:
@@ -192,6 +307,7 @@ class KafkaMonitor:
                         extras['data'] = the_dict
                         self.logger.warn("Did not find schema to validate "\
                             "request", extra=extras)
+                        self._increment_fail_stat(the_dict)
 
                 except ValueError:
                     extras = {}
@@ -200,10 +316,82 @@ class KafkaMonitor:
                     extras['data'] = message.message.value
                     self.logger.warning('Unparseable JSON Received',
                                     extra=extras)
+                    self._increment_fail_stat(message.message.value)
+
         except OffsetOutOfRangeError:
             # consumer has no idea where they are
             self.consumer.seek(0,2)
             self.logger.error("Kafka offset out of range error")
+
+    def _increment_total_stat(self, dict):
+        '''
+        Increments the total stat counters
+
+        @param dict: the loaded message object for HLL counter
+        '''
+        if 'total' in self.stats_dict:
+            self.logger.debug("Incremented total stats")
+            for key in self.stats_dict['total']:
+                if key == 0:
+                    self.stats_dict['total'][key].increment(dict)
+                else:
+                    self.stats_dict['total'][key].increment()
+
+    def _increment_fail_stat(self, dict):
+        '''
+        Increments the total stat counters
+
+        @param dict: the loaded message object for HLL counter
+        '''
+        if 'fail' in self.stats_dict:
+            self.logger.debug("Incremented fail stats")
+            for key in self.stats_dict['fail']:
+                if key == 0:
+                    self.stats_dict['fail'][key].increment(dict)
+                else:
+                    self.stats_dict['fail'][key].increment()
+
+    def _increment_plugin_stat(self, name, dict):
+        '''
+        Increments the total stat counters
+
+        @param dict: the loaded message object for HLL counter
+        '''
+        if 'plugins' in self.stats_dict:
+            self.logger.debug("Incremented plugin '{p}' plugin stats"\
+                    .format(p=name))
+            for key in self.stats_dict['plugins'][name]:
+                if key == 0:
+                    self.stats_dict['plugins'][name][key].increment(dict)
+                else:
+                    self.stats_dict['plugins'][name][key].increment()
+
+    def _dump_stats(self):
+        '''
+        Dumps the stats out
+        '''
+        extras = {}
+        if 'total' in self.stats_dict:
+            self.logger.debug("Compiling total/fail dump stats")
+            for key in self.stats_dict['total']:
+                final = 'total_{t}'.format(t=key)
+                extras[final] = self.stats_dict['total'][key].value()
+            for key in self.stats_dict['fail']:
+                final = 'fail_{t}'.format(t=key)
+                extras[final] = self.stats_dict['fail'][key].value()
+
+        if 'plugins' in self.stats_dict:
+            self.logger.debug("Compiling plugin dump stats")
+            for name in self.stats_dict['plugins']:
+                for key in self.stats_dict['plugins'][name]:
+                    final = 'plugin_{n}_{t}'.format(n=name, t=key)
+                    extras[final] = self.stats_dict['plugins'][name][key].value()
+
+        if not self.logger.json:
+            self.logger.info('Kafka Monitor Stats Dump:\n{0}'.format(
+                    json.dumps(extras, indent=4, sort_keys=True)))
+        else:
+            self.logger.info('Kafka Monitor Stats Dump', extra=extras)
 
     def run(self):
         '''
@@ -211,6 +399,7 @@ class KafkaMonitor:
         '''
         self._setup_kafka()
         self._load_plugins()
+        self._setup_stats()
         self._main_loop()
 
     def feed(self, json_item):

@@ -66,8 +66,17 @@ class TestKafkaMonitor(TestCase):
         del self.kafka_monitor.settings['PLUGINS'] \
             ['tests.tests_offline.ExampleHandler']
 
+    def test_load_stats_total(self):
+        self.fail("Not implemented")
+        pass
+
+    def test_load_stats_plugins(self):
+        self.fail("Not implemented")
+        pass
+
     def test_process_messages(self):
         self.kafka_monitor.consumer = MagicMock()
+        self.kafka_monitor.stats_dict = {}
 
         # handle kafka offset errors
         self.kafka_monitor.consumer.get_messages = MagicMock(

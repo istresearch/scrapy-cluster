@@ -29,3 +29,17 @@ LOG_STDOUT = True
 LOG_JSON = False
 LOG_LEVEL = 'INFO'
 
+# stats setup
+STATS_TOTAL = True
+STATS_PLUGINS = True
+STATS_CYCLE = 5
+STATS_DUMP = 60
+# from time variables in utils.stats_collector class
+STATS_TIMES = [
+    'SECONDS_15_MINUTE',
+    'SECONDS_1_HOUR',
+    'SECONDS_6_HOUR',
+    'SECONDS_12_HOUR',
+    'SECONDS_1_DAY',
+    'SECONDS_1_WEEK',
+]
