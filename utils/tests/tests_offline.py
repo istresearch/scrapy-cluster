@@ -164,8 +164,8 @@ class TestLogFactory(TestCase):
 class TestLogJSONFile(TestCase):
     def setUp(self):
         self.logger = LogObject(name='test', json=True,
-                dir='tests', level='INFO', stdout=False, file='test.log')
-        self.test_file = 'tests/test'
+                dir='.', level='INFO', stdout=False, file='test.log')
+        self.test_file = './test'
 
     def test_log_file_json(self):
         self.logger._get_time = MagicMock(return_value=5)
