@@ -346,7 +346,7 @@ class ThreadedCounter(AbstractCounter):
         '''
         if self.roll:
             self.date = time.strftime(self.date_format,
-                    time.localtime(self.start_time))
+                    time.gmtime(self.start_time))
 
             self.final_key = '{}:{}'.format(self.key, self.date)
         else:

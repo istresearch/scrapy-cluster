@@ -95,7 +95,7 @@ class TestStatsThreaded(RedisMixin, TestCase):
         tc.roll = True
         tc.key = 'myKey'
         tc._set_key()
-        self.assertEqual('myKey:2015-09-19_09:59:36', tc.get_key())
+        self.assertEqual('myKey:2015-09-19_13:59:36', tc.get_key())
 
     def test_is_expired(self):
         # test rolling the key we are using
