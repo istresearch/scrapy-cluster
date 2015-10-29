@@ -16,8 +16,10 @@ crawler/main.log
 localsettings.py
 
 # Vagrant test VM
-Vagrantfile
 .vagrant
+local/
+bin/
+pip-selfcheck.json
 
 # Distribution / packaging
 .Python
