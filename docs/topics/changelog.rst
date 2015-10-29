@@ -12,9 +12,11 @@ Date: ??/??/????
 
 - Added easy offline bash script for running all offline tests
 
+- Added online bash test script for testing if your cluster is integrated with all other external components
+
 - Modified demo incoming kafka topic from ``demo.incoming_urls`` to just ``demo.incoming`` as now all crawl/info/stop requests are serviced through a single topic
 
-- Added new ``utils`` folder for accessing modules across different components.
+- Added new ``scutils`` package for accessing modules across different components.
 
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
