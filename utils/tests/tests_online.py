@@ -358,7 +358,7 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Online depployement Test"\
                                      " Script for Utils")
-    parser.add_argument('-r', '--redis-host', action='store', required=True,
+    parser.add_argument('-r', '--redis-host', action='store',
                         default='localhost', help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
