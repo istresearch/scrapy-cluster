@@ -1,0 +1,16 @@
+---
+- hosts: all
+  sudo: yes
+  tasks:
+    - name: Update apt cache
+      apt: update-cache=yes
+
+- name: Install miniconda
+  hosts: all
+  sudo: yes
+  roles:
+    - miniconda
+
+- include: kafka.yml
+- include: zookeeper.yml
+- include: redis.yml

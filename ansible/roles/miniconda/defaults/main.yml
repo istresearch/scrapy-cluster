@@ -1,0 +1,4 @@
+---
+
+miniconda_install_dir: /opt/miniconda
+user_home: /root

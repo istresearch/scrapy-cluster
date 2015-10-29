@@ -1,0 +1,5 @@
+[program:zookeeper]
+command={{ zookeeper_base_dir }}/bin/zkServer.sh start-foreground
+autostart=true
+autorestart=true
+stopsignal=KILL
