@@ -64,15 +64,5 @@ setup(
     extras_require=extras_require,
     dependency_links=dependency_links,
     zip_safe=True,
-    # test_suite='nose.collector',
     include_package_data=True,
-    # entry_points={'console_scripts': ['traptor=traptor.traptor:main']},
-    # classifiers=[
-    #     'Development Status :: 3 - Alpha',
-    #     'Intended Audience :: Developers',
-    #     'Topic :: Text Processing :: General',
-    #     'License :: OSI Approved :: MIT License',
-    #     'Programming Language :: Python :: 2',
-    #     'Programming Language :: Python :: 2.7',
-    # ],
 )
