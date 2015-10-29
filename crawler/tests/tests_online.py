@@ -61,6 +61,7 @@ class TestLinkSpider(TestCase):
 
         # set up kafka to consumer potential result
         self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+        self.kafka_conn.ensure_topic_exists("demo_test.crawled_firehose")
         self.consumer = SimpleConsumer(
             self.kafka_conn,
             "demo-id",
