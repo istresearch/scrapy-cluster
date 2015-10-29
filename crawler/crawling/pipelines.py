@@ -12,7 +12,7 @@ from kafka import KafkaClient, SimpleProducer
 from kafka.common import KafkaUnavailableError
 
 from crawling.items import RawResponseItem
-from crawling.utils.log_factory import LogFactory
+from scutils.log_factory import LogFactory
 
 class LoggingBeforePipeline(object):
 
