@@ -14,15 +14,14 @@ import sys
 
 from redis_dupefilter import RFPDupeFilter
 
-from kazoo.client import KazooClient
-from kazoo.client import KazooState
+from kazoo.client import KazooClient, KazooState
 from kazoo.exceptions import ZookeeperError
 from kazoo.handlers.threading import KazooTimeoutError
 
-from utils.zookeeper_watcher import ZookeeperWatcher
-from utils.redis_queue import RedisPriorityQueue
-from utils.redis_throttled_queue import RedisThrottledQueue
-from utils.log_factory import LogFactory
+from scutils.zookeeper_watcher import ZookeeperWatcher
+from scutils.redis_queue import RedisPriorityQueue
+from scutils.redis_throttled_queue import RedisThrottledQueue
+from scutils.log_factory import LogFactory
 
 try:
     import cPickle as pickle

@@ -16,13 +16,12 @@ from testfixtures import LogCapture
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from method_timer import MethodTimer
-from log_factory import LogFactory
-from log_factory import LogObject
-from settings_wrapper import SettingsWrapper
+from scutils.method_timer import MethodTimer
+from scutils.log_factory import LogFactory, LogObject
+from scutils.settings_wrapper import SettingsWrapper
 
-from stats_collector import AbstractCounter
-from redis_throttled_queue import RedisThrottledQueue
+from scutils.stats_collector import AbstractCounter
+from scutils.redis_throttled_queue import RedisThrottledQueue
 
 from redis.exceptions import WatchError
 

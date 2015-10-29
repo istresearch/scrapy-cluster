@@ -6,7 +6,7 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 
 # Kafka server information
-KAFKA_HOSTS = 'locahost:9092'
+KAFKA_HOSTS = 'localhost:9092'
 KAFKA_TOPIC_PREFIX = 'demo'
 KAFKA_APPID_TOPICS = False
 
@@ -126,7 +126,7 @@ SC_LOG_DIR = 'logs'
 SC_LOG_FILE = 'main.log'
 SC_LOG_MAX_BYTES = '10MB'
 SC_LOG_JSON = False
-SC_LOG_LEVEL = 'DEBUG'
+SC_LOG_LEVEL = 'INFO'
 
 # Avoid in-memory DNS cache. See Advanced topics of docs for info
 DNSCACHE_ENABLED = False

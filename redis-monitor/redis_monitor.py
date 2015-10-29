@@ -10,8 +10,8 @@ import importlib
 import argparse
 
 from collections import OrderedDict
-from utils.log_factory import LogFactory
-from utils.settings_wrapper import SettingsWrapper
+from scutils.log_factory import LogFactory
+from scutils.settings_wrapper import SettingsWrapper
 from redis.exceptions import ConnectionError
 
 class RedisMonitor:

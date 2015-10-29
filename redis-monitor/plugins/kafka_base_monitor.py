@@ -2,7 +2,7 @@ from base_monitor import BaseMonitor
 from kafka import KafkaClient, SimpleProducer
 from kafka.common import KafkaUnavailableError
 from base_monitor import BaseMonitor
-from utils.method_timer import MethodTimer
+from scutils.method_timer import MethodTimer
 
 import traceback
 import json

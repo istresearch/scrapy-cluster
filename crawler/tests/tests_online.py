@@ -20,7 +20,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 from scrapy.crawler import CrawlerRunner
-from crawling.utils.method_timer import MethodTimer
+from scutils.method_timer import MethodTimer
 from kafka import KafkaClient, SimpleConsumer
 
 class CustomSpider(LinkSpider):
@@ -61,6 +61,7 @@ class TestLinkSpider(TestCase):
 
         # set up kafka to consumer potential result
         self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
+        self.kafka_conn.ensure_topic_exists("demo_test.crawled_firehose")
         self.consumer = SimpleConsumer(
             self.kafka_conn,
             "demo-id",

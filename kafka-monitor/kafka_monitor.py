@@ -19,10 +19,10 @@ from redis.exceptions import ConnectionError
 from jsonschema import ValidationError
 from jsonschema import Draft4Validator, validators
 
-from utils.log_factory import LogFactory
-from utils.settings_wrapper import SettingsWrapper
-from utils.method_timer import MethodTimer
-from utils.stats_collector import StatsCollector
+from scutils.log_factory import LogFactory
+from scutils.settings_wrapper import SettingsWrapper
+from scutils.method_timer import MethodTimer
+from scutils.stats_collector import StatsCollector
 
 try:
     import cPickle as pickle

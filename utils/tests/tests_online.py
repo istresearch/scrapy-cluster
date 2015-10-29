@@ -11,17 +11,11 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from redis_queue import RedisQueue
-from redis_queue import RedisPriorityQueue
-from redis_queue import RedisStack
+from scutils.redis_queue import RedisQueue, RedisPriorityQueue, RedisStack
 
-from stats_collector import ThreadedCounter
-from stats_collector import TimeWindow
-from stats_collector import RollingTimeWindow
-from stats_collector import Counter
-from stats_collector import UniqueCounter
-from stats_collector import HyperLogLogCounter
-from stats_collector import BitMapCounter
+from scutils.stats_collector import (ThreadedCounter, TimeWindow,
+                                    RollingTimeWindow, Counter, UniqueCounter,
+                                    HyperLogLogCounter, BitMapCounter)
 
 from redis.exceptions import WatchError
 import redis
@@ -101,7 +95,7 @@ class TestStatsThreaded(RedisMixin, TestCase):
         tc.roll = True
         tc.key = 'myKey'
         tc._set_key()
-        self.assertEqual('myKey:2015-09-19_09:59:36', tc.get_key())
+        self.assertEqual('myKey:2015-09-19_13:59:36', tc.get_key())
 
     def test_is_expired(self):
         # test rolling the key we are using
@@ -364,7 +358,7 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Online depployement Test"\
                                      " Script for Utils")
-    parser.add_argument('-r', '--redis-host', action='store', required=True,
+    parser.add_argument('-r', '--redis-host', action='store',
                         default='localhost', help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
