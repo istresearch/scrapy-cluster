@@ -60,19 +60,130 @@ class TestKafkaMonitor(TestCase):
         # Throw error if schema could not be found
         self.kafka_monitor.settings['PLUGINS'] \
             ['tests.tests_offline.ExampleHandler'] = 300,
-       # self.kafka_monitor.default_plugins = copy.deepcopy(self.defaults)
         self.assertRaises(IOError, self.kafka_monitor._load_plugins)
-        # del self.kafka_monitor.default_plugins.pop('tests.tests_offline.ExampleHandler')
         del self.kafka_monitor.settings['PLUGINS'] \
             ['tests.tests_offline.ExampleHandler']
 
     def test_load_stats_total(self):
-        self.fail("Not implemented")
-        pass
+        # test no rolling stats, only total
+        self.kafka_monitor.stats_dict = {}
+        self.kafka_monitor.settings['STATS_TIMES'] = []
+        self.kafka_monitor._setup_stats_total(MagicMock())
+
+        self.assertEquals(self.kafka_monitor.stats_dict['total'].keys(), [0])
+        self.assertEquals(self.kafka_monitor.stats_dict['fail'].keys(), [0])
+
+        # test good/bad rolling stats
+        self.kafka_monitor.stats_dict = {}
+        self.kafka_monitor.settings['STATS_TIMES'] = [
+            'SECONDS_15_MINUTE',
+            'SECONDS_1_HOUR',
+            'SECONDS_DUMB',
+        ]
+        good = [
+            0, # for totals, not DUMB
+            900,
+            3600,
+        ]
+
+        self.kafka_monitor._setup_stats_total(MagicMock())
+        self.assertEquals(
+            sorted(self.kafka_monitor.stats_dict['total'].keys()),
+            sorted(good))
+        self.assertEquals(
+            sorted(self.kafka_monitor.stats_dict['fail'].keys()),
+            sorted(good))
+
+        k1 = 'stats:kafka-monitor:total'
+        k2 = 'stats:kafka-monitor:fail'
+
+        for time_key in self.kafka_monitor.stats_dict['total']:
+            if time_key == 0:
+                self.assertEquals(
+                    self.kafka_monitor.stats_dict['total'][0].key,
+                    '{k}:lifetime'.format(k=k1)
+                    )
+            else:
+                self.assertEquals(
+                    self.kafka_monitor.stats_dict['total'][time_key].key,
+                    '{k}:{t}'.format(k=k1, t=time_key)
+                    )
+
+        for time_key in self.kafka_monitor.stats_dict['fail']:
+            if time_key == 0:
+                self.assertEquals(
+                    self.kafka_monitor.stats_dict['fail'][0].key,
+                    '{k}:lifetime'.format(k=k2)
+                    )
+            else:
+                self.assertEquals(
+                    self.kafka_monitor.stats_dict['fail'][time_key].key,
+                    '{k}:{t}'.format(k=k2, t=time_key)
+                    )
 
     def test_load_stats_plugins(self):
-        self.fail("Not implemented")
-        pass
+        # lets assume we are loading the default plugins
+        self.kafka_monitor._load_plugins()
+
+        # test no rolling stats
+        self.kafka_monitor.stats_dict = {}
+        self.kafka_monitor.settings['STATS_TIMES'] = []
+        self.kafka_monitor._setup_stats_plugins(MagicMock())
+        defaults = [
+            'ScraperHandler',
+            'ActionHandler'
+        ]
+
+        self.assertEquals(
+            sorted(self.kafka_monitor.stats_dict['plugins'].keys()),
+            sorted(defaults))
+
+        for key in self.kafka_monitor.plugins_dict:
+            plugin_name = self.kafka_monitor.plugins_dict[key]['instance'].__class__.__name__
+            self.assertEquals(
+                self.kafka_monitor.stats_dict['plugins'][plugin_name].keys(),
+                [0])
+
+        # test good/bad rolling stats
+        self.kafka_monitor.stats_dict = {}
+        self.kafka_monitor.settings['STATS_TIMES'] = [
+            'SECONDS_15_MINUTE',
+            'SECONDS_1_HOUR',
+            'SECONDS_DUMB',
+        ]
+        good = [
+            0, # for totals, not DUMB
+            900,
+            3600,
+        ]
+
+        self.kafka_monitor._setup_stats_plugins(MagicMock())
+
+        self.assertEquals(
+            sorted(self.kafka_monitor.stats_dict['plugins'].keys()),
+            sorted(defaults))
+
+        for key in self.kafka_monitor.plugins_dict:
+            plugin_name = self.kafka_monitor.plugins_dict[key]['instance'].__class__.__name__
+            self.assertEquals(
+                sorted(self.kafka_monitor.stats_dict['plugins'][plugin_name].keys()),
+                sorted(good))
+
+
+
+        for plugin_key in self.kafka_monitor.stats_dict['plugins']:
+            k1 = 'stats:kafka-monitor:{p}'.format(p=plugin_key)
+            for time_key in self.kafka_monitor.stats_dict['plugins'][plugin_key]:
+                if time_key == 0:
+                    self.assertEquals(
+                        self.kafka_monitor.stats_dict['plugins'][plugin_key][0].key,
+                        '{k}:lifetime'.format(k=k1)
+                        )
+                else:
+                    self.assertEquals(
+                        self.kafka_monitor.stats_dict['plugins'][plugin_key][time_key].key,
+                        '{k}:{t}'.format(k=k1, t=time_key)
+                        )
 
     def test_process_messages(self):
         self.kafka_monitor.consumer = MagicMock()

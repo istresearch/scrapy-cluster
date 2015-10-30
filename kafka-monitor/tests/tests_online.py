@@ -30,6 +30,8 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor = KafkaMonitor("localsettings.py")
         new_settings = self.kafka_monitor.wrapper.load("localsettings.py")
         new_settings['KAFKA_INCOMING_TOPIC'] = "demo.incoming_test"
+        new_settings['STATS_TOTAL'] = False
+        new_settings['STATS_PLUGINS'] = False
         new_settings['PLUGINS'] = {
             'plugins.scraper_handler.ScraperHandler': None,
             'plugins.action_handler.ActionHandler': None,

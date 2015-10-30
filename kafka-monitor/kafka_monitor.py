@@ -135,11 +135,11 @@ class KafkaMonitor:
         '''
         self.stats_dict['total'] = {}
         self.stats_dict['fail'] = {}
+        temp_key1 = 'stats:kafka-monitor:total'
+        temp_key2 = 'stats:kafka-monitor:fail'
         for item in self.settings['STATS_TIMES']:
             try:
                 time = getattr(StatsCollector, item)
-                temp_key1 = 'stats:kafka-monitor:total'
-                temp_key2 = 'stats:kafka-monitor:fail'
                 self.stats_dict['total'][time] = StatsCollector \
                         .get_rolling_time_window(
                                 redis_conn=redis_conn,
@@ -165,8 +165,7 @@ class KafkaMonitor:
                         key='{k}:lifetime'.format(k=temp_key2),
                         cycle_time=self.settings['STATS_CYCLE'],
                         roll=False)
-        self.logger.debug("Set up total/fail Stats Collector 'lifetime'"\
-                        .format(i=item))
+        self.logger.debug("Set up total/fail Stats Collector 'lifetime'")
         self.stats_dict['total'][0] = total1
         self.stats_dict['fail'][0] = total2
 
@@ -179,12 +178,12 @@ class KafkaMonitor:
         self.stats_dict['plugins'] = {}
         for key in self.plugins_dict:
             plugin_name = self.plugins_dict[key]['instance'].__class__.__name__
+            temp_key = 'stats:kafka-monitor:{p}'.format(p=plugin_name)
             self.stats_dict['plugins'][plugin_name] = {}
             for item in self.settings['STATS_TIMES']:
                 try:
                     time = getattr(StatsCollector, item)
-                    temp_key = 'stats:kafka-monitor:{p}'\
-                            .format(p=plugin_name)
+                    
                     self.stats_dict['plugins'][plugin_name][time] = StatsCollector \
                             .get_rolling_time_window(
                                     redis_conn=redis_conn,
@@ -201,7 +200,7 @@ class KafkaMonitor:
                             cycle_time=self.settings['STATS_CYCLE'],
                             roll=False)
             self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
-                            .format(p=plugin_name, i=item))
+                            .format(p=plugin_name))
             self.stats_dict['plugins'][plugin_name][0] = total
 
     def _setup_kafka(self):
