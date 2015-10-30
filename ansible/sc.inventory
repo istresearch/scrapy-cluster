@@ -1,0 +1,17 @@
+# Scrapy Cluster inventory
+
+default ansible_ssh_host=192.168.33.99
+
+[kafka]
+scdev
+
+[zookeeper]
+scdev
+
+[redis]
+scdev
+
+[scrapy-cluster:children]
+kafka
+zookeeper
+redis

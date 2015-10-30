@@ -1,0 +1,56 @@
+---
+- name: ensure supervisord is installed
+  pip: 
+    name=supervisor
+    state=present
+  tags: supervisord
+
+- name: ensure directories are created
+  file: 
+    state=directory
+    dest={{ item }}
+    mode=0755
+  with_items:
+    - "{{ supervisord_log_dir }}"
+    - "{{ supervisord_programs_dir }}"
+  tags: supervisord
+
+- name: setup configuration
+  template:
+    src=supervisord.conf.j2
+    dest=/etc/supervisord.conf
+  tags: supervisord
+
+- name: setup CentOS supervisord service script
+  copy:
+    src=supervisord_centos
+    dest=/etc/init.d/supervisord
+    owner=root
+    group=root
+    mode=0755
+  tags: supervisord
+  when: ansible_os_family == "RedHat"
+
+- name: setup Ubuntu supervisord service script
+  copy:
+    src=supervisord_ubuntu
+    dest=/etc/init.d/supervisord
+    owner=root
+    group=root
+    mode=0755
+  tags: supervisord
+  when: ansible_os_family == "Debian"
+
+- name: ensure supervisord is running
+  service:
+    name: supervisord
+    state: started
+  tags: supervisord
+
+- name: reload supervisor
+  shell: "supervisorctl reload"
+  tags: supervisord
+
+- name: set up sc alias
+  lineinfile: dest="/root/.bashrc" line="alias sc='supervisorctl'"
+
