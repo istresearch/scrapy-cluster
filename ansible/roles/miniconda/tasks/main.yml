@@ -4,13 +4,22 @@
   register: minicondaCheck
   tags: miniconda
 
+- name: Download miniconda
+  get_url:
+    url="{{ miniconda_source }}"
+    dest=/tmp/Miniconda.sh
+    mode=0755
+    validate_certs=no
+  when: minicondaCheck.stat.exists == false
+  tags: miniconda
+
 - name: Setup Miniconda
   when: minicondaCheck.stat.exists == false
-  script: Miniconda.sh -b -p {{ miniconda_install_dir }}
+  command: "/tmp/Miniconda.sh -b -p {{ miniconda_install_dir }}"
   tags: miniconda
 
 - name: Install miniconda pip
-  shell: "/opt/miniconda/bin/conda install pip --yes"
+  command: "/opt/miniconda/bin/conda install pip --yes"
   tags:
     - miniconda
     - pip
@@ -23,6 +32,7 @@
     state=present
   with_items:
     - PATH={{ miniconda_install_dir }}/bin:$PATH
+  tags: miniconda
 
 - name: prepend miniconda to path for vagrant
   lineinfile:
@@ -32,3 +42,4 @@
     state=present
   with_items:
     - PATH={{ miniconda_install_dir }}/bin:$PATH
+  tags: miniconda
