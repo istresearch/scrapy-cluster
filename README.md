@@ -33,17 +33,17 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 
 To set up a pre-canned Scrapy Cluster test environment, make sure you have the latest **Virtualbox** + **Vagrant >= 1.7.4** installed.  Vagrant will automatically mount the base **scrapy-cluster** directory to the **/vagrant** directory, so any code changes you make will be visible inside the VM.
 
-### Steps to launch the test VM:
-1.  `vagrant up`
-2.  `vagrant ssh` to ssh into the **scdev** VM.
-3.  Check that everything is running with `sudo supervisorctl status`
+### Steps to launch the test environment:
+1.  `vagrant up` in base **scrapy-cluster** directory.
+2.  `vagrant ssh` to ssh into the VM.
+3.  `sudo supervisorctl status` to check that everything is running.
 4.  `cd /vagrant` to get to the **scrapy-cluster** directory.
 5.  `conda create -n sc scrapy --yes` to create a conda virtualenv with Scrapy pre-installed.
 6.  `source activate sc` to activate your virtual environment.
 7.  `cd utils && python setup.py install` to install the **scutils** packages.
 8.  `cd ../; pip install -r requirements.txt` to install the remaining Scrapy Cluster dependencies.
-9.  Run the offline tests by running `./run_offline_tests.sh`
-10.  Run the online tests (relies on kafka, zookeeper, redis) by running `./run_online_tests.sh`
+9.  `./run_offline_tests.sh` to run offline tests.
+10. `./run_online_tests.sh` to run online tests (relies on kafka, zookeeper, redis).
 
 ## Documentation
 
