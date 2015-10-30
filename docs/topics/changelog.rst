@@ -14,6 +14,8 @@ Date: ??/??/????
 
 - Added online bash test script for testing if your cluster is integrated with all other external components
 
+- New Vagrant virtual machine for easier development and testing.
+
 - Modified demo incoming kafka topic from ``demo.incoming_urls`` to just ``demo.incoming`` as now all crawl/info/stop requests are serviced through a single topic
 
 - Added new ``scutils`` package for accessing modules across different components.
