@@ -169,8 +169,6 @@ class TestKafkaMonitor(TestCase):
                 sorted(self.kafka_monitor.stats_dict['plugins'][plugin_name].keys()),
                 sorted(good))
 
-
-
         for plugin_key in self.kafka_monitor.stats_dict['plugins']:
             k1 = 'stats:kafka-monitor:{p}'.format(p=plugin_key)
             for time_key in self.kafka_monitor.stats_dict['plugins'][plugin_key]:

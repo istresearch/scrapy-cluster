@@ -183,7 +183,7 @@ class KafkaMonitor:
             for item in self.settings['STATS_TIMES']:
                 try:
                     time = getattr(StatsCollector, item)
-                    
+
                     self.stats_dict['plugins'][plugin_name][time] = StatsCollector \
                             .get_rolling_time_window(
                                     redis_conn=redis_conn,
@@ -354,6 +354,7 @@ class KafkaMonitor:
         '''
         Increments the total stat counters
 
+        @param name: The formal name of the plugin
         @param dict: the loaded message object for HLL counter
         '''
         if 'plugins' in self.stats_dict:

@@ -34,7 +34,7 @@ STATS_TOTAL = True
 STATS_PLUGINS = True
 STATS_CYCLE = 5
 STATS_DUMP = 60
-# from time variables in utils.stats_collector class
+# from time variables in scutils.stats_collector class
 STATS_TIMES = [
     'SECONDS_15_MINUTE',
     'SECONDS_1_HOUR',
