@@ -2,6 +2,7 @@
 
 import sys
 
+
 def main():
 
     import argparse
@@ -12,11 +13,11 @@ def main():
     from os import path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-    from scutils.redis_queue import RedisPriorityQueue, RedisStack, RedisQueue
+    from scutils.redis_queue import RedisPriorityQueue
     from scutils.redis_throttled_queue import RedisThrottledQueue
 
-    parser = argparse.ArgumentParser(description="Throttled Queue Test Script."\
-                " Start either a single or multiple processes to see the " \
+    parser = argparse.ArgumentParser(description="Throttled Queue Test Script."
+                    " Start either a single or multiple processes to see the "
                 " throttled queue mechanism in action.")
     parser.add_argument('-r', '--redis-host', action='store', required=True,
                         help="The Redis host ip")

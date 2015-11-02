@@ -2,9 +2,9 @@ STRING = "my stuff"
 MY_STRING = "cool"
 DICT = {
     "value": "override",
-    "append":"value"
+    "append": "value"
 }
 NEW_DICT = {
-    "other":"stuff"
+    "other": "stuff"
 }
 NEW_LIST = ['item1']
