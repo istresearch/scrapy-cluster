@@ -14,6 +14,7 @@ PLUGINS = {
     'plugins.info_monitor.InfoMonitor': 100,
     'plugins.stop_monitor.StopMonitor': 200,
     'plugins.expire_monitor.ExpireMonitor': 300,
+    'plugins.stats_monitor.StatsMonitor': 400,
 }
 
 # logging setup

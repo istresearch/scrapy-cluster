@@ -60,7 +60,8 @@ class BaseMonitor(object):
         '''
         return True
 
-    def get_log_dict(self, action, spiderid, appid, uuid=None, crawlid = None):
+    def get_log_dict(self, action, appid, spiderid=None, uuid=None,
+            crawlid = None):
         '''
         Returns a basic dictionary for logging
         @param action: the action taken by the redis monitor
@@ -71,8 +72,9 @@ class BaseMonitor(object):
         '''
         extras = {}
         extras['action'] = action
-        extras['spiderid'] = spiderid
         extras['appid'] = appid
+        if spiderid is not None:
+            extras['spiderid'] = spiderid
         if uuid is not None:
             extras['uuid'] = uuid
         if crawlid is not None:

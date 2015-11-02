@@ -115,10 +115,18 @@ class RedisMonitor:
         The internal while true main loop for the redis monitor
         '''
         self.logger.debug("Running main loop")
+        old_time = 0
         while True:
             for plugin_key in self.plugins_dict:
                 obj = self.plugins_dict[plugin_key]
                 self._process_plugin(obj)
+
+            if self.settings['STATS_DUMP'] != 0:
+                new_time = int(time.time() / self.settings['STATS_DUMP'])
+                # only log every X seconds
+                if new_time != old_time:
+                    self._dump_stats()
+                    old_time = new_time
 
             time.sleep(0.1)
 
@@ -205,8 +213,8 @@ class RedisMonitor:
                         cycle_time=self.settings['STATS_CYCLE'],
                         roll=False)
         self.logger.debug("Set up total/fail Stats Collector 'lifetime'")
-        self.stats_dict['total'][0] = total1
-        self.stats_dict['fail'][0] = total2
+        self.stats_dict['total']['lifetime'] = total1
+        self.stats_dict['fail']['lifetime'] = total2
 
     def _setup_stats_plugins(self):
         '''
@@ -238,7 +246,7 @@ class RedisMonitor:
                             roll=False)
             self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
                             .format(p=plugin_name))
-            self.stats_dict['plugins'][plugin_name][0] = total
+            self.stats_dict['plugins'][plugin_name]['lifetime'] = total
 
     def _increment_total_stat(self, item):
         '''
@@ -249,7 +257,7 @@ class RedisMonitor:
         if 'total' in self.stats_dict:
             self.logger.debug("Incremented total stats")
             for key in self.stats_dict['total']:
-                if key == 0:
+                if key == 'lifetime':
                     self.stats_dict['total'][key].increment(item)
                 else:
                     self.stats_dict['total'][key].increment()
@@ -263,7 +271,7 @@ class RedisMonitor:
         if 'fail' in self.stats_dict:
             self.logger.debug("Incremented fail stats")
             for key in self.stats_dict['fail']:
-                if key == 0:
+                if key == 'lifetime':
                     self.stats_dict['fail'][key].increment(item)
                 else:
                     self.stats_dict['fail'][key].increment()
@@ -279,10 +287,37 @@ class RedisMonitor:
             self.logger.debug("Incremented plugin '{p}' plugin stats"\
                     .format(p=name))
             for key in self.stats_dict['plugins'][name]:
-                if key == 0:
+                if key == 'lifetime':
                     self.stats_dict['plugins'][name][key].increment(item)
                 else:
                     self.stats_dict['plugins'][name][key].increment()
+
+    def _dump_stats(self):
+        '''
+        Dumps the stats out
+        '''
+        extras = {}
+        if 'total' in self.stats_dict:
+            self.logger.debug("Compiling total/fail dump stats")
+            for key in self.stats_dict['total']:
+                final = 'total_{t}'.format(t=key)
+                extras[final] = self.stats_dict['total'][key].value()
+            for key in self.stats_dict['fail']:
+                final = 'fail_{t}'.format(t=key)
+                extras[final] = self.stats_dict['fail'][key].value()
+
+        if 'plugins' in self.stats_dict:
+            self.logger.debug("Compiling plugin dump stats")
+            for name in self.stats_dict['plugins']:
+                for key in self.stats_dict['plugins'][name]:
+                    final = 'plugin_{n}_{t}'.format(n=name, t=key)
+                    extras[final] = self.stats_dict['plugins'][name][key].value()
+
+        if not self.logger.json:
+            self.logger.info('Redis Monitor Stats Dump:\n{0}'.format(
+                    json.dumps(extras, indent=4, sort_keys=True)))
+        else:
+            self.logger.info('Redis Monitor Stats Dump', extra=extras)
 
 def main():
     parser = argparse.ArgumentParser(
