@@ -1,6 +1,6 @@
-import re
 import pickle
 from kafka_base_monitor import KafkaBaseMonitor
+
 
 class InfoMonitor(KafkaBaseMonitor):
 
@@ -35,13 +35,13 @@ class InfoMonitor(KafkaBaseMonitor):
 
         # log we received the info message
         extras = self.get_log_dict('info', dict['spiderid'],
-                                    dict['appid'], master['uuid'])
+                                   dict['appid'], master['uuid'])
 
         if len(elements) == 4:
             dict['crawlid'] = elements[3]
             extras = self.get_log_dict('info', dict['spiderid'],
-                                    dict['appid'], master['uuid'],
-                                    elements[3])
+                                       dict['appid'], master['uuid'],
+                                       elements[3])
         self.logger.info('Received info request', extra=extras)
 
         # generate the information requested
@@ -56,7 +56,7 @@ class InfoMonitor(KafkaBaseMonitor):
         else:
             extras['success'] = False
             self.logger.error('Failed to send info to kafka',
-                                extra=extras)
+                              extra=extras)
 
         self.redis_conn.delete(key)
 
@@ -170,8 +170,8 @@ class InfoMonitor(KafkaBaseMonitor):
         master['domains'] = {}
 
         timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(sid=dict['spiderid'],
-                                                        aid=dict['appid'],
-                                                        cid=dict['crawlid'])
+                                                         aid=dict['appid'],
+                                                         cid=dict['crawlid'])
         if self.redis_conn.exists(timeout_key):
             master['expires'] = self.redis_conn.get(timeout_key)
 
@@ -186,8 +186,7 @@ class InfoMonitor(KafkaBaseMonitor):
                 for item in sortedDict[score]:
                     if 'meta' in item:
                         item = item['meta']
-                    if item['appid'] == dict['appid'] and \
-                                    item['crawlid'] == dict['crawlid']:
+                    if item['appid'] == dict['appid'] and item['crawlid'] == dict['crawlid']:
                         if domain not in master['domains']:
                             master['domains'][domain] = {}
                             master['domains'][domain]['total'] = 0

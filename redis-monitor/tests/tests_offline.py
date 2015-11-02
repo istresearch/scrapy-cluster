@@ -4,24 +4,23 @@ Offline tests
 
 import unittest
 from unittest import TestCase
-import mock
 from mock import MagicMock
 
 import sys
 from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from redis_monitor import RedisMonitor
+
 from plugins.base_monitor import BaseMonitor
-from plugins.kafka_base_monitor import KafkaBaseMonitor
 from plugins.expire_monitor import ExpireMonitor
 from plugins.info_monitor import InfoMonitor
 from plugins.stop_monitor import StopMonitor
-import copy
 
 import settings
 import pickle
 import re
+
 
 class TestRedisMonitor(TestCase):
 
@@ -32,14 +31,13 @@ class TestRedisMonitor(TestCase):
 
     def test_load_plugins(self):
         # test loading default plugins
-        assert_keys = [100,200,300]
+        assert_keys = [100, 200, 300]
         self.redis_monitor._load_plugins()
         self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
 
         # test removing a plugin from settings
-        assert_keys = [100,300]
-        self.redis_monitor.settings['PLUGINS'] \
-            ['plugins.stop_monitor.StopMonitor'] = None
+        assert_keys = [100, 300]
+        self.redis_monitor.settings['PLUGINS']['plugins.stop_monitor.StopMonitor'] = None
         self.redis_monitor._load_plugins()
         self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
         self.redis_monitor.settings['PLUGINS'] \
@@ -102,7 +100,8 @@ class TestRedisMonitor(TestCase):
 
     def test_main_loop(self):
         self.redis_monitor._load_plugins()
-        self.redis_monitor._process_plugin = MagicMock(side_effect=Exception("normal"))
+        self.redis_monitor._process_plugin = MagicMock(side_effect=Exception(
+                                                       "normal"))
 
         try:
             self.redis_monitor._main_loop()
@@ -110,10 +109,11 @@ class TestRedisMonitor(TestCase):
         except BaseException as e:
             self.assertEquals("normal", e.message)
 
+
 class TestBasePlugins(TestCase):
     def test_bad_plugins(self):
         class ForgotRegex(BaseMonitor):
-            def handle(self,c,d):
+            def handle(self, c, d):
                 pass
         class ForgotHandle(BaseMonitor):
             regex = "*:*:stuff"
@@ -148,10 +148,12 @@ class TestBasePlugins(TestCase):
         except NotImplementedError as e:
             pass
 
+
 class RegexFixer(object):
     def fix_re(self, regex):
         # redis key finding is different than regex finding
         return re.sub('\*', '.+', regex)
+
 
 class TestInfoPlugin(TestCase, RegexFixer):
 
@@ -170,7 +172,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
         v1 = "stuff"
         v1 = pickle.dumps(v1)
         v2 = 200
-        self.plugin.redis_conn.zscan_iter = MagicMock(return_value=[(v1,v2)])
+        self.plugin.redis_conn.zscan_iter = MagicMock(return_value=[(v1, v2)])
         ret_val = self.plugin._get_bin('key')
         self.assertEquals(ret_val, {-200: ['stuff']})
 
@@ -190,7 +192,9 @@ class TestInfoPlugin(TestCase, RegexFixer):
         self.plugin.redis_conn.exists = MagicMock(return_value=True)
         self.plugin.redis_conn.get = MagicMock(return_value=10)
         self.plugin.redis_conn.scan_iter = MagicMock(return_value=['theKey:bingo.com'])
-        self.plugin._get_bin = MagicMock(return_value={-200: [{'appid':"testapp", "priority":10, 'crawlid':'crawlIDHERE'}]})
+        self.plugin._get_bin = MagicMock(return_value={-200: [{
+                                         'appid': "testapp", "priority": 10,
+                                         'crawlid': 'crawlIDHERE'}]})
 
         result = self.plugin._build_crawlid_info(master, dict)
 
@@ -207,7 +211,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
                     'low_priority': 10,
                     'high_priority': 10,
                     'total': 1
-            }},
+                }},
             'uuid': 'ABC123'
         }
 
@@ -225,8 +229,11 @@ class TestInfoPlugin(TestCase, RegexFixer):
 
         self.plugin.redis_conn.exists = MagicMock(return_value=True)
         self.plugin.redis_conn.get = MagicMock(return_value=10)
-        self.plugin.redis_conn.scan_iter = MagicMock(return_value=['theKey:bingo.com'])
-        self.plugin._get_bin = MagicMock(return_value={-200: [{'appid':"testapp", "priority":20, 'crawlid':'cool'}]})
+        self.plugin.redis_conn.scan_iter = MagicMock(return_value=[
+                                                     'theKey:bingo.com'])
+        self.plugin._get_bin = MagicMock(return_value={-200: [{
+                                         'appid': "testapp", "priority": 20,
+                                         'crawlid': 'cool'}]})
 
         result = self.plugin._build_appid_info(master, dict)
 
@@ -249,9 +256,10 @@ class TestInfoPlugin(TestCase, RegexFixer):
                     'distinct_domains': 1,
                     'total': 1,
                     'expires': 10
-            }}}
+                }}}
 
         self.assertEquals(result, success)
+
 
 class TestStopPlugin(TestCase, RegexFixer):
     def setUp(self):
@@ -261,8 +269,10 @@ class TestStopPlugin(TestCase, RegexFixer):
 
     def test_stop_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'stop:spider:app:crawl'), ['stop:spider:app:crawl'])
-        self.assertEquals(re.findall(regex, 'stop:spider:app'), ['stop:spider:app'])
+        self.assertEquals(re.findall(regex, 'stop:spider:app:crawl'),
+                          ['stop:spider:app:crawl'])
+        self.assertEquals(re.findall(regex, 'stop:spider:app'),
+                          ['stop:spider:app'])
         self.assertEquals(re.findall(regex, 'stop:stuff'), [])
 
     def test_stop_monitor_mini_purge(self):
@@ -274,6 +284,7 @@ class TestStopPlugin(TestCase, RegexFixer):
 
         self.assertEquals(self.plugin._mini_purge("link", "app", "crawl"), 1)
 
+
 class TestExpirePlugin(TestCase, RegexFixer):
     def setUp(self):
         self.plugin = ExpireMonitor()
@@ -282,13 +293,15 @@ class TestExpirePlugin(TestCase, RegexFixer):
 
     def test_stop_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'timeout:blah1:blah2:bla3'), ['timeout:blah1:blah2:bla3'])
+        self.assertEquals(re.findall(regex, 'timeout:blah1:blah2:bla3'),
+                          ['timeout:blah1:blah2:bla3'])
         self.assertEquals(re.findall(regex, 'timeout:blah1:blah2'), [])
 
     def test_expire_monitor_time(self):
         # if the stop monitor passes then this is just testing whether
         # the handler acts on the key only if it has expired
-        self.plugin._purge_crawl = MagicMock(side_effect=Exception("throw once"))
+        self.plugin._purge_crawl = MagicMock(side_effect=Exception(
+                                             "throw once"))
 
         self.plugin._get_current_time = MagicMock(return_value=5)
 

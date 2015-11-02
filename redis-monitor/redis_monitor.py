@@ -1,18 +1,14 @@
 import redis
-import logging
 import sys
 import time
-import re
-import pickle
 import traceback
-import json
-import importlib
 import argparse
 
 from collections import OrderedDict
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
 from redis.exceptions import ConnectionError
+
 
 class RedisMonitor:
 
@@ -43,14 +39,15 @@ class RedisMonitor:
         my_output = not log_file if log_file else self.settings['LOG_STDOUT']
         my_json = json if json else self.settings['LOG_JSON']
         self.logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level, name='redis-monitor')
+                                              stdout=my_output, level=my_level,
+                                              name='redis-monitor')
 
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'])
         try:
             self.redis_conn.info()
             self.logger.debug("Successfully connected to Redis")
-        except ConnectionError as ex:
+        except ConnectionError:
             self.logger.error("Failed to connect to Redis")
             # essential to functionality
             sys.exit(1)
@@ -80,8 +77,8 @@ class RedisMonitor:
             if plugins[key] is None:
                 continue
             # valid plugin, import and setup
-            self.logger.debug("Trying to load plugin {cls}" \
-                .format(cls=key))
+            self.logger.debug("Trying to load plugin {cls}"
+                              .format(cls=key))
             the_class = self.import_class(key)
             instance = the_class()
             instance.redis_conn = self.redis_conn
@@ -94,13 +91,13 @@ class RedisMonitor:
             mini['instance'] = instance
             if the_regex is None:
                 raise ImportError()
-                #continue
+                # continue
             mini['regex'] = the_regex
 
             self.plugins_dict[plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
-                                                key=lambda t: t[0]))
+                                               key=lambda t: t[0]))
 
     def run(self):
         '''
@@ -132,35 +129,37 @@ class RedisMonitor:
             val = self.redis_conn.get(key)
             try:
                 instance.handle(key, val)
-            except Exception as e:
+            except Exception:
                 self.logger.error(traceback.format_exc())
                 pass
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description='Redis Monitor: Monitor the Scrapy Cluster Redis ' \
-            'instance.\n')
+        description='Redis Monitor: Monitor the Scrapy Cluster Redis '
+        'instance.\n')
 
     parser.add_argument('-s', '--settings', action='store', required=False,
-        help="The settings file to read from", default="localsettings.py")
+                        help="The settings file to read from",
+                        default="localsettings.py")
     parser.add_argument('-ll', '--log-level', action='store', required=False,
-        help="The log level", default=None,
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+                        help="The log level", default=None,
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
     parser.add_argument('-lf', '--log-file', action='store_const',
-        required=False, const=True, default=None,
-        help='Log the output to the file specified in settings.py. Otherwise '\
-        'logs to stdout')
+                        required=False, const=True, default=None,
+                        help='Log the output to the file specified in '
+                        'settings.py. Otherwise logs to stdout')
     parser.add_argument('-lj', '--log-json', action='store_const',
-        required=False, const=True, default=None,
-        help="Log the data in JSON format")
+                        required=False, const=True, default=None,
+                        help="Log the data in JSON format")
     args = vars(parser.parse_args())
 
     redis_monitor = RedisMonitor(args['settings'])
     redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
-        json=args['log_json'])
+                        json=args['log_json'])
     try:
         redis_monitor.run()
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         redis_monitor.logger.info("Closing Redis Monitor")
 
 if __name__ == "__main__":
