@@ -205,7 +205,7 @@ class LogObject(object):
         @param message: The message to write
         @param extra: The object to write
         '''
-        self.logger.info(message, extra=extra);
+        self.logger.info(message, extra=extra)
 
     def name(self):
         '''
