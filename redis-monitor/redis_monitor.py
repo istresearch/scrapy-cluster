@@ -12,6 +12,7 @@ import argparse
 from collections import OrderedDict
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
+from scutils.stats_collector import StatsCollector
 from redis.exceptions import ConnectionError
 
 class RedisMonitor:
@@ -56,6 +57,7 @@ class RedisMonitor:
             sys.exit(1)
 
         self._load_plugins()
+        self._setup_stats()
 
     def import_class(self, cl):
         '''
@@ -131,10 +133,156 @@ class RedisMonitor:
         for key in self.redis_conn.scan_iter(match=regex):
             val = self.redis_conn.get(key)
             try:
-                instance.handle(key, val)
+                self._process_key_val(instance, key, val)
             except Exception as e:
                 self.logger.error(traceback.format_exc())
-                pass
+                self._increment_fail_stat('{k}:{v}'.format(k=key, v=val))
+
+    def _process_key_val(self, instance, key, val):
+        '''
+        Logic to let the plugin instance process the redis key/val
+        Split out for unit testing
+
+        @param instance: the plugin instance
+        @param key: the redis key
+        @param val: the key value from redis
+        '''
+        if instance.check_precondition(key, val):
+            combined = '{k}:{v}'.format(k=key, v=val)
+            self._increment_total_stat(combined)
+            self._increment_plugin_stat(
+                instance.__class__.__name__,
+                combined)
+            instance.handle(key, val)
+
+    def _setup_stats(self):
+        '''
+        Sets up the stats
+        '''
+        # stats setup
+        self.stats_dict = {}
+
+        if self.settings['STATS_TOTAL']:
+            self._setup_stats_total()
+
+        if self.settings['STATS_PLUGINS']:
+            self._setup_stats_plugins()
+
+    def _setup_stats_total(self):
+        '''
+        Sets up the total stats collectors
+        '''
+        self.stats_dict['total'] = {}
+        self.stats_dict['fail'] = {}
+        temp_key1 = 'stats:redis-monitor:total'
+        temp_key2 = 'stats:redis-monitor:fail'
+        for item in self.settings['STATS_TIMES']:
+            try:
+                time = getattr(StatsCollector, item)
+                self.stats_dict['total'][time] = StatsCollector \
+                        .get_rolling_time_window(
+                                redis_conn=self.redis_conn,
+                                key='{k}:{t}'.format(k=temp_key1, t=time),
+                                window=time,
+                                cycle_time=self.settings['STATS_CYCLE'])
+                self.stats_dict['fail'][time] = StatsCollector \
+                        .get_rolling_time_window(
+                                redis_conn=self.redis_conn,
+                                key='{k}:{t}'.format(k=temp_key2, t=time),
+                                window=time,
+                                cycle_time=self.settings['STATS_CYCLE'])
+                self.logger.debug("Set up total/fail Stats Collector '{i}'"\
+                        .format(i=item))
+            except AttributeError as e:
+                self.logger.warning("Unable to find Stats Time '{s}'"\
+                        .format(s=item))
+        total1 = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
+                        key='{k}:lifetime'.format(k=temp_key1),
+                        cycle_time=self.settings['STATS_CYCLE'],
+                        roll=False)
+        total2 = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
+                        key='{k}:lifetime'.format(k=temp_key2),
+                        cycle_time=self.settings['STATS_CYCLE'],
+                        roll=False)
+        self.logger.debug("Set up total/fail Stats Collector 'lifetime'")
+        self.stats_dict['total'][0] = total1
+        self.stats_dict['fail'][0] = total2
+
+    def _setup_stats_plugins(self):
+        '''
+        Sets up the total stats collectors
+        '''
+        self.stats_dict['plugins'] = {}
+        for key in self.plugins_dict:
+            plugin_name = self.plugins_dict[key]['instance'].__class__.__name__
+            temp_key = 'stats:redis-monitor:{p}'.format(p=plugin_name)
+            self.stats_dict['plugins'][plugin_name] = {}
+            for item in self.settings['STATS_TIMES']:
+                try:
+                    time = getattr(StatsCollector, item)
+
+                    self.stats_dict['plugins'][plugin_name][time] = StatsCollector \
+                            .get_rolling_time_window(
+                                    redis_conn=self.redis_conn,
+                                    key='{k}:{t}'.format(k=temp_key, t=time),
+                                    window=time,
+                                    cycle_time=self.settings['STATS_CYCLE'])
+                    self.logger.debug("Set up {p} plugin Stats Collector '{i}'"\
+                            .format(p=plugin_name, i=item))
+                except AttributeError as e:
+                    self.logger.warning("Unable to find Stats Time '{s}'"\
+                            .format(s=item))
+            total = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
+                            key='{k}:lifetime'.format(k=temp_key),
+                            cycle_time=self.settings['STATS_CYCLE'],
+                            roll=False)
+            self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
+                            .format(p=plugin_name))
+            self.stats_dict['plugins'][plugin_name][0] = total
+
+    def _increment_total_stat(self, item):
+        '''
+        Increments the total stat counters
+
+        @param item: the unique print for HLL counter
+        '''
+        if 'total' in self.stats_dict:
+            self.logger.debug("Incremented total stats")
+            for key in self.stats_dict['total']:
+                if key == 0:
+                    self.stats_dict['total'][key].increment(item)
+                else:
+                    self.stats_dict['total'][key].increment()
+
+    def _increment_fail_stat(self, item):
+        '''
+        Increments the total stat counters
+
+        @param item: the unique print for HLL counter
+        '''
+        if 'fail' in self.stats_dict:
+            self.logger.debug("Incremented fail stats")
+            for key in self.stats_dict['fail']:
+                if key == 0:
+                    self.stats_dict['fail'][key].increment(item)
+                else:
+                    self.stats_dict['fail'][key].increment()
+
+    def _increment_plugin_stat(self, name, item):
+        '''
+        Increments the total stat counters
+
+        @param name: The formal name of the plugin
+        @param item: the unique print for HLL counter
+        '''
+        if 'plugins' in self.stats_dict:
+            self.logger.debug("Incremented plugin '{p}' plugin stats"\
+                    .format(p=name))
+            for key in self.stats_dict['plugins'][name]:
+                if key == 0:
+                    self.stats_dict['plugins'][name][key].increment(item)
+                else:
+                    self.stats_dict['plugins'][name][key].increment()
 
 def main():
     parser = argparse.ArgumentParser(

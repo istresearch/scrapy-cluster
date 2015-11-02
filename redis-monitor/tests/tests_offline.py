@@ -58,6 +58,7 @@ class TestRedisMonitor(TestCase):
         # test that exceptions are caught within each plugin
         # assuming now all plugins are loaded
         self.redis_monitor._load_plugins()
+        self.redis_monitor.stats_dict = {}
 
         # BaseExceptions are never raised normally
         self.redis_monitor.plugins_dict.items()[0][1]['instance'].handle = MagicMock(side_effect=BaseException("info"))
@@ -100,6 +101,70 @@ class TestRedisMonitor(TestCase):
         except Exception as e:
             self.fail("Normal Exception not handled")
 
+    def test_load_stats_plugins(self):
+        # lets assume we are loading the default plugins
+        self.redis_monitor._load_plugins()
+        self.redis_monitor.redis_conn = MagicMock()
+
+        # test no rolling stats
+        self.redis_monitor.stats_dict = {}
+        self.redis_monitor.settings['STATS_TIMES'] = []
+        self.redis_monitor._setup_stats_plugins()
+        defaults = [
+            'ExpireMonitor',
+            'StopMonitor',
+            'InfoMonitor'
+        ]
+
+        self.assertEquals(
+            sorted(self.redis_monitor.stats_dict['plugins'].keys()),
+            sorted(defaults))
+
+        for key in self.redis_monitor.plugins_dict:
+            plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
+            self.assertEquals(
+                self.redis_monitor.stats_dict['plugins'][plugin_name].keys(),
+                [0])
+
+        # test good/bad rolling stats
+        self.redis_monitor.stats_dict = {}
+        self.redis_monitor.settings['STATS_TIMES'] = [
+            'SECONDS_15_MINUTE',
+            'SECONDS_1_HOUR',
+            'SECONDS_DUMB',
+        ]
+        good = [
+            0, # for totals, not DUMB
+            900,
+            3600,
+        ]
+
+        self.redis_monitor._setup_stats_plugins()
+
+        self.assertEquals(
+            sorted(self.redis_monitor.stats_dict['plugins'].keys()),
+            sorted(defaults))
+
+        for key in self.redis_monitor.plugins_dict:
+            plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
+            self.assertEquals(
+                sorted(self.redis_monitor.stats_dict['plugins'][plugin_name].keys()),
+                sorted(good))
+
+        for plugin_key in self.redis_monitor.stats_dict['plugins']:
+            k1 = 'stats:redis-monitor:{p}'.format(p=plugin_key)
+            for time_key in self.redis_monitor.stats_dict['plugins'][plugin_key]:
+                if time_key == 0:
+                    self.assertEquals(
+                        self.redis_monitor.stats_dict['plugins'][plugin_key][0].key,
+                        '{k}:lifetime'.format(k=k1)
+                        )
+                else:
+                    self.assertEquals(
+                        self.redis_monitor.stats_dict['plugins'][plugin_key][time_key].key,
+                        '{k}:{t}'.format(k=k1, t=time_key)
+                        )
+
     def test_main_loop(self):
         self.redis_monitor._load_plugins()
         self.redis_monitor._process_plugin = MagicMock(side_effect=Exception("normal"))
@@ -109,6 +174,25 @@ class TestRedisMonitor(TestCase):
             self.fail("_process_plugin not called")
         except BaseException as e:
             self.assertEquals("normal", e.message)
+
+    def test_precondition(self):
+        self.redis_monitor.stats_dict = {}
+        instance = MagicMock()
+        instance.check_precondition = MagicMock(return_value=False)
+        instance.handle = MagicMock(side_effect=Exception("handler"))
+        key = 'stuff'
+        value = 'blah'
+
+        # this should not raise an exception
+        self.redis_monitor._process_key_val(instance, key, value)
+
+        # this should
+        instance.check_precondition = MagicMock(return_value=True)
+        try:
+            self.redis_monitor._process_key_val(instance, key, value)
+            self.fail('handler not called')
+        except BaseException as e:
+            self.assertEquals('handler', e.message)
 
 class TestBasePlugins(TestCase):
     def test_bad_plugins(self):
@@ -293,11 +377,13 @@ class TestExpirePlugin(TestCase, RegexFixer):
         self.plugin._get_current_time = MagicMock(return_value=5)
 
         # not timed out
-        self.plugin.handle("key:stuff:blah:blah", 6)
+        if self.plugin.check_precondition("key:stuff:blah:blah", 6):
+            self.plugin.handle("key:stuff:blah:blah", 6)
 
         # timed out
         try:
-            self.plugin.handle("key:stuff:blah:blah", 4)
+            if self.plugin.check_precondition("key:stuff:blah:blah", 4):
+                self.plugin.handle("key:stuff:blah:blah", 4)
             self.fail("Expire not called")
         except BaseException as e:
             self.assertEquals("throw once", e.message)

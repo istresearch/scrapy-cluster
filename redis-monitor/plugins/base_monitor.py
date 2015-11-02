@@ -49,6 +49,17 @@ class BaseMonitor(object):
         '''
         self.logger = logger
 
+    def check_precondition(self, key, val):
+        '''
+        Precondition plugin processing check. Useful so we don't execute
+        plugin code over and over again that acts at only certain times
+
+        @param key: the key that matched the request
+        @param val: The value stored at the key
+        @return: True if the plugin should process the key(s), otherwise False
+        '''
+        return True
+
     def get_log_dict(self, action, spiderid, appid, uuid=None, crawlid = None):
         '''
         Returns a basic dictionary for logging
