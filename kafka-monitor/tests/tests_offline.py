@@ -37,12 +37,12 @@ class TestKafkaMonitor(TestCase):
 
     def test_load_plugins(self):
         # test loading default plugins
-        assert_keys = [100,200]
+        assert_keys = [100,200,300]
         self.kafka_monitor._load_plugins()
         self.assertEqual(self.kafka_monitor.plugins_dict.keys(), assert_keys)
 
         # test removing a plugin from settings
-        assert_keys = [200]
+        assert_keys = [200,300]
         self.kafka_monitor.settings['PLUGINS'] \
             ['plugins.scraper_handler.ScraperHandler'] = None
         self.kafka_monitor._load_plugins()
@@ -70,8 +70,8 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor.settings['STATS_TIMES'] = []
         self.kafka_monitor._setup_stats_total(MagicMock())
 
-        self.assertEquals(self.kafka_monitor.stats_dict['total'].keys(), [0])
-        self.assertEquals(self.kafka_monitor.stats_dict['fail'].keys(), [0])
+        self.assertEquals(self.kafka_monitor.stats_dict['total'].keys(), ['lifetime'])
+        self.assertEquals(self.kafka_monitor.stats_dict['fail'].keys(), ['lifetime'])
 
         # test good/bad rolling stats
         self.kafka_monitor.stats_dict = {}
@@ -81,7 +81,7 @@ class TestKafkaMonitor(TestCase):
             'SECONDS_DUMB',
         ]
         good = [
-            0, # for totals, not DUMB
+            'lifetime', # for totals, not DUMB
             900,
             3600,
         ]
@@ -131,7 +131,8 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor._setup_stats_plugins(MagicMock())
         defaults = [
             'ScraperHandler',
-            'ActionHandler'
+            'ActionHandler',
+            'StatsHandler'
         ]
 
         self.assertEquals(
@@ -142,7 +143,7 @@ class TestKafkaMonitor(TestCase):
             plugin_name = self.kafka_monitor.plugins_dict[key]['instance'].__class__.__name__
             self.assertEquals(
                 self.kafka_monitor.stats_dict['plugins'][plugin_name].keys(),
-                [0])
+                ['lifetime'])
 
         # test good/bad rolling stats
         self.kafka_monitor.stats_dict = {}
@@ -152,7 +153,7 @@ class TestKafkaMonitor(TestCase):
             'SECONDS_DUMB',
         ]
         good = [
-            0, # for totals, not DUMB
+            'lifetime', # for totals, not DUMB
             900,
             3600,
         ]

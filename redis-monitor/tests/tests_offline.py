@@ -32,12 +32,12 @@ class TestRedisMonitor(TestCase):
 
     def test_load_plugins(self):
         # test loading default plugins
-        assert_keys = [100,200,300]
+        assert_keys = [100,200,300,400]
         self.redis_monitor._load_plugins()
         self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
 
         # test removing a plugin from settings
-        assert_keys = [100,300]
+        assert_keys = [100,300,400]
         self.redis_monitor.settings['PLUGINS'] \
             ['plugins.stop_monitor.StopMonitor'] = None
         self.redis_monitor._load_plugins()
@@ -113,7 +113,8 @@ class TestRedisMonitor(TestCase):
         defaults = [
             'ExpireMonitor',
             'StopMonitor',
-            'InfoMonitor'
+            'InfoMonitor',
+            'StatsMonitor'
         ]
 
         self.assertEquals(
@@ -124,7 +125,7 @@ class TestRedisMonitor(TestCase):
             plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
             self.assertEquals(
                 self.redis_monitor.stats_dict['plugins'][plugin_name].keys(),
-                [0])
+                ['lifetime'])
 
         # test good/bad rolling stats
         self.redis_monitor.stats_dict = {}
@@ -134,7 +135,7 @@ class TestRedisMonitor(TestCase):
             'SECONDS_DUMB',
         ]
         good = [
-            0, # for totals, not DUMB
+            'lifetime', # for totals, not DUMB
             900,
             3600,
         ]
