@@ -1,8 +1,7 @@
 import redis
 import time
-import uuid
-import datetime
 from threading import Thread
+
 
 class StatsCollector():
     '''
@@ -41,8 +40,9 @@ class StatsCollector():
 
     @classmethod
     def get_time_window(self, redis_conn=None, host='localhost', port=6379,
-            key='time_window_counter', cycle_time=5, start_time=None,
-            window=SECONDS_1_HOUR, roll=True, keep_max=12):
+                        key='time_window_counter', cycle_time=5,
+                        start_time=None, window=SECONDS_1_HOUR, roll=True,
+                        keep_max=12):
         '''
         Generate a new TimeWindow
         Useful for collecting number of hits generated between certain times
@@ -60,15 +60,15 @@ class StatsCollector():
             windows to keep
         '''
         counter = TimeWindow(key=key, cycle_time=cycle_time,
-                start_time=start_time, window=window, roll=roll,
-                keep_max=keep_max)
+                             start_time=start_time, window=window, roll=roll,
+                             keep_max=keep_max)
         counter.setup(redis_conn=redis_conn, host=host, port=port)
         return counter
 
     @classmethod
-    def get_rolling_time_window(self, redis_conn=None, host='localhost', port=6379,
-            key='rolling_time_window_counter', cycle_time=5,
-            window=SECONDS_1_HOUR):
+    def get_rolling_time_window(self, redis_conn=None, host='localhost',
+                                port=6379, key='rolling_time_window_counter',
+                                cycle_time=5, window=SECONDS_1_HOUR):
         '''
         Generate a new RollingTimeWindow
         Useful for collect data about the number of hits in the past X seconds
@@ -81,14 +81,14 @@ class StatsCollector():
         @param window: the number of seconds behind now() to keep data for
         '''
         counter = RollingTimeWindow(key=key, cycle_time=cycle_time,
-                window=window)
+                                    window=window)
         counter.setup(redis_conn=redis_conn, host=host, port=port)
         return counter
 
     @classmethod
     def get_counter(self, redis_conn=None, host='localhost', port=6379,
-            key='counter', cycle_time=5, start_time=None,
-            window=SECONDS_1_HOUR, roll=True, keep_max=12, start_at=0):
+                    key='counter', cycle_time=5, start_time=None,
+                    window=SECONDS_1_HOUR, roll=True, keep_max=12, start_at=0):
         '''
         Generate a new Counter
         Useful for generic distributed counters
@@ -107,15 +107,15 @@ class StatsCollector():
         @param start_at: The integer to start counting at
         '''
         counter = Counter(key=key, cycle_time=cycle_time,
-                start_time=start_time, window=window, roll=roll,
-                keep_max=keep_max)
+                          start_time=start_time, window=window, roll=roll,
+                          keep_max=keep_max)
         counter.setup(redis_conn=redis_conn, host=host, port=port)
         return counter
 
     @classmethod
     def get_unique_counter(self, redis_conn=None, host='localhost', port=6379,
-            key='unique_counter', cycle_time=5, start_time=None,
-            window=SECONDS_1_HOUR, roll=True, keep_max=12):
+                           key='unique_counter', cycle_time=5, start_time=None,
+                           window=SECONDS_1_HOUR, roll=True, keep_max=12):
         '''
         Generate a new UniqueCounter.
         Useful for exactly counting unique objects
@@ -133,15 +133,16 @@ class StatsCollector():
             windows to keep
         '''
         counter = UniqueCounter(key=key, cycle_time=cycle_time,
-                start_time=start_time, window=window, roll=roll,
-                keep_max=keep_max)
+                                start_time=start_time, window=window,
+                                roll=roll, keep_max=keep_max)
         counter.setup(redis_conn=redis_conn, host=host, port=port)
         return counter
 
     @classmethod
     def get_hll_counter(self, redis_conn=None, host='localhost', port=6379,
-            key='hyperloglog_counter', cycle_time=5, start_time=None,
-            window=SECONDS_1_HOUR, roll=True, keep_max=12):
+                        key='hyperloglog_counter', cycle_time=5,
+                        start_time=None, window=SECONDS_1_HOUR, roll=True,
+                        keep_max=12):
         '''
         Generate a new HyperLogLogCounter.
         Useful for approximating extremely large counts of unique items
@@ -159,15 +160,15 @@ class StatsCollector():
             windows to keep
         '''
         counter = HyperLogLogCounter(key=key, cycle_time=cycle_time,
-                start_time=start_time, window=window, roll=roll,
-                keep_max=keep_max)
+                                     start_time=start_time, window=window,
+                                     roll=roll, keep_max=keep_max)
         counter.setup(redis_conn=redis_conn, host=host, port=port)
         return counter
 
     @classmethod
     def get_bitmap_counter(self, redis_conn=None, host='localhost', port=6379,
-            key='bitmap_counter', cycle_time=5, start_time=None,
-            window=SECONDS_1_HOUR, roll=True, keep_max=12):
+                           key='bitmap_counter', cycle_time=5, start_time=None,
+                           window=SECONDS_1_HOUR, roll=True, keep_max=12):
         '''
         Generate a new BitMapCounter
         Useful for creating different bitsets about users/items
@@ -186,19 +187,20 @@ class StatsCollector():
             windows to keep
         '''
         counter = BitMapCounter(key=key, cycle_time=cycle_time,
-                start_time=start_time, window=window, roll=roll,
-                keep_max=keep_max)
+                                start_time=start_time, window=window,
+                                roll=roll, keep_max=keep_max)
         counter.setup(redis_conn=redis_conn, host=host, port=port)
         return counter
+
 
 class AbstractCounter():
 
     def __init__(self, key=None):
         self.redis_conn = None
         if key is not None:
-            self.key=key
+            self.key = key
         else:
-            self.key='default_counter'
+            self.key = 'default_counter'
 
     def setup(self, redis_conn=None, host='localhost', port=6379):
         '''
@@ -208,7 +210,7 @@ class AbstractCounter():
             if host is not None and port is not None:
                 self.redis_conn = redis.Redis(host=host, port=port)
             else:
-                raise StandardError("Please specify some form of connection "\
+                raise StandardError("Please specify some form of connection "
                                     "to Redis")
         else:
             self.redis_conn = redis_conn
@@ -251,12 +253,13 @@ class AbstractCounter():
         '''
         return self.key
 
+
 class ThreadedCounter(AbstractCounter):
 
     date_format = '%Y-%m-%d_%H:%M:%S'
 
     def __init__(self, key='default_counter', cycle_time=5, start_time=None,
-            window=None, roll=False, keep_max=5):
+                 window=None, roll=False, keep_max=5):
         '''
         A threaded counter, used to help roll time slots
 
@@ -301,7 +304,8 @@ class ThreadedCounter(AbstractCounter):
         @param host: the redis host
         @param port: the redis port
         '''
-        AbstractCounter.setup(self, redis_conn=redis_conn, host=host, port=port)
+        AbstractCounter.setup(self, redis_conn=redis_conn, host=host,
+                              port=port)
 
         self._threaded_start()
 
@@ -346,7 +350,7 @@ class ThreadedCounter(AbstractCounter):
         '''
         if self.roll:
             self.date = time.strftime(self.date_format,
-                    time.gmtime(self.start_time))
+                                      time.gmtime(self.start_time))
 
             self.final_key = '{}:{}'.format(self.key, self.date)
         else:
@@ -374,10 +378,11 @@ class ThreadedCounter(AbstractCounter):
     def get_key(self):
         return self.final_key
 
+
 class TimeWindow(ThreadedCounter):
 
     def __init__(self, key='time_window_counter', cycle_time=5,
-            start_time=None, window=3600, roll=False, keep_max=None):
+                 start_time=None, window=3600, roll=False, keep_max=None):
         '''
         A static window counter, is only valid for the initialized time range.
 
@@ -387,7 +392,8 @@ class TimeWindow(ThreadedCounter):
             on a new date based key
         '''
         ThreadedCounter.__init__(self, key=key, cycle_time=cycle_time,
-            start_time=start_time, window=window, roll=roll, keep_max=keep_max)
+                                 start_time=start_time, window=window,
+                                 roll=roll, keep_max=keep_max)
 
     def increment(self):
         curr_time = self._time()
@@ -399,15 +405,15 @@ class TimeWindow(ThreadedCounter):
 
     def expire(self):
         self.redis_conn.zremrangebyscore(self.final_key, '-inf',
-                                        self.start_time - 1)
+                                         self.start_time - 1)
         self.redis_conn.zremrangebyscore(self.final_key,
-                                        self.start_time + self.window,
-                                        'inf')
+                                         self.start_time + self.window, 'inf')
+
 
 class RollingTimeWindow(ThreadedCounter):
 
     def __init__(self, key='rolling_time_window_counter', cycle_time=5,
-            window=60):
+                 window=60):
         '''
         A rolling time window. This continuously will have the number of hits
         within X seconds behind the current time.
@@ -415,7 +421,8 @@ class RollingTimeWindow(ThreadedCounter):
         @param window: the collection window in seconds
         '''
         ThreadedCounter.__init__(self, key=key, cycle_time=cycle_time,
-            start_time=None, window=window, roll=False, keep_max=None)
+                                 start_time=None, window=window, roll=False,
+                                 keep_max=None)
         self.window = window
 
     def increment(self):
@@ -429,17 +436,19 @@ class RollingTimeWindow(ThreadedCounter):
         expires = self._time() - self.window
         self.redis_conn.zremrangebyscore(self.key, '-inf', expires)
 
+
 class Counter(ThreadedCounter):
 
-    def __init__(self, key='counter', cycle_time=5, start_time=None, window=None,
-            roll=False, keep_max=None, start_at=0):
+    def __init__(self, key='counter', cycle_time=5, start_time=None,
+                 window=None, roll=False, keep_max=None, start_at=0):
         '''
         A simple integer counter
 
         @param start_at: where to start the counter
         '''
         ThreadedCounter.__init__(self, key=key, cycle_time=cycle_time,
-            start_time=start_time, window=window, roll=roll, keep_max=keep_max)
+                                 start_time=start_time, window=window,
+                                 roll=roll, keep_max=keep_max)
 
         self.init = False
         self.start_at = start_at
@@ -456,15 +465,17 @@ class Counter(ThreadedCounter):
     def expire(self):
         pass
 
+
 class UniqueCounter(ThreadedCounter):
 
-    def __init__(self, key='unique_counter', cycle_time=5, start_time=None, window=None,
-            roll=False, keep_max=None):
+    def __init__(self, key='unique_counter', cycle_time=5, start_time=None,
+                 window=None, roll=False, keep_max=None):
         '''
         A unique item counter. Guarantees accuracy at the cost of storage
         '''
         ThreadedCounter.__init__(self, key=key, cycle_time=cycle_time,
-            start_time=start_time, window=window, roll=roll, keep_max=keep_max)
+                                 start_time=start_time, window=window,
+                                 roll=roll, keep_max=keep_max)
 
     def increment(self, item):
         '''
@@ -480,16 +491,18 @@ class UniqueCounter(ThreadedCounter):
     def expire(self):
         pass
 
+
 class HyperLogLogCounter(ThreadedCounter):
 
-    def __init__(self, key='hyperloglog_counter', cycle_time=5, start_time=None, window=None,
-            roll=False, keep_max=None):
+    def __init__(self, key='hyperloglog_counter', cycle_time=5,
+                 start_time=None, window=None, roll=False, keep_max=None):
         '''
         A unique item counter. Accurate within 1%, max storage of 12k
         http://redis.io/topics/data-types-intro#hyperloglogs
         '''
         ThreadedCounter.__init__(self, key=key, cycle_time=cycle_time,
-            start_time=start_time, window=window, roll=roll, keep_max=keep_max)
+                                 start_time=start_time, window=window,
+                                 roll=roll, keep_max=keep_max)
 
     def increment(self, item):
         '''
@@ -505,17 +518,19 @@ class HyperLogLogCounter(ThreadedCounter):
     def expire(self):
         pass
 
+
 class BitMapCounter(ThreadedCounter):
 
-    def __init__(self, key='bitmap_counter', cycle_time=5, start_time=None, window=None,
-            roll=False, keep_max=None):
+    def __init__(self, key='bitmap_counter', cycle_time=5, start_time=None,
+                 window=None, roll=False, keep_max=None):
         '''
         A unique counter via bitmaps, see
         http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
         for example usages
         '''
         ThreadedCounter.__init__(self, key=key, cycle_time=cycle_time,
-            start_time=start_time, window=window, roll=roll, keep_max=keep_max)
+                                 start_time=start_time, window=window,
+                                 roll=roll, keep_max=keep_max)
 
     def increment(self, index):
         '''

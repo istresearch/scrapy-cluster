@@ -1,10 +1,10 @@
-import json
 import logging
 import time
 import sys
 
 from pythonjsonlogger import jsonlogger
 from cloghandler import ConcurrentRotatingFileHandler
+
 
 class LogFactory(object):
     '''
@@ -20,25 +20,26 @@ class LogFactory(object):
 
         return self._instance
 
+
 class LogObject(object):
     '''
     Easy wrapper for writing json logs to a rotating file log
     '''
 
     level_dict = {
-        "DEBUG":0,
-        "INFO":1,
-        "WARN":2,
-        "WARNING":2,
-        "ERROR":3,
-        "CRITICAL":4,
+        "DEBUG": 0,
+        "INFO": 1,
+        "WARN": 2,
+        "WARNING": 2,
+        "ERROR": 3,
+        "CRITICAL": 4,
     }
 
     def __init__(self, json=False, stdout=True, name='scrapy-cluster',
-                dir='logs', file='main.log', bytes=25000000, backups=5,
-                level='INFO',
-                format='%(asctime)s [%(name)s] %(levelname)s: %(message)s',
-                propagate=False):
+                 dir='logs', file='main.log', bytes=25000000, backups=5,
+                 level='INFO',
+                 format='%(asctime)s [%(name)s] %(levelname)s: %(message)s',
+                 propagate=False):
         '''
         @param stdout: Flag to write logs to stdout or file
         @param json: Flag to write json logs with objects or just the messages
@@ -72,7 +73,8 @@ class LogObject(object):
         else:
             # set up to file
             file_handler = ConcurrentRotatingFileHandler(dir + '/' + file,
-                    maxBytes=bytes, backupCount=backups)
+                                                         maxBytes=bytes,
+                                                         backupCount=backups)
             file_handler.setLevel(logging.DEBUG)
             formatter = self._get_formatter(json)
             file_handler.setFormatter(formatter)
@@ -89,8 +91,8 @@ class LogObject(object):
         '''
         if level not in self.level_dict.keys():
             self.log_level = 'DEBUG'
-            self.logger.warn("Unknown log level '{lev}', defaulting to DEBUG" \
-                .format(lev=level))
+            self.logger.warn("Unknown log level '{lev}', defaulting to DEBUG"
+                             .format(lev=level))
 
     def _get_formatter(self, json):
         '''
