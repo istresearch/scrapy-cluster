@@ -17,6 +17,7 @@ PLUGIN_DIR = 'plugins/'
 PLUGINS = {
     'plugins.scraper_handler.ScraperHandler': 100,
     'plugins.action_handler.ActionHandler': 200,
+    'plugins.stats_handler.StatsHandler': 300,
 }
 
 # logging setup
