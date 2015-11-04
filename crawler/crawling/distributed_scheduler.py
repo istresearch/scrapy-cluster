@@ -124,8 +124,8 @@ class DistributedScheduler(object):
                 item = loaded_config['domains'][domain]
                 # check valid
                 if 'window' in item and 'hits' in item:
-                    self.logger.debug("Added domain {dom} to loaded config" \
-                            .format(dom=domain))
+                    self.logger.debug("Added domain {dom} to loaded config"
+                                      .format(dom=domain))
                     self.domain_config[domain] = item
 
         self.config_flag = True
@@ -142,8 +142,8 @@ class DistributedScheduler(object):
             # we already have a throttled queue for this domain, update it to new settings
             if final_key in self.queue_dict:
                 self.queue_dict[final_key].window = float(self.domain_config[key]['window'])
-                self.logger.debug("Updated queue {q} with new config" \
-                            .format(q=final_key))
+                self.logger.debug("Updated queue {q} with new config"
+                                  .format(q=final_key))
                 # if scale is applied, scale back; otherwise use updated hits
                 if 'scale' in self.domain_config[key]:
                     # round to int
@@ -204,8 +204,8 @@ class DistributedScheduler(object):
             throttle_key = throttle_key + the_domain
 
             if key not in self.queue_dict or newConf:
-                self.logger.debug("Added new Throttled Queue {q}" \
-                            .format(q=key))
+                self.logger.debug("Added new Throttled Queue {q}"
+                                  .format(q=key))
                 q = RedisPriorityQueue(self.redis_conn, key)
 
                 # use default window and hits
@@ -245,18 +245,18 @@ class DistributedScheduler(object):
         self.old_ip = self.my_ip
         self.my_ip = '127.0.0.1'
         try:
-            obj = urllib2.urlopen(settings.get('PUBLIC_IP_URL', 'http://ip.42.pl/raw'))
+            obj = urllib2.urlopen(settings.get('PUBLIC_IP_URL',
+                                  'http://ip.42.pl/raw'))
             self.my_ip = obj.read()
             obj.close()
-            self.logger.debug("Current public ip: {ip}" \
-                            .format(ip=self.my_ip))
+            self.logger.debug("Current public ip: {ip}".format(ip=self.my_ip))
         except IOError:
             self.logger.error("Could not reach out to get public ip")
             pass
 
         if self.old_ip != self.my_ip:
-            self.logger.info("Changed Public IP: {old} -> {new}" \
-                            .format(old=self.old_ip, new=self.my_ip))
+            self.logger.info("Changed Public IP: {old} -> {new}".format(
+                             old=self.old_ip, new=self.my_ip))
 
     @classmethod
     def from_settings(cls, settings):
@@ -359,13 +359,13 @@ class DistributedScheduler(object):
                     .format(appid=req_dict['meta']['appid'],
                             id=req_dict['meta']['crawlid']))
             else:
-                self.logger.debug("Crawlid: '{id}' Appid: '{appid}' expired".format(
-                    appid=req_dict['meta']['appid'],
-                    id=req_dict['meta']['crawlid']))
+                self.logger.debug("Crawlid: '{id}' Appid: '{appid}' expired"
+                                  .format(appid=req_dict['meta']['appid'],
+                                          id=req_dict['meta']['crawlid']))
         else:
-            self.logger.debug("Crawlid: '{id}' Appid: '{appid}' blacklisted".format(
-                    appid=req_dict['meta']['appid'],
-                    id=req_dict['meta']['crawlid']))
+            self.logger.debug("Crawlid: '{id}' Appid: '{appid}' blacklisted"
+                              .format(appid=req_dict['meta']['appid'],
+                                      id=req_dict['meta']['crawlid']))
 
     def request_to_dict(self, request):
         '''
