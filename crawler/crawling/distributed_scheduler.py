@@ -1,9 +1,7 @@
-from scrapy.utils.misc import load_object
 from scrapy.http import Request
 from scrapy.conf import settings
 
 import redis
-import json
 import random
 import time
 import tldextract
@@ -13,9 +11,6 @@ import yaml
 import sys
 
 from redis_dupefilter import RFPDupeFilter
-
-from kazoo.client import KazooClient, KazooState
-from kazoo.exceptions import ZookeeperError
 from kazoo.handlers.threading import KazooTimeoutError
 
 from scutils.zookeeper_watcher import ZookeeperWatcher
@@ -28,40 +23,41 @@ try:
 except ImportError:
     import pickle
 
+
 class DistributedScheduler(object):
     '''
     Scrapy request scheduler that utilizes Redis Throttled Priority Queues
     to moderate different domain scrape requests within a distributed scrapy
     cluster
     '''
-    redis_conn = None # the redis connection
-    queue_dict = None # the dict of throttled queues
-    spider = None # the spider using this scheduler
-    queue_keys = None # the list of current queues
-    queue_class = None # the class to use for the queue
-    dupefilter = None # the redis dupefilter
-    update_time = 0 # the last time the queues were updated
-    update_ip_time = 0 # the last time the ip was updated
-    update_interval = 0 # how often to update the queues
-    extract = None # the tld extractor
-    hits = 0 # default number of hits for a queue
-    window = 0 # default window to calculate number of hits
-    my_ip = None # the ip address of the scheduler (if needed)
-    old_ip = None # the old ip for logging
-    ip_update_interval = 0 # the interval to update the ip address
-    add_type = None # add spider type to redis throttle queue key
-    add_ip = None # add spider public ip to redis throttle queue key
-    item_retries = 0 # the number of extra tries to get an item
+    redis_conn = None  # the redis connection
+    queue_dict = None  # the dict of throttled queues
+    spider = None  # the spider using this scheduler
+    queue_keys = None  # the list of current queues
+    queue_class = None  # the class to use for the queue
+    dupefilter = None  # the redis dupefilter
+    update_time = 0  # the last time the queues were updated
+    update_ip_time = 0  # the last time the ip was updated
+    update_interval = 0  # how often to update the queues
+    extract = None  # the tld extractor
+    hits = 0  # default number of hits for a queue
+    window = 0  # default window to calculate number of hits
+    my_ip = None  # the ip address of the scheduler (if needed)
+    old_ip = None  # the old ip for logging
+    ip_update_interval = 0  # the interval to update the ip address
+    add_type = None  # add spider type to redis throttle queue key
+    add_ip = None  # add spider public ip to redis throttle queue key
+    item_retries = 0  # the number of extra tries to get an item
     # Zookeeper Dynamic Config Vars
-    domain_config = {} # The list of domains and their configs
-    my_id = None # The id used to read the throttle config
-    config_flag = False # Flag to reload queues if settings are wiped too
-    assign_path = None # The base assigned configuration path to read
-    zoo_client = None # The KazooClient to manage the config
-    my_assignment = None # Zookeeper path to read actual yml config
+    domain_config = {}  # The list of domains and their configs
+    my_id = None  # The id used to read the throttle config
+    config_flag = False  # Flag to reload queues if settings are wiped too
+    assign_path = None  # The base assigned configuration path to read
+    zoo_client = None  # The KazooClient to manage the config
+    my_assignment = None  # Zookeeper path to read actual yml config
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
-                hits, window, mod, ip_refresh, add_type, add_ip):
+                 hits, window, mod, ip_refresh, add_type, add_ip):
         '''
         Initialize the scheduler
         '''
@@ -95,7 +91,7 @@ class DistributedScheduler(object):
                                 config_handler=self.change_config,
                                 error_handler=self.error_config,
                                 pointer=False, ensure=True, valid_init=True)
-        except KazooTimeoutError as e:
+        except KazooTimeoutError:
             self.logger.error("Could not connect to Zookeeper")
             sys.exit(1)
 
@@ -151,7 +147,8 @@ class DistributedScheduler(object):
                 # if scale is applied, scale back; otherwise use updated hits
                 if 'scale' in self.domain_config[key]:
                     # round to int
-                    hits = int(self.domain_config[key]['hits'] * self.fit_scale(self.domain_config[key]['scale']))
+                    hits = int(self.domain_config[key]['hits'] * self.fit_scale(
+                               self.domain_config[key]['scale']))
                     self.queue_dict[final_key].limit = float(hits)
                 else:
                     self.queue_dict[final_key].limit = float(self.domain_config[key]['hits'])
@@ -264,7 +261,7 @@ class DistributedScheduler(object):
     @classmethod
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
-                                            port=settings.get('REDIS_PORT'))
+                             port=settings.get('REDIS_PORT'))
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         hits = settings.get('QUEUE_HITS', 10)
@@ -284,11 +281,14 @@ class DistributedScheduler(object):
         my_file = settings.get('SC_LOG_FILE', 'main.log')
 
         logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
-            bytes=my_bytes)
+                                         stdout=my_output,
+                                         level=my_level,
+                                         dir=my_dir,
+                                         file=my_file,
+                                         bytes=my_bytes)
 
         return cls(server, persist, up_int, timeout, retries, logger, hits,
-                window, mod, ip_refresh, add_type, add_ip)
+                   window, mod, ip_refresh, add_type, add_ip)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -300,7 +300,8 @@ class DistributedScheduler(object):
         self.create_queues()
         self.setup_zookeeper()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
-                            self.spider.name + ':dupefilter', self.rfp_timeout)
+                                        self.spider.name + ':dupefilter',
+                                        self.rfp_timeout)
 
     def close(self, reason):
         self.logger.info("Closing Spider")
@@ -331,7 +332,7 @@ class DistributedScheduler(object):
         req_dict = self.request_to_dict(request)
 
         if not self.is_blacklisted(req_dict['meta']['appid'],
-                                    req_dict['meta']['crawlid']):
+                                   req_dict['meta']['crawlid']):
             # grab the tld of the request
             ex_res = self.extract(req_dict['url'])
             key = "{sid}:{dom}.{suf}:queue".format(
@@ -347,7 +348,7 @@ class DistributedScheduler(object):
                 # we may already have the queue in memory
                 if key in self.queue_keys:
                     self.queue_dict[key].push(req_dict,
-                                            req_dict['meta']['priority'])
+                                              req_dict['meta']['priority'])
                 else:
                     # shoving into a new redis queue, negative b/c of sorted sets
                     # this will populate ourself and other schedulers when
@@ -382,7 +383,7 @@ class DistributedScheduler(object):
             '_encoding': request._encoding,
             'priority': request.priority,
             'dont_filter': request.dont_filter,
-             # callback/errback are assumed to be a bound instance of the spider
+             #  callback/errback are assumed to be a bound instance of the spider
             'callback': None if request.callback is None else request.callback.func_name,
             'errback': None if request.errback is None else request.errback.func_name,
         }

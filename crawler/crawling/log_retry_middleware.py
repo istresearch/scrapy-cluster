@@ -1,11 +1,11 @@
 import logging
-from scrapy.utils.response import response_status_message
 
 from scrapy.xlib.tx import ResponseFailed
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
         ConnectionRefusedError, ConnectionDone, ConnectError, \
         ConnectionLost, TCPTimedOutError
+
 
 class LogRetryMiddleware(object):
 
@@ -19,7 +19,7 @@ class LogRetryMiddleware(object):
         self.logger = logging.getLogger('scrapy-cluster')
         self.logger.setLevel(logging.DEBUG)
         self.retry_http_codes = set(int(x) for x in
-                                        settings.getlist('RETRY_HTTP_CODES'))
+                                    settings.getlist('RETRY_HTTP_CODES'))
 
     @classmethod
     def from_settings(cls, settings):
@@ -31,7 +31,7 @@ class LogRetryMiddleware(object):
 
     def process_exception(self, request, exception, spider):
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
-             self._log_retry(request, exception, spider)
+            self._log_retry(request, exception, spider)
 
     def _log_retry(self, request, exception, spider):
         extras = {}

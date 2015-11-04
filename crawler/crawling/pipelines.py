@@ -4,7 +4,6 @@
 
 import json
 import datetime as dt
-import time
 import sys
 import traceback
 
@@ -13,6 +12,7 @@ from kafka.common import KafkaUnavailableError
 
 from crawling.items import RawResponseItem
 from scutils.log_factory import LogFactory
+
 
 class LoggingBeforePipeline(object):
 
@@ -34,8 +34,11 @@ class LoggingBeforePipeline(object):
         my_file = settings.get('SC_LOG_FILE', 'main.log')
 
         logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
-            bytes=my_bytes)
+                                         stdout=my_output,
+                                         level=my_level,
+                                         dir=my_dir,
+                                         file=my_file,
+                                         bytes=my_bytes)
 
         return cls(logger)
 
@@ -60,6 +63,7 @@ class LoggingBeforePipeline(object):
             item['logger'] = self.logger.name()
             self.logger.error('Scraper Retry', extra=item)
             return None
+
 
 class KafkaPipeline(object):
     '''
@@ -86,13 +90,16 @@ class KafkaPipeline(object):
         my_appids = settings.get('KAFKA_APPID_TOPICS', False)
 
         logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
-            bytes=my_bytes)
+                                         stdout=my_output,
+                                         level=my_level,
+                                         dir=my_dir,
+                                         file=my_file,
+                                         bytes=my_bytes)
 
         try:
             kafka = KafkaClient(settings['KAFKA_HOSTS'])
             producer = SimpleProducer(kafka)
-        except KafkaUnavailableError as ex:
+        except KafkaUnavailableError:
                 logger.error("Unable to connect to Kafka in Pipeline"\
                     ", raising exit flag.")
                 # this is critical so we choose to exit
@@ -128,7 +135,7 @@ class KafkaPipeline(object):
                 self.producer.send_messages(appid_topic, message)
 
             item['success'] = True
-        except Exception as ex:
+        except Exception:
             item['success'] = False
             item['exception'] = traceback.format_exc()
 
@@ -138,6 +145,7 @@ class KafkaPipeline(object):
         if topicName not in self.topic_list:
             self.kafka.ensure_topic_exists(topicName)
             self.topic_list.append(topicName)
+
 
 class LoggingAfterPipeline(object):
 
@@ -159,8 +167,11 @@ class LoggingAfterPipeline(object):
         my_file = settings.get('SC_LOG_FILE', 'main.log')
 
         logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
-            bytes=my_bytes)
+                                         stdout=my_output,
+                                         level=my_level,
+                                         dir=my_dir,
+                                         file=my_file,
+                                         bytes=my_bytes)
 
         return cls(logger)
 
@@ -186,6 +197,6 @@ class LoggingAfterPipeline(object):
                 self.logger.info('Sent page to Kafka', extra=item_copy)
             else:
                 self.logger.error('Failed to send page to Kafka',
-                                            extra=item_copy)
+                                  extra=item_copy)
             return item
 

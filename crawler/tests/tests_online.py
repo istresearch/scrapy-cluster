@@ -3,8 +3,6 @@ Online link spider test
 '''
 import unittest
 from unittest import TestCase
-import mock
-from mock import MagicMock
 import time
 
 import sys
@@ -16,18 +14,18 @@ import redis
 import json
 import threading, time
 from crawling.spiders.link_spider import LinkSpider
-from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 from scrapy.crawler import CrawlerRunner
-from scutils.method_timer import MethodTimer
 from kafka import KafkaClient, SimpleConsumer
+
 
 class CustomSpider(LinkSpider):
     '''
     Overridden link spider for testing
     '''
     name = "test-spider"
+
 
 class TestLinkSpider(TestCase):
 
@@ -49,7 +47,7 @@ class TestLinkSpider(TestCase):
                                       port=self.settings['REDIS_PORT'])
         try:
             self.redis_conn.info()
-        except ConnectionError as ex:
+        except ConnectionError:
             print "Could not connect to Redis"
             # plugin is essential to functionality
             sys.exit(1)

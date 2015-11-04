@@ -1,5 +1,6 @@
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 
+
 class RedisRetryMiddleware(RetryMiddleware):
 
     def __init__(self, settings):

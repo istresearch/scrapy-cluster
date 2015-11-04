@@ -22,8 +22,6 @@ from crawling.items import RawResponseItem
 
 from scutils.redis_throttled_queue import RedisThrottledQueue
 
-import Queue
-import time
 
 class TestRedisDupefilter(TestCase):
 
@@ -44,6 +42,7 @@ class TestRedisDupefilter(TestCase):
         self.dupe.server.sadd = MagicMock(return_value=0)
         self.assertTrue(self.dupe.request_seen(req))
 
+
 class TestRedisRetryMiddleware(TestCase):
 
     def setUp(self):
@@ -63,6 +62,7 @@ class TestRedisRetryMiddleware(TestCase):
         # over max
         self.assertEqual(self.retry._retry(out, 'stuff', MagicMock()), None)
 
+
 class ThrottleMixin(object):
 
     @mock.patch('crawling.distributed_scheduler.DistributedScheduler' \
@@ -71,7 +71,8 @@ class ThrottleMixin(object):
                 '.setup_zookeeper')
     def setUp(self, u, z):
         self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
-            MagicMock(), 10, 60, False, 60, False, False)
+                                              MagicMock(), 10, 60, False, 60,
+                                              False, False)
         self.scheduler.open(MagicMock())
         self.scheduler.my_ip = 'ip'
         self.scheduler.spider.name = 'link'
@@ -102,6 +103,7 @@ class ThrottleMixin(object):
 
         return req
 
+
 class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
 
     @mock.patch('time.time', return_value=5)
@@ -109,17 +111,17 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         self.req = self.get_request()
 
         # test request already seen
-        self.scheduler.dupefilter.request_seen = MagicMock(return_value = True)
+        self.scheduler.dupefilter.request_seen = MagicMock(return_value=True)
         self.assertEquals(self.scheduler.enqueue_request(self.req), None)
 
         # test request not expiring and queue seen
         self.scheduler.queue_keys = ['link:ex.com:queue']
-        self.extract = MagicMock(return_value={"domain":'ex', "suffix":'com'})
+        self.extract = MagicMock(return_value={"domain": 'ex', "suffix": 'com'})
         self.scheduler.is_blacklisted = MagicMock(return_value=False)
-        self.scheduler.dupefilter.request_seen = MagicMock(return_value = False)
+        self.scheduler.dupefilter.request_seen = MagicMock(return_value=False)
         self.scheduler.queue_dict['link:ex.com:queue'] = MagicMock()
-        self.scheduler.queue_dict['link:ex.com:queue'].push = \
-                                            MagicMock(side_effect=KeyError("1"))
+        self.scheduler.queue_dict['link:ex.com:queue'].push = MagicMock(
+                                                    side_effect=KeyError("1"))
         try:
             self.scheduler.enqueue_request(self.req)
             # this should not be reached
@@ -145,18 +147,20 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         self.scheduler.is_blacklisted = MagicMock(return_value=True)
         self.assertEqual(self.scheduler.enqueue_request(self.req), None)
 
+
 class TestDistributedSchedulerFindItem(ThrottleMixin, TestCase):
 
     def test_find_item(self):
         # test finding an item
         self.scheduler.queue_keys = ["ex.com"]
-        self.scheduler.queue_dict = {"ex.com":MagicMock()}
+        self.scheduler.queue_dict = {"ex.com": MagicMock()}
         self.scheduler.queue_dict["ex.com"].pop = MagicMock(return_value='item')
         self.assertEqual(self.scheduler.find_item(), 'item')
 
         # test failed to find an item
         self.scheduler.queue_dict["ex.com"].pop = MagicMock(return_value=None)
         self.assertEqual(self.scheduler.find_item(), None)
+
 
 class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
 
@@ -189,10 +193,10 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
 
         # test got item
         self.scheduler.find_item = MagicMock(
-                                        return_value={"url":"http://ex.com",
-                                                    "crawlid":"abc123",
-                                                    "appid":"myapp",
-                                                    "spiderid":"link"})
+                                        return_value={"url": "http://ex.com",
+                                                      "crawlid": "abc123",
+                                                      "appid": "myapp",
+                                                      "spiderid": "link"})
         out = self.scheduler.next_request()
         self.assertEquals(out.url, 'http://ex.com')
         for key in out.meta:
@@ -201,6 +205,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         # test didn't get item
         self.scheduler.find_item = MagicMock(return_value=None)
         self.assertEquals(self.scheduler.next_request(), None)
+
 
 class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
 
@@ -246,11 +251,12 @@ class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
         except Exception as error:
             self.assertEqual(error.message, "2")
 
+
 class TestDistributedSchedulerLoadDomainConfig(ThrottleMixin, TestCase):
 
     def test_load_domain_config(self):
         good_yaml_dict = {
-            "domains":{
+            "domains": {
                 "ex1.com": {
                     "window": 60,
                     "hits": 10,
@@ -290,6 +296,7 @@ class TestDistributedSchedulerLoadDomainConfig(ThrottleMixin, TestCase):
         self.scheduler.load_domain_config(bad_yaml_dict2)
         self.assertEqual(self.scheduler.domain_config, {})
 
+
 class TestDistributedSchedulerUpdateDomainQueues(ThrottleMixin, TestCase):
 
     def test_update_domain_queues(self):
@@ -302,7 +309,7 @@ class TestDistributedSchedulerUpdateDomainQueues(ThrottleMixin, TestCase):
             }
         }
         q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
-        self.scheduler.queue_dict = {'link:ex1.com:queue':q}
+        self.scheduler.queue_dict = {'link:ex1.com:queue': q}
 
         self.scheduler.update_domain_queues()
         self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].window, 50)
@@ -317,12 +324,13 @@ class TestDistributedSchedulerUpdateDomainQueues(ThrottleMixin, TestCase):
             }
         }
         q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
-        self.scheduler.queue_dict = {'link:ex2.com:queue':q}
+        self.scheduler.queue_dict = {'link:ex2.com:queue': q}
 
         self.scheduler.update_domain_queues()
         self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'].window, 50)
         # the scale factor effects the limit only
         self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'].limit, 5)
+
 
 class TestDistributedSchedulerErrorConfig(ThrottleMixin, TestCase):
 
@@ -336,13 +344,14 @@ class TestDistributedSchedulerErrorConfig(ThrottleMixin, TestCase):
         self.scheduler.window = 7
         self.scheduler.hits = 5
         q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
-        self.scheduler.queue_dict = {'link:ex1.com:queue':q}
+        self.scheduler.queue_dict = {'link:ex1.com:queue': q}
 
         self.scheduler.error_config('stuff')
 
         self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].window, 7)
         self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].limit, 5)
         self.assertEqual(self.scheduler.domain_config, {})
+
 
 class TestDistributedSchedulerFitScale(ThrottleMixin, TestCase):
 
@@ -355,6 +364,7 @@ class TestDistributedSchedulerFitScale(ThrottleMixin, TestCase):
 
         # assert normal
         self.assertEqual(self.scheduler.fit_scale(0.51), 0.51)
+
 
 class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
 
@@ -406,19 +416,21 @@ class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
             self.assertTrue(self.scheduler.queue_dict[key].window_key
                             in expected)
 
+
 class TestDistributedSchedulerParseCookie(ThrottleMixin, TestCase):
 
     def test_parse_cookie(self):
         cookie = "blah=stuff; expires=Thu, 18 May 2017 12:42:29 GMT; path"\
         "=/; Domain=.domain.com"
         result = {
-            "blah":"stuff",
-            "expires":"Thu, 18 May 2017 12:42:29 GMT",
-            "path":"/",
-            "Domain":".domain.com",
+            "blah": "stuff",
+            "expires": "Thu, 18 May 2017 12:42:29 GMT",
+            "path": "/",
+            "Domain": ".domain.com",
         }
 
         self.assertEqual(result, self.scheduler.parse_cookie(cookie))
+
 
 class TestLinkSpider(TestCase):
 
@@ -445,9 +457,9 @@ class TestLinkSpider(TestCase):
         return item
 
     def do_test(self, meta_object,
-                            text, expected_raw, expected_requests):
+                text, expected_raw, expected_requests):
         request = Request(url='http://www.drudgereport.com',
-                        meta=meta_object)
+                          meta=meta_object)
         response = HtmlResponse('drudge.url', body=text, request=request)
 
         raw_item_count = 0
