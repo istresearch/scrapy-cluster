@@ -218,7 +218,7 @@ class RedisMonitor:
 
     def _setup_stats_plugins(self):
         '''
-        Sets up the total stats collectors
+        Sets up the plugin stats collectors
         '''
         self.stats_dict['plugins'] = {}
         for key in self.plugins_dict:
