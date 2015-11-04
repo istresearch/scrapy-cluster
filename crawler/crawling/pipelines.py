@@ -59,7 +59,7 @@ class LoggingBeforePipeline(object):
             item_copy['action'] = 'emit'
             self.logger.info('Scraped page', extra=item_copy)
             return item
-        elif isinstance(item, ErrorResponseItem):
+        elif isinstance(item):
             item['logger'] = self.logger.name()
             self.logger.error('Scraper Retry', extra=item)
             return None
