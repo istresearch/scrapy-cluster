@@ -7,6 +7,7 @@ import time
 
 from docopt import docopt
 
+
 def main():
     """kafkadump: Kafka topic dump utility for debugging.
 
@@ -51,10 +52,10 @@ def main():
         consumer_id = args["--consumer"] or "default"
         kafka.ensure_topic_exists(topic)
         consumer = SimpleConsumer(kafka, consumer_id, topic,
-                            buffer_size=1024*100,      # 100kb
-                            fetch_size_bytes=1024*100, # 100kb
-                            max_buffer_size=None       # eliminate big message errors
-                            )
+                                  buffer_size=1024*100,      # 100kb
+                                  fetch_size_bytes=1024*100,  # 100kb
+                                  max_buffer_size=None       # eliminate big message errors
+                                  )
         if args["--from-beginning"]:
             consumer.seek(0, 0)
         else:

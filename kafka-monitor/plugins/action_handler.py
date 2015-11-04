@@ -1,9 +1,9 @@
 from base_handler import BaseHandler
 import tldextract
 import redis
-import pickle
 import sys
 from redis.exceptions import ConnectionError
+
 
 class ActionHandler(BaseHandler):
 
@@ -20,7 +20,7 @@ class ActionHandler(BaseHandler):
         try:
             self.redis_conn.info()
             self.logger.debug("Connected to Redis in ActionHandler")
-        except ConnectionError as ex:
+        except ConnectionError:
             self.logger.error("Failed to connect to Redis in ActionHandler")
             # plugin is essential to functionality
             sys.exit(1)
@@ -33,9 +33,9 @@ class ActionHandler(BaseHandler):
         '''
         # format key
         key = "{action}:{spiderid}:{appid}".format(
-                action = dict['action'],
-                spiderid = dict['spiderid'],
-                appid = dict['appid'])
+                action=dict['action'],
+                spiderid=dict['spiderid'],
+                appid=dict['appid'])
 
         if "crawlid" in dict:
             key = key + ":" + dict['crawlid']

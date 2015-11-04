@@ -4,7 +4,6 @@ Offline tests
 
 import unittest
 from unittest import TestCase
-import mock
 from mock import MagicMock
 
 import sys
@@ -15,18 +14,18 @@ from kafka_monitor import KafkaMonitor
 from plugins.scraper_handler import ScraperHandler
 from plugins.base_handler import BaseHandler
 from plugins.action_handler import ActionHandler
-import copy
 
 from kafka.common import OffsetOutOfRangeError
-from jsonschema import ValidationError
 from jsonschema import Draft4Validator
 import tldextract
+
 
 class ExampleHandler(BaseHandler):
     schema = "crazy_schema.json"
 
     def setup(self, settings):
         pass
+
 
 class TestKafkaMonitor(TestCase):
 
@@ -37,7 +36,7 @@ class TestKafkaMonitor(TestCase):
 
     def test_load_plugins(self):
         # test loading default plugins
-        assert_keys = [100,200,300]
+        assert_keys = [100, 200, 300]
         self.kafka_monitor._load_plugins()
         self.assertEqual(self.kafka_monitor.plugins_dict.keys(), assert_keys)
 
@@ -81,7 +80,7 @@ class TestKafkaMonitor(TestCase):
             'SECONDS_DUMB',
         ]
         good = [
-            'lifetime', # for totals, not DUMB
+            'lifetime',  # for totals, not DUMB
             900,
             3600,
         ]
@@ -153,7 +152,7 @@ class TestKafkaMonitor(TestCase):
             'SECONDS_DUMB',
         ]
         good = [
-            'lifetime', # for totals, not DUMB
+            'lifetime',  # for totals, not DUMB
             900,
             3600,
         ]
@@ -198,6 +197,7 @@ class TestKafkaMonitor(TestCase):
 
         # handle bad json errors
         message_string = "{\"sdasdf   sd}"
+
         # fake class so we can use dot notation
         class a:
             pass
@@ -221,7 +221,7 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor.plugins_dict.items()[1][1]['instance'].handle = MagicMock(side_effect=AssertionError("action"))
 
 
-        # test that handler function is called for the scraper
+        #  test that handler function is called for the scraper
         message_string = "{\"url\":\"www.stuff.com\",\"crawlid\":\"1234\"," \
             "\"appid\":\"testapp\"}"
         m.message.value = message_string
@@ -243,6 +243,7 @@ class TestKafkaMonitor(TestCase):
         except AssertionError as e:
             self.assertEquals("action", e.message)
 
+
 class TestPlugins(TestCase):
 
     def test_default_handler(self):
@@ -250,22 +251,22 @@ class TestPlugins(TestCase):
         try:
             handler.setup("s")
             self.fail("base setup should be abstract")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
 
         try:
             handler.handle({})
             self.fail("base handler should be abstract")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
 
     def test_scrape_handler(self):
         valid = {
-            "url":"www.stuff.com",
-            "crawlid":"abc124",
-            "appid":"testapp",
-            "spiderid":"link",
-            "priority":5,
+            "url": "www.stuff.com",
+            "crawlid": "abc124",
+            "appid": "testapp",
+            "spiderid": "link",
+            "priority": 5,
         }
         handler = ScraperHandler()
         handler.extract = tldextract.TLDExtract()
@@ -295,11 +296,11 @@ class TestPlugins(TestCase):
         handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
 
         valid = {
-            "uuid":"abaksdjb",
-            "crawlid":"abc124",
-            "appid":"testapp",
-            "spiderid":"link",
-            "action":"info",
+            "uuid": "abaksdjb",
+            "crawlid": "abc124",
+            "appid": "testapp",
+            "spiderid": "link",
+            "action": "info",
         }
 
         try:
@@ -310,8 +311,9 @@ class TestPlugins(TestCase):
 
     def test_bad_plugins(self):
         class ForgotSchema(BaseHandler):
-            def handle(self,d):
+            def handle(self, d):
                 pass
+
         class ForgotHandle(BaseHandler):
             schema = "mySchema"
 
@@ -328,7 +330,7 @@ class TestPlugins(TestCase):
         try:
             handler.handle({})
             self.fail("did not raise error")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
 
 if __name__ == '__main__':
