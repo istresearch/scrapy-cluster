@@ -171,7 +171,7 @@ class KafkaMonitor:
 
     def _setup_stats_plugins(self, redis_conn):
         '''
-        Sets up the total stats collectors
+        Sets up the plugin stats collectors
 
         @param redis_conn: the redis connection
         '''
