@@ -15,6 +15,7 @@ from kafka_monitor import KafkaMonitor
 from plugins.scraper_handler import ScraperHandler
 from plugins.base_handler import BaseHandler
 from plugins.action_handler import ActionHandler
+from plugins.stats_handler import StatsHandler
 import copy
 
 from kafka.common import OffsetOutOfRangeError
@@ -300,6 +301,23 @@ class TestPlugins(TestCase):
             "appid":"testapp",
             "spiderid":"link",
             "action":"info",
+        }
+
+        try:
+            handler.handle(valid)
+            self.fail("Added not called")
+        except AssertionError as e:
+            self.assertEquals("added", e.message)
+
+    def test_stats_handler(self):
+        handler = StatsHandler()
+        handler.redis_conn = MagicMock()
+        handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
+
+        valid = {
+            "uuid":"abaksdjb",
+            "appid":"testapp",
+            "stats":"all",
         }
 
         try:
