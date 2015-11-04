@@ -50,7 +50,19 @@ class BaseMonitor(object):
         '''
         self.logger = logger
 
-    def get_log_dict(self, action, spiderid, appid, uuid=None, crawlid=None):
+    def check_precondition(self, key, val):
+        '''
+        Precondition plugin processing check. Useful so we don't execute
+        plugin code over and over again that acts at only certain times
+
+        @param key: the key that matched the request
+        @param val: The value stored at the key
+        @return: True if the plugin should process the key(s), otherwise False
+        '''
+        return True
+
+    def get_log_dict(self, action, appid, spiderid=None, uuid=None,
+                     crawlid=None):
         '''
         Returns a basic dictionary for logging
         @param action: the action taken by the redis monitor
@@ -61,8 +73,9 @@ class BaseMonitor(object):
         '''
         extras = {}
         extras['action'] = action
-        extras['spiderid'] = spiderid
         extras['appid'] = appid
+        if spiderid is not None:
+            extras['spiderid'] = spiderid
         if uuid is not None:
             extras['uuid'] = uuid
         if crawlid is not None:

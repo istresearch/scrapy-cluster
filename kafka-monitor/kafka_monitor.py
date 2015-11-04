@@ -166,8 +166,8 @@ class KafkaMonitor:
                         cycle_time=self.settings['STATS_CYCLE'],
                         roll=False)
         self.logger.debug("Set up total/fail Stats Collector 'lifetime'")
-        self.stats_dict['total'][0] = total1
-        self.stats_dict['fail'][0] = total2
+        self.stats_dict['total']['lifetime'] = total1
+        self.stats_dict['fail']['lifetime'] = total2
 
     def _setup_stats_plugins(self, redis_conn):
         '''
@@ -183,7 +183,7 @@ class KafkaMonitor:
             for item in self.settings['STATS_TIMES']:
                 try:
                     time = getattr(StatsCollector, item)
-                    
+
                     self.stats_dict['plugins'][plugin_name][time] = StatsCollector \
                             .get_rolling_time_window(
                                     redis_conn=redis_conn,
@@ -201,7 +201,7 @@ class KafkaMonitor:
                             roll=False)
             self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
                             .format(p=plugin_name))
-            self.stats_dict['plugins'][plugin_name][0] = total
+            self.stats_dict['plugins'][plugin_name]['lifetime'] = total
 
     def _setup_kafka(self):
         '''
@@ -331,7 +331,7 @@ class KafkaMonitor:
         if 'total' in self.stats_dict:
             self.logger.debug("Incremented total stats")
             for key in self.stats_dict['total']:
-                if key == 0:
+                if key == 'lifetime':
                     self.stats_dict['total'][key].increment(dict)
                 else:
                     self.stats_dict['total'][key].increment()
@@ -345,7 +345,7 @@ class KafkaMonitor:
         if 'fail' in self.stats_dict:
             self.logger.debug("Incremented fail stats")
             for key in self.stats_dict['fail']:
-                if key == 0:
+                if key == 'lifetime':
                     self.stats_dict['fail'][key].increment(dict)
                 else:
                     self.stats_dict['fail'][key].increment()
@@ -354,13 +354,14 @@ class KafkaMonitor:
         '''
         Increments the total stat counters
 
+        @param name: The formal name of the plugin
         @param dict: the loaded message object for HLL counter
         '''
         if 'plugins' in self.stats_dict:
             self.logger.debug("Incremented plugin '{p}' plugin stats"\
                     .format(p=name))
             for key in self.stats_dict['plugins'][name]:
-                if key == 0:
+                if key == 'lifetime':
                     self.stats_dict['plugins'][name][key].increment(dict)
                 else:
                     self.stats_dict['plugins'][name][key].increment()

@@ -37,6 +37,8 @@ Kafka Monitor Changes
 
 - Added defaults to ``scraper_schema.json``
 
+- Added Stats Collection and interface for retrieving stats
+
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -45,6 +47,8 @@ Redis Monitor Changes
 - Added both offline and online unit tests
 
 - Improved logging
+
+- Added Stats Collection
 
 Crawler Changes
 ^^^^^^^^^^^^^^^^^^^^^

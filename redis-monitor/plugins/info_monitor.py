@@ -19,8 +19,6 @@ class InfoMonitor(KafkaBaseMonitor):
         @param key: The key that matched the request
         @param value: The value associated with the key
         '''
-
-
         # the master dict to return
         master = {}
         master['uuid'] = value
