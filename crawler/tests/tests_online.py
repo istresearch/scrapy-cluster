@@ -11,6 +11,7 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 import scrapy
 import redis
+from redis.exceptions import ConnectionError
 import json
 import threading, time
 from crawling.spiders.link_spider import LinkSpider
