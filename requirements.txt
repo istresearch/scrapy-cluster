@@ -25,7 +25,7 @@ PyYAML==3.11
 queuelib==1.2.2
 redis==2.10.3
 Scrapy==1.0.3
-scutils==0.0.1
+#scutils==0.0.1 temp removal
 service-identity==14.0.0
 six==1.10.0
 testfixtures==4.3.3
