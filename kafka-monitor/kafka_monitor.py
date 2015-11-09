@@ -344,7 +344,11 @@ class KafkaMonitor:
 
         @param item: the loaded message object for HLL counter
         '''
-        item['ts'] = time.time()
+        if isinstance(item, dict):
+            item['ts'] = time.time()
+        elif isinstance(item, str):
+            item = item + str(time.time())
+
         if 'fail' in self.stats_dict:
             self.logger.debug("Incremented fail stats")
             for key in self.stats_dict['fail']:
