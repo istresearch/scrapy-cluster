@@ -12,6 +12,8 @@
                 "kafka-monitor",
                 "redis-monitor",
                 "crawler",
+                "spider",
+                "machine",
                 "all"
             ],
             "default": "all"

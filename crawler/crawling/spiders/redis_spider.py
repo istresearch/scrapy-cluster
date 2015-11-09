@@ -110,7 +110,7 @@ class RedisSpider(Spider):
                         else:
                             self.stats_dict['status_codes'][code][key].increment()
                     except Exception as e:
-                        print e.message
+                        self._logger.warn("Error in spider redis stats")
                 self._logger.debug("Incremented status_code '{c}' stats"\
                         .format(c=code))
 

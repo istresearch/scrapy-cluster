@@ -8,6 +8,7 @@ import traceback
 import json
 import importlib
 import argparse
+import time
 
 from collections import OrderedDict
 from scutils.log_factory import LogFactory
@@ -254,6 +255,7 @@ class RedisMonitor:
 
         @param item: the unique print for HLL counter
         '''
+        item = item + str(time.time())
         if 'total' in self.stats_dict:
             self.logger.debug("Incremented total stats")
             for key in self.stats_dict['total']:
@@ -268,6 +270,7 @@ class RedisMonitor:
 
         @param item: the unique print for HLL counter
         '''
+        item = item + str(time.time())
         if 'fail' in self.stats_dict:
             self.logger.debug("Incremented fail stats")
             for key in self.stats_dict['fail']:
@@ -283,6 +286,7 @@ class RedisMonitor:
         @param name: The formal name of the plugin
         @param item: the unique print for HLL counter
         '''
+        item = item + str(time.time())
         if 'plugins' in self.stats_dict:
             self.logger.debug("Incremented plugin '{p}' plugin stats"\
                     .format(p=name))
