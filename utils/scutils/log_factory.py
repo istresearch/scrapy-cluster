@@ -221,6 +221,8 @@ class LogObject(object):
             dict['level'] = level
         if 'timestamp' not in dict:
             dict['timestamp'] = self._get_time()
+        if 'logger' not in dict:
+            dict['logger'] = self.name()
         return dict
 
     def _get_time(self):
