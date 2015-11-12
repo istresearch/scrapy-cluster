@@ -1,7 +1,7 @@
 import json
 import logging
-import time
 import sys
+import datetime
 
 from pythonjsonlogger import jsonlogger
 from cloghandler import ConcurrentRotatingFileHandler
@@ -229,4 +229,4 @@ class LogObject(object):
         '''
         Returns the system time
         '''
-        return time.time()
+        return datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
