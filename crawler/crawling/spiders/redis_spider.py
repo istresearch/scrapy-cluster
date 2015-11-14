@@ -55,12 +55,20 @@ class RedisSpider(Spider):
         if self.settings['STATS_STATUS_CODES']:
             self._setup_stats_status_codes()
 
+    def _get_hostname(self):
+        '''
+        Gets the hostname of the machine the spider is running on
+
+        @return: the hostname of the machine
+        '''
+        return socket.gethostname()
+
     def _setup_stats_status_codes(self):
         '''
         Sets up the status code stats collectors
         '''
         self.stats_dict['status_codes'] = {}
-        hostname = socket.gethostname()
+        hostname = self._get_hostname()
         # we chose to handle 504's here as well as in the middleware
         # in case the middleware is disabled
         for status_code in self.settings['STATS_RESPONSE_CODES']:

@@ -137,7 +137,6 @@ STATS_RESPONSE_CODES = [
     504,
 ]
 STATS_CYCLE = 5
-STATS_DUMP = 60
 # from time variables in scutils.stats_collector class
 STATS_TIMES = [
     'SECONDS_15_MINUTE',
