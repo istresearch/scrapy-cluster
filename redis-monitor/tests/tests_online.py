@@ -4,13 +4,12 @@ Online integration tests
 
 import unittest
 from unittest import TestCase
-import mock
 from mock import MagicMock
 
 import sys
 from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from redis_monitor import RedisMonitor
 from plugins.kafka_base_monitor import KafkaBaseMonitor
 from kafka import KafkaClient, SimpleConsumer
@@ -18,22 +17,25 @@ from kafka import KafkaClient, SimpleConsumer
 import settings
 import redis
 import json
-import pickle
+
 
 class CustomMonitor(KafkaBaseMonitor):
     '''
     Custom Monitor so we can run this test live without interference
     '''
     regex = "info-test:*"
+
     def setup(self, settings):
         KafkaBaseMonitor.setup(self, settings)
+
     def handle(self, key, value):
         return_dict = {
             "info-test": value,
-            "appid":"someapp"
+            "appid": "someapp"
         }
         self._send_to_kafka(return_dict)
         self.redis_conn.delete(key)
+
 
 class TestRedisMonitor(TestCase):
 
@@ -51,7 +53,7 @@ class TestRedisMonitor(TestCase):
             'plugins.info_monitor.InfoMonitor': None,
             'plugins.stop_monitor.StopMonitor': None,
             'plugins.expire_monitor.ExpireMonitor': None,
-            'tests.tests_online.CustomMonitor':100,
+            'tests.tests_online.CustomMonitor': 100,
         }
         self.redis_monitor.redis_conn = redis.Redis(
             host=self.redis_monitor.settings['REDIS_HOST'],
@@ -60,7 +62,8 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._load_plugins()
         self.redis_monitor.stats_dict = {}
 
-        self.kafka_conn = KafkaClient(self.redis_monitor.settings['KAFKA_HOSTS'])
+        self.kafka_conn = KafkaClient(self.redis_monitor.settings[
+                                      'KAFKA_HOSTS'])
         self.kafka_conn.ensure_topic_exists("demo_test.outbound_firehose")
 
         self.consumer = SimpleConsumer(
@@ -88,7 +91,7 @@ class TestRedisMonitor(TestCase):
     def test_sent_to_kafka(self):
         success = {
             u'info-test': "ABC123",
-            u"appid":u"someapp"
+            u"appid": u"someapp"
         }
 
         # ensure it was sent out to kafka

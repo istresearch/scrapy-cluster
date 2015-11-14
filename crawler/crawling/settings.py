@@ -12,7 +12,7 @@ KAFKA_APPID_TOPICS = False
 
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'
-ZOOKEEPER_HOSTS =  'localhost:2181'
+ZOOKEEPER_HOSTS = 'localhost:2181'
 
 PUBLIC_IP_URL = 'http://ip.42.pl/raw'
 
@@ -101,13 +101,13 @@ SPIDER_MIDDLEWARES = {
 
 DOWNLOADER_MIDDLEWARES = {
     # Handle timeout retries with the redis scheduler and logger
-    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware' : None,
+    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': None,
     'crawling.redis_retry_middleware.RedisRetryMiddleware': 510,
     # exceptions processed in reverse order
     'crawling.log_retry_middleware.LogRetryMiddleware': 520,
     # custom cookies to not persist across crawl requests
-    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware' : None,
-    'crawling.custom_cookies.CustomCookiesMiddleware' :700,
+    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
+    'crawling.custom_cookies.CustomCookiesMiddleware': 700,
 }
 
 # Disable the built in logging in production

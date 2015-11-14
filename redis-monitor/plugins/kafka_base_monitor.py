@@ -1,12 +1,11 @@
 from base_monitor import BaseMonitor
 from kafka import KafkaClient, SimpleProducer
 from kafka.common import KafkaUnavailableError
-from base_monitor import BaseMonitor
 from scutils.method_timer import MethodTimer
 
-import traceback
 import json
 import sys
+
 
 class KafkaBaseMonitor(BaseMonitor):
     '''
@@ -35,11 +34,11 @@ class KafkaBaseMonitor(BaseMonitor):
         ret_val = _hidden_setup()
 
         if ret_val:
-            self.logger.debug("Successfully connected to Kafka in {name}" \
-                .format(name=self.__class__.__name__))
+            self.logger.debug("Successfully connected to Kafka in {name}"
+                              .format(name=self.__class__.__name__))
         else:
-            self.logger.error("Failed to set up Kafka Connection in {name} " \
-                "within timeout".format(name=self.__class__.__name__))
+            self.logger.error("Failed to set up Kafka Connection in {name} "
+                              "within timeout".format(name=self.__class__.__name__))
             # this is essential to running the redis monitor
             sys.exit(1)
 
@@ -70,5 +69,3 @@ class KafkaBaseMonitor(BaseMonitor):
             self.logger.error(message)
 
         return False
-
-

@@ -1,5 +1,6 @@
 import importlib
 
+
 class SettingsWrapper(object):
     '''
     Wrapper for loading settings files and merging them with overrides
@@ -44,7 +45,7 @@ class SettingsWrapper(object):
         try:
             settings = importlib.import_module(self.default_settings)
             self.my_settings = self._convert_to_dict(settings)
-        except ImportError as ex:
+        except ImportError:
             print "No default settings found"
 
     def _load_custom(self, settings_name='localsettings.py'):
@@ -59,7 +60,7 @@ class SettingsWrapper(object):
         try:
             settings = importlib.import_module(settings_name)
             new_settings = self._convert_to_dict(settings)
-        except ImportError as ex:
+        except ImportError:
             print "No override settings found"
 
         for key in new_settings:

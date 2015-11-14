@@ -10,7 +10,6 @@ from kafka.common import KafkaUnavailableError
 import time
 import json
 import sys
-import importlib
 import argparse
 import redis
 
@@ -28,6 +27,7 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
 
 class KafkaMonitor:
 
@@ -64,8 +64,7 @@ class KafkaMonitor:
             if plugins[key] is None:
                 continue
             # valid plugin, import and setup
-            self.logger.debug("Trying to load plugin {cls}" \
-                .format(cls=key))
+            self.logger.debug("Trying to load plugin {cls}".format(cls=key))
             the_class = self._import_class(key)
             instance = the_class()
             instance._set_logger(self.logger)
@@ -82,7 +81,7 @@ class KafkaMonitor:
             self.plugins_dict[plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
-                                                key=lambda t: t[0]))
+                                               key=lambda t: t[0]))
 
     def setup(self, level=None, log_file=None, json=None):
         '''
@@ -99,8 +98,9 @@ class KafkaMonitor:
         # negate because logger wants True for std out
         my_output = not log_file if log_file else self.settings['LOG_STDOUT']
         my_json = json if json else self.settings['LOG_JSON']
-        self.logger = LogFactory.get_instance(json=my_json,
-            stdout=my_output, level=my_level, name='kafka-monitor')
+        self.logger = LogFactory.get_instance(json=my_json, stdout=my_output,
+                                              level=my_level,
+                                              name='kafka-monitor')
 
         self.validator = self.extend_with_default(Draft4Validator)
 
@@ -111,14 +111,14 @@ class KafkaMonitor:
         self.stats_dict = {}
 
         redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
-                                      port=self.settings['REDIS_PORT'])
+                                 port=self.settings['REDIS_PORT'])
 
         try:
             redis_conn.info()
             self.logger.debug("Connected to Redis in StatsCollector Setup")
-        except ConnectionError as ex:
-            self.logger.warn("Failed to connect to Redis in StatsCollector"\
-                    " Setup, no stats will be collected")
+        except ConnectionError:
+            self.logger.warn("Failed to connect to Redis in StatsCollector"
+                             " Setup, no stats will be collected")
             return
 
         if self.settings['STATS_TOTAL']:
@@ -158,13 +158,13 @@ class KafkaMonitor:
                 self.logger.warning("Unable to find Stats Time '{s}'"\
                         .format(s=item))
         total1 = StatsCollector.get_hll_counter(redis_conn=redis_conn,
-                        key='{k}:lifetime'.format(k=temp_key1),
-                        cycle_time=self.settings['STATS_CYCLE'],
-                        roll=False)
+                                                key='{k}:lifetime'.format(k=temp_key1),
+                                                cycle_time=self.settings['STATS_CYCLE'],
+                                                roll=False)
         total2 = StatsCollector.get_hll_counter(redis_conn=redis_conn,
-                        key='{k}:lifetime'.format(k=temp_key2),
-                        cycle_time=self.settings['STATS_CYCLE'],
-                        roll=False)
+                                                key='{k}:lifetime'.format(k=temp_key2),
+                                                cycle_time=self.settings['STATS_CYCLE'],
+                                                roll=False)
         self.logger.debug("Set up total/fail Stats Collector 'lifetime'")
         self.stats_dict['total']['lifetime'] = total1
         self.stats_dict['fail']['lifetime'] = total2
@@ -192,13 +192,13 @@ class KafkaMonitor:
                                     cycle_time=self.settings['STATS_CYCLE'])
                     self.logger.debug("Set up {p} plugin Stats Collector '{i}'"\
                             .format(p=plugin_name, i=item))
-                except AttributeError as e:
+                except AttributeError:
                     self.logger.warning("Unable to find Stats Time '{s}'"\
                             .format(s=item))
             total = StatsCollector.get_hll_counter(redis_conn=redis_conn,
-                            key='{k}:lifetime'.format(k=temp_key),
-                            cycle_time=self.settings['STATS_CYCLE'],
-                            roll=False)
+                                                   key='{k}:lifetime'.format(k=temp_key),
+                                                   cycle_time=self.settings['STATS_CYCLE'],
+                                                   roll=False)
             self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
                             .format(p=plugin_name))
             self.stats_dict['plugins'][plugin_name]['lifetime'] = total
@@ -214,10 +214,10 @@ class KafkaMonitor:
                 self.kafka_conn.ensure_topic_exists(
                         self.settings['KAFKA_INCOMING_TOPIC'])
                 self.consumer = SimpleConsumer(self.kafka_conn,
-                                          self.settings['KAFKA_GROUP'],
-                                          self.settings['KAFKA_INCOMING_TOPIC'],
-                                          auto_commit=True,
-                                          iter_timeout=1.0)
+                                               self.settings['KAFKA_GROUP'],
+                                               self.settings['KAFKA_INCOMING_TOPIC'],
+                                               auto_commit=True,
+                                               iter_timeout=1.0)
             except KafkaUnavailableError as ex:
                 message = "An exception '{0}' occured. Arguments:\n{1!r}" \
                     .format(type(ex).__name__, ex.args)
@@ -229,8 +229,8 @@ class KafkaMonitor:
         if ret_val:
             self.logger.debug("Successfully connected to Kafka")
         else:
-            self.logger.error("Failed to set up Kafka Connection within"\
-                " timeout")
+            self.logger.error("Failed to set up Kafka Connection within"
+                              " timeout")
             # this is essential to running the kafka monitor
             sys.exit(1)
 
@@ -252,7 +252,7 @@ class KafkaMonitor:
                     instance.setdefault(property, subschema["default"])
 
         return validators.extend(
-            validator_class, {"properties" : set_defaults},
+            validator_class, {"properties": set_defaults},
         )
 
     def _main_loop(self):
@@ -297,15 +297,15 @@ class KafkaMonitor:
                             # break if nothing is returned
                             if ret is None:
                                 break
-                        except ValidationError as ex:
+                        except ValidationError:
                             pass
                     if not found_plugin:
                         extras = {}
                         extras['parsed'] = True
                         extras['valid'] = False
                         extras['data'] = the_dict
-                        self.logger.warn("Did not find schema to validate "\
-                            "request", extra=extras)
+                        self.logger.warn("Did not find schema to validate "
+                                         "request", extra=extras)
                         self._increment_fail_stat(the_dict)
 
                 except ValueError:
@@ -314,12 +314,12 @@ class KafkaMonitor:
                     extras['valid'] = False
                     extras['data'] = message.message.value
                     self.logger.warning('Unparseable JSON Received',
-                                    extra=extras)
+                                        extra=extras)
                     self._increment_fail_stat(message.message.value)
 
         except OffsetOutOfRangeError:
             # consumer has no idea where they are
-            self.consumer.seek(0,2)
+            self.consumer.seek(0, 2)
             self.logger.error("Kafka offset out of range error")
 
     def _increment_total_stat(self, string):
@@ -422,7 +422,7 @@ class KafkaMonitor:
                 self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
                 topic = self.settings['KAFKA_INCOMING_TOPIC']
                 producer = SimpleProducer(self.kafka_conn)
-            except KafkaUnavailableError as ex:
+            except KafkaUnavailableError:
                 self.logger.error("Unable to connect to Kafka")
                 return False
 
@@ -431,7 +431,7 @@ class KafkaMonitor:
                     topic, json.dumps(json_item, indent=4)))
             else:
                 self.logger.info('Feeding JSON into {0}\n'.format(topic),
-                    extra={'value':json_item})
+                                 extra={'value': json_item})
 
             self.kafka_conn.ensure_topic_exists(topic)
             producer.send_messages(topic, json.dumps(json_item))
@@ -444,6 +444,7 @@ class KafkaMonitor:
             self.logger.info("Successly fed item to Kafka")
         else:
             self.logger.error("Failed to feed item into Kafka")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -462,32 +463,32 @@ def main():
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-r', '--run', action='store_const', const=True,
-        help='Run the Kafka Monitor')
+                       help='Run the Kafka Monitor')
     group.add_argument('-f', '--feed', action='store',
-        help='Feed a JSON formatted request to be sent to Kafka')
+                       help='Feed a JSON formatted request to be sent to Kafka')
 
     parser.add_argument('-s', '--settings', action='store', required=False,
-        help="The settings file to read from", default="localsettings.py")
+                        help="The settings file to read from", default="localsettings.py")
     parser.add_argument('-ll', '--log-level', action='store', required=False,
-        help="The log level", default=None,
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+                        help="The log level", default=None,
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
     parser.add_argument('-lf', '--log-file', action='store_const',
-        required=False, const=True, default=None,
-        help='Log the output to the file specified in settings.py. Otherwise '\
-        'logs to stdout')
+                        required=False, const=True, default=None,
+                        help='Log the output to the file specified in settings.py. Otherwise '\
+                        'logs to stdout')
     parser.add_argument('-lj', '--log-json', action='store_const',
-        required=False, const=True, default=None,
-        help="Log the data in JSON format")
+                        required=False, const=True, default=None,
+                        help="Log the data in JSON format")
     args = vars(parser.parse_args())
 
     kafka_monitor = KafkaMonitor(args['settings'])
     kafka_monitor.setup(level=args['log_level'], log_file=args['log_file'],
-        json=args['log_json'])
+                        json=args['log_json'])
 
     if args['run']:
         try:
             kafka_monitor.run()
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             kafka_monitor.logger.info("Closing Kafka Monitor")
     if args['feed']:
         json_req = args['feed']

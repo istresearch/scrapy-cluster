@@ -2,6 +2,8 @@ from OpenSSL import SSL
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet._sslverify import ClientTLSOptions
 from scrapy.core.downloader.contextfactory import ScrapyClientContextFactory
+
+
 class MyClientContextFactory(ScrapyClientContextFactory):
 
     def getContext(self, hostname=None, port=None):

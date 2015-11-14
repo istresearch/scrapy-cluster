@@ -2,19 +2,20 @@ import time
 
 from redis.exceptions import WatchError
 
+
 class RedisThrottledQueue(object):
 
-    queue = None # the instantiated queue class
-    window = None # the window to use to limit requests
-    limit = None # number of requests in the given window
-    redis_conn = None # the redis connection
-    moderation = None # whether to use moderation or not
-    moderate_key = None # the last time the moderated queue was pulled
-    window_append = ":throttle_window" # appended to end of window queue key
-    time_append = ":throttle_time" # appended to end to time key
+    queue = None    # the instantiated queue class
+    window = None   # the window to use to limit requests
+    limit = None    # number of requests in the given window
+    redis_conn = None   # the redis connection
+    moderation = None   # whether to use moderation or not
+    moderate_key = None     # the last time the moderated queue was pulled
+    window_append = ":throttle_window"  # appended to end of window queue key
+    time_append = ":throttle_time"  # appended to end to time key
 
     def __init__(self, redisConn, myQueue, throttleWindow, throttleLimit,
-                        moderate = False, windowName = None, modName = None):
+                        moderate=False, windowName=None, modName=None):
         '''
         For best performance, all instances of a throttled queue should have
             the same settings
@@ -77,7 +78,8 @@ class RedisThrottledQueue(object):
         queue pop request, only will return a request if
         the given time window has not been exceeded
 
-        @return: The item if the throttle limit has not been hit, otherwise None
+        @return: The item if the throttle limit has not been hit,
+        otherwise None
         '''
         if self.allowed():
             return self.queue.pop(*args)
@@ -105,7 +107,7 @@ class RedisThrottledQueue(object):
         if self.moderation:
             with self.redis_conn.pipeline() as pipe:
                 try:
-                    pipe.watch(self.moderate_key) # ---- LOCK
+                    pipe.watch(self.moderate_key)  # ---- LOCK
                     # from this point onward if no errors are raised we
                     # successfully incremented the counter
 
@@ -156,7 +158,6 @@ class RedisThrottledQueue(object):
 
         return False
 
-
     def test_hits(self):
         '''
         Tests to see if the number of throttle queue hits is within our limit
@@ -165,7 +166,7 @@ class RedisThrottledQueue(object):
         '''
         with self.redis_conn.pipeline() as pipe:
             try:
-                pipe.watch(self.window_key) # ---- LOCK
+                pipe.watch(self.window_key)  # ---- LOCK
                 value = self.redis_conn.zcard(self.window_key)
                 if value < self.limit:
                     # push value into key

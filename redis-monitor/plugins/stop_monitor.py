@@ -1,6 +1,6 @@
-import re
 import pickle
 from kafka_base_monitor import KafkaBaseMonitor
+
 
 class StopMonitor(KafkaBaseMonitor):
 
@@ -33,7 +33,7 @@ class StopMonitor(KafkaBaseMonitor):
 
         # log we received the stop message
         extras = self.get_log_dict('stop', spiderid,
-                                    appid, uuid, crawlid)
+                                   appid, uuid, crawlid)
         self.logger.info('Received stop request', extra=extras)
 
         redis_key = spiderid + ":blacklist"

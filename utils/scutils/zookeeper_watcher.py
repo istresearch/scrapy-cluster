@@ -1,31 +1,31 @@
-from kazoo.client import KazooClient
-from kazoo.client import KazooState
+from kazoo.client import KazooClient, KazooState
 from kazoo.exceptions import ZookeeperError, KazooException
 from threading import Thread
 import argparse
 import sys
 from time import sleep
 
+
 class ZookeeperWatcher():
-    zoo_client = None # The KazooClient to manage the config
-    point_path = None # Zookeeper path to pointed to file
-    pointed_at_expired = None # is True when the assignment has been set to
-                                # None but we cannot remove the config listener
-    valid_handler = None # the function to call when the validity changes
-    config_handler = None # the function to call when the config changes
-    error_handler = None # the function to call when an error occurs in reading
-    valid_file = False # the current state of the ConfigWatcher with ZK
-    do_not_restart = False # used when closing via ^C
-    old_data = '' # The current file contents, to see if a change occurred
-    old_pointed = '' # the current pointed path, to see if change occurred
+    zoo_client = None  # The KazooClient to manage the config
+    point_path = None  # Zookeeper path to pointed to file
+    pointed_at_expired = None  # is True when the assignment has been set to
+                               # None but we cannot remove the config listener
+    valid_handler = None  # the function to call when the validity changes
+    config_handler = None  # the function to call when the config changes
+    error_handler = None  # the function to call when an error occurs in reading
+    valid_file = False  # the current state of the ConfigWatcher with ZK
+    do_not_restart = False  # used when closing via ^C
+    old_data = ''  # The current file contents, to see if a change occurred
+    old_pointed = ''  # the current pointed path, to see if change occurred
 
     INVALID_PATH = "Invalid pointer path"
     INVALID_GET = "Invalid get on file path"
     BAD_CONNECTION = "Connection interrupted with Zookeeper, re-establishing"
 
-    def __init__(self, hosts, filepath, valid_handler = None,
-                config_handler = None, error_handler = None, pointer = False,
-                ensure = False, valid_init = True):
+    def __init__(self, hosts, filepath, valid_handler=None,
+                 config_handler=None, error_handler=None, pointer=False,
+                 ensure=False, valid_init=True):
         '''
         Zookeeper file watcher, used to tell a program their zookeeper file has
         changed. Can be used to watch a single file, or both a file and path of
@@ -72,7 +72,8 @@ class ZookeeperWatcher():
         '''
         Spawns a worker thread to set up the zookeeper connection
         '''
-        thread = Thread(target=self.init_connections, kwargs={'no_init':no_init})
+        thread = Thread(target=self.init_connections, kwargs={
+                        'no_init': no_init})
         thread.setDaemon(True)
         thread.start()
         thread.join()
@@ -96,7 +97,7 @@ class ZookeeperWatcher():
                         self.zoo_client = KazooClient(hosts=self.hosts)
                         self.zoo_client.start()
                     else:
-                        #self.zoo_client.stop()
+                        # self.zoo_client.stop()
                         self.zoo_client._connection.connection_stopped.set()
                         self.zoo_client.close()
                         self.zoo_client = KazooClient(hosts=self.hosts)
@@ -168,8 +169,8 @@ class ZookeeperWatcher():
     def get_file_contents(self, pointer=False):
         '''
         Gets any file contents you care about. Defaults to the main file
-        @param pointer: The the contents of the file pointer, not the pointed at
-                        file
+        @param pointer: The the contents of the file pointer, not the pointed
+        at file
         @return: A string of the contents
         '''
         if self.pointer:
@@ -302,6 +303,7 @@ class ZookeeperWatcher():
             return True
         return False
 
+
 def main():
     parser = argparse.ArgumentParser(
             description="Zookeeper file watcher")
@@ -319,7 +321,7 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--poll', action='store_true', help="Polling example")
     group.add_argument('--event', action='store_true',
-                        help="Event driven example")
+                       help="Event driven example")
 
     args = vars(parser.parse_args())
 
@@ -333,8 +335,10 @@ def main():
 
     def valid_file(state):
         print "The valid state is now", state
+
     def change_file(conf_string):
         print "Your file contents:", conf_string
+
     def error_file(message):
         print "An error was thrown:", message
 
@@ -344,19 +348,19 @@ def main():
             zoo_watcher = ZookeeperWatcher(hosts, file, pointer=True)
         elif event:
             zoo_watcher = ZookeeperWatcher(hosts, file,
-                                            valid_handler=valid_file,
-                                            config_handler=change_file,
-                                            error_handler=error_file,
-                                            pointer=True, valid_init=valid)
+                                           valid_handler=valid_file,
+                                           config_handler=change_file,
+                                           error_handler=error_file,
+                                           pointer=True, valid_init=valid)
     else:
         if poll:
             zoo_watcher = ZookeeperWatcher(hosts, file)
         elif event:
             zoo_watcher = ZookeeperWatcher(hosts, file,
-                                            valid_handler=valid_file,
-                                            config_handler=change_file,
-                                            error_handler=error_file,
-                                            valid_init=valid)
+                                           valid_handler=valid_file,
+                                           config_handler=change_file,
+                                           error_handler=error_file,
+                                           valid_init=valid)
 
     try:
         while True:
@@ -370,4 +374,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-

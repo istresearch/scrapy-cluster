@@ -1,4 +1,4 @@
 STRING = "stuff"
 DICT = {
-    "value":"other stuff"
+    "value": "other stuff"
 }

@@ -4,7 +4,6 @@ Online integration tests
 
 import unittest
 from unittest import TestCase
-import mock
 from mock import MagicMock
 
 import sys
@@ -18,11 +17,13 @@ import settings
 import redis
 import json
 
+
 # setup custom class to handle our requests
 class CustomHandler(ActionHandler):
     def handle(self, dict):
         key = "cluster:test"
         self.redis_conn.set(key, dict['uuid'])
+
 
 class TestKafkaMonitor(TestCase):
 
@@ -35,7 +36,7 @@ class TestKafkaMonitor(TestCase):
         new_settings['PLUGINS'] = {
             'plugins.scraper_handler.ScraperHandler': None,
             'plugins.action_handler.ActionHandler': None,
-            'tests.tests_online.CustomHandler':100,
+            'tests.tests_online.CustomHandler': 100,
         }
 
         self.kafka_monitor.wrapper.load = MagicMock(return_value=new_settings)

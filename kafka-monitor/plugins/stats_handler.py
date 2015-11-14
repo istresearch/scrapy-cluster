@@ -1,8 +1,8 @@
 from base_handler import BaseHandler
 import redis
-import pickle
 import sys
 from redis.exceptions import ConnectionError
+
 
 class StatsHandler(BaseHandler):
 
@@ -18,7 +18,7 @@ class StatsHandler(BaseHandler):
         try:
             self.redis_conn.info()
             self.logger.debug("Connected to Redis in StatsHandler")
-        except ConnectionError as ex:
+        except ConnectionError:
             self.logger.error("Failed to connect to Redis in StatsHandler")
             # plugin is essential to functionality
             sys.exit(1)
@@ -31,8 +31,8 @@ class StatsHandler(BaseHandler):
         '''
         # format key
         key = "statsrequest:{stats}:{appid}".format(
-                stats = dict['stats'],
-                appid = dict['appid'])
+                stats=dict['stats'],
+                appid=dict['appid'])
 
         self.redis_conn.set(key, dict['uuid'])
 

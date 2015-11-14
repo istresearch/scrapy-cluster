@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 import signal
 """
 A timer class so methods can only execute for a certain amount of seconds,
@@ -9,6 +8,8 @@ then returns the default value
 @author: Madison Bahmer @ IST Research
          Last Updated 9/1/15
 """
+
+
 class MethodTimer(object):
     '''
     -------------------------------------
@@ -39,7 +40,8 @@ class MethodTimer(object):
                     raise MethodTimer.DecoratorTimeout()
 
                 old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(timeout_time) # triger alarm in timeout_time seconds
+                # triger alarm in timeout_time seconds
+                signal.alarm(timeout_time)
                 try:
                     retval = f(*args)
                 except MethodTimer.DecoratorTimeout:

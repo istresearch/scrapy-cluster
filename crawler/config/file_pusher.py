@@ -1,5 +1,6 @@
 import sys
 
+
 def main():
     '''
     A manual configuration file pusher for the crawlers. This will update

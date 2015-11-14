@@ -1,5 +1,6 @@
 import time
 
+
 class BaseMonitor(object):
     '''
     Base monitor for handling incoming requests seen within redis
@@ -61,7 +62,7 @@ class BaseMonitor(object):
         return True
 
     def get_log_dict(self, action, appid, spiderid=None, uuid=None,
-            crawlid = None):
+                     crawlid=None):
         '''
         Returns a basic dictionary for logging
         @param action: the action taken by the redis monitor

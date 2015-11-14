@@ -1,10 +1,10 @@
 from scrapy import signals
 from scrapy.exceptions import DontCloseSpider
 from scrapy.spiders import Spider
+
 from scutils.stats_collector import StatsCollector
 import socket
 import time
-#from crawler.utils.log_factory import LogFactory
 
 class RedisSpider(Spider):
     '''
@@ -14,7 +14,7 @@ class RedisSpider(Spider):
     def _set_crawler(self, crawler):
         super(RedisSpider, self)._set_crawler(crawler)
         self.crawler.signals.connect(self.spider_idle,
-                                        signal=signals.spider_idle)
+                                     signal=signals.spider_idle)
 
     def spider_idle(self):
         raise DontCloseSpider
@@ -140,5 +140,3 @@ class RedisSpider(Spider):
                 key_item_list.append(item)
             header_dict[key] = key_item_list
         return header_dict
-
-

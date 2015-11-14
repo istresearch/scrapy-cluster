@@ -4,26 +4,20 @@ Offline utility tests
 
 import unittest
 from unittest import TestCase
-import mock
-from mock import MagicMock
-
 import os
-import sys
 import time
-import contextlib
 import json
+
+from mock import MagicMock
 from testfixtures import LogCapture
-from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from redis.exceptions import WatchError
 
 from scutils.method_timer import MethodTimer
 from scutils.log_factory import LogFactory, LogObject
 from scutils.settings_wrapper import SettingsWrapper
-
 from scutils.stats_collector import AbstractCounter
 from scutils.redis_throttled_queue import RedisThrottledQueue
 
-from redis.exceptions import WatchError
 
 class TestMethodTimer(TestCase):
 
@@ -51,9 +45,10 @@ class TestMethodTimer(TestCase):
         result = method(True, "Stuff", ['item'])
         self.assertEqual(result, "STUFF2")
 
+
 class TestSettingsWrapper(TestCase):
 
-    defaults = {"STRING":"stuff", "DICT":{"value":"other stuff"}}
+    defaults = {"STRING": "stuff", "DICT": {"value": "other stuff"}}
 
     def setUp(self):
         self.wrapper = SettingsWrapper()
@@ -101,10 +96,12 @@ class TestSettingsWrapper(TestCase):
         }
         self.assertEqual(sets, actual)
 
+
 class TestLogFactory(TestCase):
     def setUp(self):
         self.logger = LogFactory.get_instance(name='test',
-                dir='./', level='DEBUG', propagate=True)
+                                              dir='./', level='DEBUG',
+                                              propagate=True)
 
     def test_debug_log(self):
         self.logger.log_level = 'DEBUG'
@@ -112,7 +109,7 @@ class TestLogFactory(TestCase):
             self.logger.debug('debug message')
             self.logger.info('info message')
         l.check(
-            ('test','DEBUG','debug message'),
+            ('test', 'DEBUG', 'debug message'),
             ('test', 'INFO', 'info message'),
         )
 
@@ -124,7 +121,7 @@ class TestLogFactory(TestCase):
             self.logger.warn('warn message')
         l.check(
             ('test', 'INFO', 'info message'),
-            ('test','WARNING','warn message'),
+            ('test', 'WARNING', 'warn message'),
         )
 
     def test_warn_log(self):
@@ -134,8 +131,8 @@ class TestLogFactory(TestCase):
             self.logger.warn('warn message')
             self.logger.error('error message')
         l.check(
-            ('test','WARNING','warn message'),
-            ('test','ERROR','error message'),
+            ('test', 'WARNING', 'warn message'),
+            ('test', 'ERROR', 'error message'),
         )
 
     def test_error_log(self):
@@ -146,8 +143,8 @@ class TestLogFactory(TestCase):
             self.logger.critical('critical message')
 
         l.check(
-            ('test','ERROR','error message'),
-            ('test','CRITICAL','critical message'),
+            ('test', 'ERROR', 'error message'),
+            ('test', 'CRITICAL', 'critical message'),
         )
 
     def test_critical_log(self):
@@ -157,13 +154,15 @@ class TestLogFactory(TestCase):
             self.logger.critical('critical message')
 
         l.check(
-            ('test','CRITICAL','critical message'),
+            ('test', 'CRITICAL', 'critical message'),
         )
+
 
 class TestLogJSONFile(TestCase):
     def setUp(self):
         self.logger = LogObject(name='test', json=True,
-                dir='.', level='INFO', stdout=False, file='test.log')
+                                dir='.', level='INFO', stdout=False,
+                                file='test.log')
         self.test_file = './test'
 
     def test_log_file_json(self):
@@ -182,6 +181,7 @@ class TestLogJSONFile(TestCase):
         os.remove(self.test_file + '.log')
         os.remove(self.test_file + '.lock')
 
+
 class TestStatsAbstract(TestCase):
 
     def test_default_key(self):
@@ -198,26 +198,27 @@ class TestStatsAbstract(TestCase):
         try:
             ac.increment()
             self.fail("increment should be abstract")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
 
         try:
             ac.value()
             self.fail("value should be abstract")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
 
         try:
             ac.expire()
             self.fail("expire should be abstract")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
 
         try:
             ac.increment()
             self.fail("increment should be abstract")
-        except NotImplementedError as e:
+        except NotImplementedError:
             pass
+
 
 class TestUnmoderatedRedisThrottledQueue(TestCase):
 
@@ -242,6 +243,7 @@ class TestUnmoderatedRedisThrottledQueue(TestCase):
                                                 side_effect=WatchError)
         self.assertFalse(self.queue.allowed())
 
+
 class TestModeratedRedisThrottledQueue(TestCase):
 
     def setUp(self):
@@ -250,11 +252,11 @@ class TestModeratedRedisThrottledQueue(TestCase):
     def test_moderated(self):
         # a moderated queue should pop ~ every x seconds
         # we already tested the window limit in the unmoderated test
-        self.queue.is_moderated = MagicMock(return_value = True)
+        self.queue.is_moderated = MagicMock(return_value=True)
         self.assertFalse(self.queue.allowed())
 
-        self.queue.is_moderated = MagicMock(return_value = False)
-        self.queue.test_hits = MagicMock(return_value = True)
+        self.queue.is_moderated = MagicMock(return_value=False)
+        self.queue.test_hits = MagicMock(return_value=True)
         self.assertTrue(self.queue.allowed())
 
         # mock exception raised even with good moderation

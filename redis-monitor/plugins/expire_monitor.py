@@ -1,7 +1,5 @@
-import re
-import pickle
-import time
 from stop_monitor import StopMonitor
+
 
 class ExpireMonitor(StopMonitor):
     '''
@@ -42,13 +40,13 @@ class ExpireMonitor(StopMonitor):
 
         # log ack of expire
         extras = self.get_log_dict('expire', spiderid,
-                                        appid, crawlid=crawlid)
+                                   appid, crawlid=crawlid)
         self.logger.info("Expiring crawl found", extra=extras)
 
         # add crawl to blacklist so it doesnt propagate
         redis_key = spiderid + ":blacklist"
         value = '{appid}||{crawlid}'.format(appid=appid,
-                                        crawlid=crawlid)
+                                            crawlid=crawlid)
         # add this to the blacklist set
         self.redis_conn.sadd(redis_key, value)
 
@@ -70,6 +68,6 @@ class ExpireMonitor(StopMonitor):
         else:
             master['success'] = False
             self.logger.error('Failed to send expired ack to kafka',
-                                extra=master)
+                              extra=master)
 
         self.redis_conn.delete(key)

@@ -35,7 +35,7 @@ class LogRetryMiddleware(object):
 
         #self.logger.setLevel(logging.DEBUG)
         self.retry_http_codes = set(int(x) for x in
-                                        settings.getlist('RETRY_HTTP_CODES'))
+                                    settings.getlist('RETRY_HTTP_CODES'))
 
         # stats setup
         self.stats_dict = {}
@@ -57,8 +57,8 @@ class LogRetryMiddleware(object):
 
     def process_exception(self, request, exception, spider):
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
-             self._log_retry(request, exception, spider)
-             self._increment_504_stat(request)
+            self._log_retry(request, exception, spider)
+            self._increment_504_stat(request)
 
     def _log_retry(self, request, exception, spider):
         extras = {}

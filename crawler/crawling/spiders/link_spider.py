@@ -7,8 +7,6 @@ from scrapy.conf import settings
 from crawling.items import RawResponseItem
 from redis_spider import RedisSpider
 
-import json
-import uuid
 
 class LinkSpider(RedisSpider):
     '''
@@ -48,9 +46,9 @@ class LinkSpider(RedisSpider):
         if cur_depth >= response.meta['maxdepth']:
             self._logger.debug("Not spidering links in '{}' because" \
                 " cur_depth={} >= maxdepth={}".format(
-                response.url,
-                cur_depth,
-                response.meta['maxdepth']))
+                                                      response.url,
+                                                      cur_depth,
+                                                      response.meta['maxdepth']))
         else:
             # we are spidering -- yield Request for each discovered link
             link_extractor = LinkExtractor(
@@ -61,7 +59,7 @@ class LinkSpider(RedisSpider):
 
             for link in link_extractor.extract_links(response):
                 # link that was discovered
-                item["links"].append({"url": link.url,"text": link.text, })
+                item["links"].append({"url": link.url, "text": link.text, })
                 req = Request(link.url, callback=self.parse)
 
                 # pass along all known meta fields

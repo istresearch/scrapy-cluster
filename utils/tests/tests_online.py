@@ -3,29 +3,25 @@ Online utils test
 '''
 import unittest
 from unittest import TestCase
-import mock
 from mock import MagicMock
 import time
 
-import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+import redis
+import argparse
 
 from scutils.redis_queue import RedisQueue, RedisPriorityQueue, RedisStack
 
 from scutils.stats_collector import (ThreadedCounter, TimeWindow,
-                                    RollingTimeWindow, Counter, UniqueCounter,
-                                    HyperLogLogCounter, BitMapCounter)
+                                     RollingTimeWindow, Counter, UniqueCounter,
+                                     HyperLogLogCounter, BitMapCounter)
 
-from redis.exceptions import WatchError
-import redis
-import argparse
 
 class RedisMixin(object):
 
     def __init__(self, name, redis_conn):
         self.redis_conn = redis_conn
         TestCase.__init__(self, name)
+
 
 class QueueMixin(RedisMixin, object):
 
@@ -34,12 +30,13 @@ class QueueMixin(RedisMixin, object):
     def setUp(self):
         self.queue = self.queue_class(self.redis_conn, 'key')
 
+
 class TestRedisFifoQueue(QueueMixin, TestCase):
 
     queue_class = RedisQueue
 
     def test_fifo_queue(self):
-        item1 = {"stuff":'a', "blah":2}
+        item1 = {"stuff": 'a', "blah": 2}
         item2 = 123
         item3 = "dohrayme"
 
@@ -50,6 +47,7 @@ class TestRedisFifoQueue(QueueMixin, TestCase):
         self.assertEqual(item1, self.queue.pop())
         self.assertEqual(item2, self.queue.pop())
         self.assertEqual(item3, self.queue.pop())
+
 
 class TestRedisPriorityQueue(QueueMixin, TestCase):
 
@@ -69,6 +67,7 @@ class TestRedisPriorityQueue(QueueMixin, TestCase):
         self.assertEqual(item3, self.queue.pop())
         self.assertEqual(item2, self.queue.pop())
 
+
 class TestRedisStack(QueueMixin, TestCase):
 
     queue_class = RedisStack
@@ -85,6 +84,7 @@ class TestRedisStack(QueueMixin, TestCase):
         self.assertEqual(item3, self.queue.pop())
         self.assertEqual(item2, self.queue.pop())
         self.assertEqual(item1, self.queue.pop())
+
 
 class TestStatsThreaded(RedisMixin, TestCase):
 
@@ -134,6 +134,7 @@ class TestStatsThreaded(RedisMixin, TestCase):
             key = keys.pop()
             self.redis_conn.delete(key)
 
+
 class CleanMixin(object):
 
     def clean_keys(self, key):
@@ -141,6 +142,7 @@ class CleanMixin(object):
         while len(keys) > 0:
             key = keys.pop()
             self.redis_conn.delete(key)
+
 
 class TestStatsTimeWindow(RedisMixin, TestCase, CleanMixin):
 
@@ -159,7 +161,7 @@ class TestStatsTimeWindow(RedisMixin, TestCase, CleanMixin):
 
     def test_roll_window(self):
         counter = TimeWindow(key='test_key', cycle_time=.01, window=1,
-            roll=True)
+                             roll=True)
         counter.setup(self.redis_conn)
         counter.increment()
         counter.increment()
@@ -176,6 +178,7 @@ class TestStatsTimeWindow(RedisMixin, TestCase, CleanMixin):
         self.assertEqual(counter.value(), 2)
         counter.stop()
         self.clean_keys(counter.key)
+
 
 class TestStatsRollingTimeWindow(RedisMixin, TestCase, CleanMixin):
 
@@ -201,6 +204,7 @@ class TestStatsRollingTimeWindow(RedisMixin, TestCase, CleanMixin):
         self.assertEqual(counter.value(), 1)
         counter.stop()
         self.clean_keys(counter.key)
+
 
 class TestStatsCounter(RedisMixin, TestCase, CleanMixin):
 
@@ -236,6 +240,7 @@ class TestStatsCounter(RedisMixin, TestCase, CleanMixin):
         counter.stop()
         self.clean_keys(counter.key)
 
+
 class TestStatsUniqueCounter(RedisMixin, TestCase, CleanMixin):
 
     def test_uniques(self):
@@ -254,7 +259,7 @@ class TestStatsUniqueCounter(RedisMixin, TestCase, CleanMixin):
         # rough sleep to get us back on track
         time.sleep(2 - (int(time.time()) % 2))
         counter = UniqueCounter(key='test_key', window=2, cycle_time=.1,
-            roll=True)
+                                roll=True)
         counter.setup(redis_conn=self.redis_conn)
         i = 0
         while i < 100:
@@ -271,9 +276,10 @@ class TestStatsUniqueCounter(RedisMixin, TestCase, CleanMixin):
         counter.stop()
         self.clean_keys(counter.key)
 
+
 class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
 
-    tolerance = 2 # percent
+    tolerance = 2   # percent
 
     def get_percent_diff(self, value, actual):
         return abs(actual - value) / ((value + actual) / 2.0) * 100.0
@@ -299,7 +305,7 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
         # rough sleep to get us back on track
         time.sleep(5.0 - (time.time() % 5.0))
         counter = HyperLogLogCounter(key='test_key', window=5, roll=True,
-            cycle_time=.1,)
+                                     cycle_time=.1,)
         counter.setup(redis_conn=self.redis_conn)
         i = 0
         while i < 5010:
@@ -324,6 +330,7 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
         counter.stop()
         self.clean_keys(counter.key)
 
+
 class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
 
     def test_bitmap_counter(self):
@@ -342,7 +349,7 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
         # rough sleep to get us back on track
         time.sleep(2 - (int(time.time()) % 2))
         counter = BitMapCounter(key='test_key', window=2, cycle_time=.1,
-            roll=True)
+                                roll=True)
         counter.setup(redis_conn=self.redis_conn)
 
         counter.increment(0)
@@ -356,7 +363,7 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
         self.clean_keys(counter.key)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Online depployement Test"\
+    parser = argparse.ArgumentParser(description="Online deployment Test"
                                      " Script for Utils")
     parser.add_argument('-r', '--redis-host', action='store',
                         default='localhost', help="The Redis host ip")
@@ -371,7 +378,8 @@ if __name__ == '__main__':
 
     # moved to the top to help get better consistency
     suite.addTest(TestStatsHyperLogLogCounter('test_hll_counter', redis_conn))
-    suite.addTest(TestStatsHyperLogLogCounter('test_roll_hll_counter', redis_conn))
+    suite.addTest(TestStatsHyperLogLogCounter('test_roll_hll_counter',
+                  redis_conn))
 
     suite.addTest(TestRedisFifoQueue('test_fifo_queue', redis_conn))
     suite.addTest(TestRedisPriorityQueue('test_priority_queue', redis_conn))
@@ -385,7 +393,8 @@ if __name__ == '__main__':
     suite.addTest(TestStatsTimeWindow('test_window', redis_conn))
     suite.addTest(TestStatsTimeWindow('test_roll_window', redis_conn))
 
-    suite.addTest(TestStatsRollingTimeWindow('test_rolling_window', redis_conn))
+    suite.addTest(TestStatsRollingTimeWindow('test_rolling_window',
+                  redis_conn))
 
     suite.addTest(TestStatsCounter('test_generic_counter', redis_conn))
     suite.addTest(TestStatsCounter('test_roll_generic_counter', redis_conn))
@@ -394,6 +403,7 @@ if __name__ == '__main__':
     suite.addTest(TestStatsUniqueCounter('test_roll_uniques', redis_conn))
 
     suite.addTest(TestStatsBitMapCounter('test_bitmap_counter', redis_conn))
-    suite.addTest(TestStatsBitMapCounter('test_roll_bitmap_counter', redis_conn))
+    suite.addTest(TestStatsBitMapCounter('test_roll_bitmap_counter',
+                  redis_conn))
 
     unittest.TextTestRunner(verbosity=2).run(suite)
