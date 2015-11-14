@@ -9,6 +9,8 @@ import urllib2
 import re
 import yaml
 import sys
+import uuid
+import socket
 
 from redis_dupefilter import RFPDupeFilter
 from kazoo.handlers.threading import KazooTimeoutError
@@ -30,24 +32,25 @@ class DistributedScheduler(object):
     to moderate different domain scrape requests within a distributed scrapy
     cluster
     '''
-    redis_conn = None  # the redis connection
-    queue_dict = None  # the dict of throttled queues
-    spider = None  # the spider using this scheduler
-    queue_keys = None  # the list of current queues
-    queue_class = None  # the class to use for the queue
-    dupefilter = None  # the redis dupefilter
-    update_time = 0  # the last time the queues were updated
-    update_ip_time = 0  # the last time the ip was updated
-    update_interval = 0  # how often to update the queues
-    extract = None  # the tld extractor
-    hits = 0  # default number of hits for a queue
-    window = 0  # default window to calculate number of hits
-    my_ip = None  # the ip address of the scheduler (if needed)
-    old_ip = None  # the old ip for logging
-    ip_update_interval = 0  # the interval to update the ip address
-    add_type = None  # add spider type to redis throttle queue key
-    add_ip = None  # add spider public ip to redis throttle queue key
-    item_retries = 0  # the number of extra tries to get an item
+    redis_conn = None # the redis connection
+    queue_dict = None # the dict of throttled queues
+    spider = None # the spider using this scheduler
+    queue_keys = None # the list of current queues
+    queue_class = None # the class to use for the queue
+    dupefilter = None # the redis dupefilter
+    update_time = 0 # the last time the queues were updated
+    update_ip_time = 0 # the last time the ip was updated
+    update_interval = 0 # how often to update the queues
+    extract = None # the tld extractor
+    hits = 0 # default number of hits for a queue
+    window = 0 # default window to calculate number of hits
+    my_ip = None # the ip address of the scheduler (if needed)
+    old_ip = None # the old ip for logging
+    ip_update_interval = 0 # the interval to update the ip address
+    add_type = None # add spider type to redis throttle queue key
+    add_ip = None # add spider public ip to redis throttle queue key
+    item_retries = 0 # the number of extra tries to get an item
+    my_uuid = None # the generated UUID for the particular scrapy process
     # Zookeeper Dynamic Config Vars
     domain_config = {}  # The list of domains and their configs
     my_id = None  # The id used to read the throttle config
@@ -79,6 +82,9 @@ class DistributedScheduler(object):
         self.extract = tldextract.TLDExtract()
 
         self.update_ipaddress()
+
+        # if we need better uuid's mod this line
+        self.my_uuid = str(uuid.uuid4()).split('-')[4]
 
     def setup_zookeeper(self):
         self.assign_path = settings.get('ZOOKEEPER_ASSIGN_PATH', "")
@@ -258,6 +264,18 @@ class DistributedScheduler(object):
             self.logger.info("Changed Public IP: {old} -> {new}".format(
                              old=self.old_ip, new=self.my_ip))
 
+    def report_self(self):
+        '''
+        Reports the crawler uuid to redis
+        '''
+        self.logger.debug("Reporting self id", extra={'uuid':self.my_uuid})
+        key = "stats:crawler:{m}:{s}:{u}".format(
+            m=socket.gethostname(),
+            s=self.spider.name,
+            u=self.my_uuid)
+        self.redis_conn.set(key, time.time())
+        self.redis_conn.expire(key, self.ip_update_interval * 2)
+
     @classmethod
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
@@ -297,6 +315,8 @@ class DistributedScheduler(object):
     def open(self, spider):
         self.spider = spider
         self.spider.set_logger(self.logger)
+        self.spider.set_redis(self.redis_conn)
+        self.spider.setup_stats()
         self.create_queues()
         self.setup_zookeeper()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
@@ -425,6 +445,7 @@ class DistributedScheduler(object):
         if t - self.update_ip_time > self.ip_update_interval:
             self.update_ip_time = t
             self.update_ipaddress()
+            self.report_self()
 
         item = self.find_item()
         if item:

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 def get_version():
-    with open('version.py') as version_file:
+    with open('scutils/version.py') as version_file:
         return re.search(r"""__version__\s+=\s+(['"])(?P<version>.+?)\1""",
                          version_file.read()).group('version')
 

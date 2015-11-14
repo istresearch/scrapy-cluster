@@ -128,6 +128,26 @@ SC_LOG_MAX_BYTES = '10MB'
 SC_LOG_JSON = False
 SC_LOG_LEVEL = 'INFO'
 
+# stats setup
+STATS_STATUS_CODES = True
+STATS_RESPONSE_CODES = [
+    200,
+    404,
+    403,
+    504,
+]
+STATS_CYCLE = 5
+STATS_DUMP = 60
+# from time variables in scutils.stats_collector class
+STATS_TIMES = [
+    'SECONDS_15_MINUTE',
+    'SECONDS_1_HOUR',
+    'SECONDS_6_HOUR',
+    'SECONDS_12_HOUR',
+    'SECONDS_1_DAY',
+    'SECONDS_1_WEEK',
+]
+
 # Avoid in-memory DNS cache. See Advanced topics of docs for info
 DNSCACHE_ENABLED = False
 

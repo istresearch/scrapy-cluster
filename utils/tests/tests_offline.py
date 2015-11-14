@@ -166,15 +166,16 @@ class TestLogJSONFile(TestCase):
         self.test_file = './test'
 
     def test_log_file_json(self):
-        self.logger._get_time = MagicMock(return_value=5)
+        self.logger._get_time = MagicMock(return_value='2015-11-12T10:11:12.0Z')
         self.logger.info("Test log")
         with open(self.test_file + '.log', 'r') as f:
             read_data = f.read()
             the_dict = json.loads(read_data)
-            del the_dict['timestamp']
-            self.assertEqual(the_dict, {
-                             "message": "Test log", "level": "INFO"
-                             })
+            self.assertItemsEqual(the_dict, {
+                "message": "Test log",
+                "level": "INFO",
+                "logger":"test",
+                "timestamp":"2015-11-12T10:11:12.0Z"})
 
     def tearDown(self):
         os.remove(self.test_file + '.log')

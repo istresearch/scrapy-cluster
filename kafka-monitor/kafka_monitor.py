@@ -171,7 +171,7 @@ class KafkaMonitor:
 
     def _setup_stats_plugins(self, redis_conn):
         '''
-        Sets up the total stats collectors
+        Sets up the plugin stats collectors
 
         @param redis_conn: the redis connection
         '''
@@ -322,47 +322,55 @@ class KafkaMonitor:
             self.consumer.seek(0, 2)
             self.logger.error("Kafka offset out of range error")
 
-    def _increment_total_stat(self, dict):
+    def _increment_total_stat(self, string):
         '''
         Increments the total stat counters
 
-        @param dict: the loaded message object for HLL counter
+        @param string: the loaded message object for the counter
         '''
+        string = string + str(time.time())
         if 'total' in self.stats_dict:
             self.logger.debug("Incremented total stats")
             for key in self.stats_dict['total']:
                 if key == 'lifetime':
-                    self.stats_dict['total'][key].increment(dict)
+
+                    self.stats_dict['total'][key].increment(string)
                 else:
                     self.stats_dict['total'][key].increment()
 
-    def _increment_fail_stat(self, dict):
+    def _increment_fail_stat(self, item):
         '''
         Increments the total stat counters
 
-        @param dict: the loaded message object for HLL counter
+        @param item: the loaded message object for HLL counter
         '''
+        if isinstance(item, dict):
+            item['ts'] = time.time()
+        elif isinstance(item, str):
+            item = item + str(time.time())
+
         if 'fail' in self.stats_dict:
             self.logger.debug("Incremented fail stats")
             for key in self.stats_dict['fail']:
                 if key == 'lifetime':
-                    self.stats_dict['fail'][key].increment(dict)
+                    self.stats_dict['fail'][key].increment(item)
                 else:
                     self.stats_dict['fail'][key].increment()
 
-    def _increment_plugin_stat(self, name, dict):
+    def _increment_plugin_stat(self, name, item):
         '''
         Increments the total stat counters
 
         @param name: The formal name of the plugin
         @param dict: the loaded message object for HLL counter
         '''
+        item['ts'] = time.time()
         if 'plugins' in self.stats_dict:
             self.logger.debug("Incremented plugin '{p}' plugin stats"\
                     .format(p=name))
             for key in self.stats_dict['plugins'][name]:
                 if key == 'lifetime':
-                    self.stats_dict['plugins'][name][key].increment(dict)
+                    self.stats_dict['plugins'][name][key].increment(item)
                 else:
                     self.stats_dict['plugins'][name][key].increment()
 

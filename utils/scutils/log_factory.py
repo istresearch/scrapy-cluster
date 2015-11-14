@@ -1,6 +1,6 @@
 import logging
-import time
 import sys
+import datetime
 
 from pythonjsonlogger import jsonlogger
 from cloghandler import ConcurrentRotatingFileHandler
@@ -223,10 +223,12 @@ class LogObject(object):
             dict['level'] = level
         if 'timestamp' not in dict:
             dict['timestamp'] = self._get_time()
+        if 'logger' not in dict:
+            dict['logger'] = self.name()
         return dict
 
     def _get_time(self):
         '''
         Returns the system time
         '''
-        return time.time()
+        return datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')

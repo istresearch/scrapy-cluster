@@ -1,4 +1,8 @@
 import logging
+import redis
+import socket
+import time
+from scrapy.utils.response import response_status_message
 
 from scrapy.xlib.tx import ResponseFailed
 from twisted.internet import defer
@@ -6,6 +10,8 @@ from twisted.internet.error import TimeoutError, DNSLookupError, \
         ConnectionRefusedError, ConnectionDone, ConnectError, \
         ConnectionLost, TCPTimedOutError
 
+from scutils.stats_collector import StatsCollector
+from scutils.log_factory import LogFactory
 
 class LogRetryMiddleware(object):
 
@@ -16,10 +22,27 @@ class LogRetryMiddleware(object):
 
     def __init__(self, settings):
         # set up the default sc logger
-        self.logger = logging.getLogger('scrapy-cluster')
-        self.logger.setLevel(logging.DEBUG)
+        my_level = settings.get('SC_LOG_LEVEL', 'INFO')
+        my_output = settings.get('SC_LOG_STDOUT', True)
+        my_json = settings.get('SC_LOG_JSON', False)
+        my_dir = settings.get('SC_LOG_DIR', 'logs')
+        my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
+        my_file = settings.get('SC_LOG_FILE', 'main.log')
+
+        self.logger = LogFactory.get_instance(json=my_json,
+            stdout=my_output, level=my_level, dir=my_dir, file=my_file,
+            bytes=my_bytes)
+
+        #self.logger.setLevel(logging.DEBUG)
         self.retry_http_codes = set(int(x) for x in
                                     settings.getlist('RETRY_HTTP_CODES'))
+
+        # stats setup
+        self.stats_dict = {}
+        self.settings = settings
+        self.name = self.settings['SPIDER_NAME']
+        if self.settings['STATS_STATUS_CODES']:
+            self._setup_stats_status_codes()
 
     @classmethod
     def from_settings(cls, settings):
@@ -27,11 +50,15 @@ class LogRetryMiddleware(object):
 
     @classmethod
     def from_crawler(cls, crawler):
+        # hack to update passed in settings
+        crawler.settings.frozen = False
+        crawler.settings.set('SPIDER_NAME', crawler.spider.name)
         return cls.from_settings(crawler.settings)
 
     def process_exception(self, request, exception, spider):
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
             self._log_retry(request, exception, spider)
+            self._increment_504_stat(request)
 
     def _log_retry(self, request, exception, spider):
         extras = {}
@@ -45,3 +72,55 @@ class LogRetryMiddleware(object):
         extras['url'] = request.url
 
         self.logger.error('Scraper Retry', extra=extras)
+
+    def _setup_stats_status_codes(self):
+        '''
+        Sets up the status code stats collectors
+        '''
+        self.redis_conn = redis.Redis(host=self.settings.get('REDIS_HOST'),
+                                            port=self.settings.get('REDIS_PORT'))
+        hostname = socket.gethostname()
+        # we chose to handle 504's here as well as in the middleware
+        # in case the middleware is disabled
+        self.logger.debug("Setting up log retry middleware stats")
+        status_code = 504
+        temp_key = 'stats:crawler:{h}:{n}:{s}'.format(
+            h=hostname, n=self.name, s=status_code)
+        for item in self.settings['STATS_TIMES']:
+            try:
+                time = getattr(StatsCollector, item)
+
+                self.stats_dict[time] = StatsCollector \
+                        .get_rolling_time_window(
+                                redis_conn=self.redis_conn,
+                                key='{k}:{t}'.format(k=temp_key, t=time),
+                                window=time,
+                                cycle_time=self.settings['STATS_CYCLE'])
+                self.logger.debug("Set up LRM status code {s}, {n} spider,"\
+                    " host {h} Stats Collector '{i}'"\
+                    .format(h=hostname, n=self.name, s=status_code, i=item))
+            except AttributeError as e:
+                self.logger.warning("Unable to find Stats Time '{s}'"\
+                        .format(s=item))
+        total = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
+                        key='{k}:lifetime'.format(k=temp_key),
+                        cycle_time=self.settings['STATS_CYCLE'],
+                        roll=False)
+        self.logger.debug("Set up status code {s}, {n} spider,"\
+                    "host {h} Stats Collector 'lifetime'"\
+                        .format(h=hostname, n=self.name, s=status_code))
+        self.stats_dict['lifetime'] = total
+
+    def _increment_504_stat(self, request):
+        '''
+        Increments the 504 stat counters
+
+        @param request: The scrapy request in the spider
+        '''
+        for key in self.stats_dict:
+            if key == 'lifetime':
+                unique = request.url + str(time.time())
+                self.stats_dict[key].increment(unique)
+            else:
+                self.stats_dict[key].increment()
+        self.logger.debug("Incremented status_code '504' stats")

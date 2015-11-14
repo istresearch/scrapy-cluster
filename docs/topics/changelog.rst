@@ -67,6 +67,8 @@ Crawler Changes
 
 - Updated offline and added online unit tests
 
+- Added response code stats collection
+
 Scrapy Cluster 1.0
 ---------------------
 

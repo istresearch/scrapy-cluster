@@ -437,6 +437,7 @@ class TestLinkSpider(TestCase):
     def setUp(self):
         self.spider = LinkSpider()
         self.spider._logger = MagicMock()
+        self.spider.stats_dict = {}
 
     def get_meta(self):
         item = {}

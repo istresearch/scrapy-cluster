@@ -40,6 +40,10 @@ class StatsMonitor(KafkaBaseMonitor):
             extras = self.get_redis_monitor_stats()
         elif stats == 'crawler':
             extras = self.get_crawler_stats()
+        elif stats == 'spider':
+            extras = self.get_spider_stats()
+        elif stats == 'machine':
+            extras = self.get_machine_stats()
         else:
             self.logger.warn('Received invalid stats request: {s}'\
                 .format(s=stats),
@@ -136,6 +140,80 @@ class StatsMonitor(KafkaBaseMonitor):
             # get zcard value
             return self.redis_conn.zcard(key)
 
+    def get_spider_stats(self):
+        '''
+        Gather spider based stats
+        '''
+        self.logger.debug("Gathering spider stats")
+        the_dict = {}
+        keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
+
+        for key in keys:
+            # break down key
+            elements = key.split(":")
+            machine = elements[2]
+            spider = elements[3]
+            response = elements[4]
+            end = elements[5]
+
+            # we only care about the spider, not machine
+            if spider not in the_dict:
+                the_dict[spider] = {}
+
+            if response not in the_dict[spider]:
+                the_dict[spider][response] = {}
+
+            the_dict[spider][response][end] = self._get_key_value(key, end == 'lifetime')
+
+        # simple count
+        the_dict['count'] = len(the_dict.keys())
+
+        # get count of unique spiders
+        spider_count = 0
+        for key in the_dict:
+            time_keys = self.redis_conn.keys(
+                'stats:crawler:*:{n}:*:*'.format(n=key))
+            spider_keys = self.redis_conn.keys(
+                'stats:crawler:*:{n}:*'.format(n=key))
+            spider_count = spider_count + (len(spider_keys) - len(time_keys))
+        the_dict['count'] = spider_count
+
+        ret_dict = {}
+        ret_dict['spiders'] = the_dict
+
+        return ret_dict
+
+    def get_machine_stats(self):
+        '''
+        Gather spider based stats
+        '''
+        self.logger.debug("Gathering machine stats")
+        the_dict = {}
+        keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
+        for key in keys:
+            # break down key
+            elements = key.split(":")
+            machine = elements[2]
+            spider = elements[3]
+            response = elements[4]
+            end = elements[5]
+
+            # we only care about the machine, not spider type
+            if machine not in the_dict:
+                the_dict[machine] = {}
+
+            if response not in the_dict[machine]:
+                the_dict[machine][response] = {}
+            the_dict[machine][response][end] = self._get_key_value(key, end == 'lifetime')
+
+        # simple count
+        the_dict['count'] = len(the_dict.keys())
+
+        ret_dict = {}
+        ret_dict['machines'] = the_dict
+
+        return ret_dict
+
     def get_crawler_stats(self):
         '''
         Gather crawler stats
@@ -144,4 +222,8 @@ class StatsMonitor(KafkaBaseMonitor):
         '''
         self.logger.debug("Gathering crawler stats")
         the_dict = {}
+
+        the_dict['spiders'] = self.get_spider_stats()['spiders']
+        the_dict['machines'] = self.get_machine_stats()['machines']
+
         return the_dict
