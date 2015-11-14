@@ -21,6 +21,12 @@ class LogRetryMiddleware(object):
                            IOError)
 
     def __init__(self, settings):
+        self.setup(settings)
+
+    def setup(self, settings):
+        '''
+        Does the actual setup of the middleware
+        '''
         # set up the default sc logger
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_output = settings.get('SC_LOG_STDOUT', True)
@@ -42,6 +48,8 @@ class LogRetryMiddleware(object):
         self.settings = settings
         self.name = self.settings['SPIDER_NAME']
         if self.settings['STATS_STATUS_CODES']:
+            self.redis_conn = redis.Redis(host=self.settings.get('REDIS_HOST'),
+                                          port=self.settings.get('REDIS_PORT'))
             self._setup_stats_status_codes()
 
     @classmethod
@@ -77,9 +85,7 @@ class LogRetryMiddleware(object):
         '''
         Sets up the status code stats collectors
         '''
-        self.redis_conn = redis.Redis(host=self.settings.get('REDIS_HOST'),
-                                            port=self.settings.get('REDIS_PORT'))
-        hostname = socket.gethostname()
+        hostname = self._get_hostname()
         # we chose to handle 504's here as well as in the middleware
         # in case the middleware is disabled
         self.logger.debug("Setting up log retry middleware stats")
@@ -110,6 +116,14 @@ class LogRetryMiddleware(object):
                     "host {h} Stats Collector 'lifetime'"\
                         .format(h=hostname, n=self.name, s=status_code))
         self.stats_dict['lifetime'] = total
+
+    def _get_hostname(self):
+        '''
+        Gets the hostname of the machine the spider is running on
+
+        @return: the hostname of the machine
+        '''
+        return socket.gethostname()
 
     def _increment_504_stat(self, request):
         '''
