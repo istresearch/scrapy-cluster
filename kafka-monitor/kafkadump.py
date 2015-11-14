@@ -31,6 +31,7 @@ def main():
             parser.exit()
     # -------
 
+    # initial main parser setup
     parser = argparse.ArgumentParser(
         description='Kafka Dump: Scrapy Cluster Kafka topic dump utility for '
                     'debugging.', add_help=False)
@@ -39,8 +40,8 @@ def main():
 
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
+    # args to use for all commands
     base_parser = argparse.ArgumentParser(add_help=False)
-
     base_parser.add_argument('-kh', '--kafka-host', action='store', required=False,
                         help="The override Kafka host")
     base_parser.add_argument('-s', '--settings', action='store', required=False,
@@ -62,9 +63,16 @@ def main():
     dump_parser.add_argument('-c', '--consumer', action='store',
                              required=False, default='default',
                              help="The Kafka consumer id to use")
-    dump_parser.add_argument('-b', '--from-beginning', action='store',
-                             required=False,
+    dump_parser.add_argument('-b', '--from-beginning', action='store_const',
+                             required=False, const=True,
                              help="Read the topic from the beginning")
+    dump_parser.add_argument('-nb', '--no-body', action='store_const',
+                             required=False, const=True, default=False,
+                             help="Do not include the raw html 'body' key in"
+                             " the json dump of the topic")
+    dump_parser.add_argument('-p', '--pretty', action='store_const',
+                             required=False, const=True, default=False,
+                             help="Pretty print the json objects consumed")
 
     args = vars(parser.parse_args())
 
@@ -138,10 +146,21 @@ def main():
                     if message is None:
                         logger.debug("no message")
                         break
+                    logger.debug("Received message")
                     val = message.message.value
-                    item = json.loads(val)
+                    try:
+                        item = json.loads(val)
+                        if args['no_body'] and 'body' in item:
+                            del item['body']
+                    except ValueError:
+                        logger.info("Message is not a JSON object")
+                        item = val
                     body_bytes = len(item)
-                    logger.info(item)
+
+                    if args['pretty']:
+                        print json.dumps(item, indent=4)
+                    else:
+                        print item
                     num_records = num_records + 1
                     total_bytes = total_bytes + body_bytes
             except KeyboardInterrupt:
