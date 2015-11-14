@@ -10,32 +10,14 @@ import argparse
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.log_factory import LogFactory
 from scutils.method_timer import MethodTimer
+from scutils.argparse_helper import ArgparseHelper
 
 def main():
-
-    # ----- Generic Argparse help class
-    class _HelpAction(argparse._HelpAction):
-
-        def __call__(self, parser, namespace, values, option_string=None):
-            parser.print_help()
-            print
-
-            subparsers_actions = [
-                action for action in parser._actions
-                if isinstance(action, argparse._SubParsersAction)]
-            for subparsers_action in subparsers_actions:
-                for choice, subparser in subparsers_action.choices.items():
-                    print("Command '{}'".format(choice))
-                    print(subparser.format_usage())
-
-            parser.exit()
-    # -------
-
     # initial main parser setup
     parser = argparse.ArgumentParser(
         description='Kafka Dump: Scrapy Cluster Kafka topic dump utility for '
                     'debugging.', add_help=False)
-    parser.add_argument('-h', '--help', action=_HelpAction,
+    parser.add_argument('-h', '--help', action=ArgparseHelper,
                         help='show this help message and exit')
 
     subparsers = parser.add_subparsers(help='commands', dest='command')
