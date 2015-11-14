@@ -4,6 +4,7 @@ import time
 import traceback
 import argparse
 import time
+import json
 
 from collections import OrderedDict
 from scutils.log_factory import LogFactory
@@ -42,7 +43,11 @@ class RedisMonitor:
         my_json = json if json else self.settings['LOG_JSON']
         self.logger = LogFactory.get_instance(json=my_json,
                                               stdout=my_output, level=my_level,
-                                              name='redis-monitor')
+                                              name='redis-monitor',
+                                              dir=self.settings['LOG_DIR'],
+                                              file=self.settings['LOG_FILE'],
+                                              bytes=self.settings['LOG_MAX_BYTES'],
+                                              backups=self.settings['LOG_BACKUPS'])
 
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'])
