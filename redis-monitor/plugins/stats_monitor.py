@@ -165,18 +165,20 @@ class StatsMonitor(KafkaBaseMonitor):
 
             the_dict[spider][response][end] = self._get_key_value(key, end == 'lifetime')
 
-        # simple count
-        the_dict['count'] = len(the_dict.keys())
-
         # get count of unique spiders
-        spider_count = 0
+        total_spider_count = 0
         for key in the_dict:
             time_keys = self.redis_conn.keys(
                 'stats:crawler:*:{n}:*:*'.format(n=key))
             spider_keys = self.redis_conn.keys(
                 'stats:crawler:*:{n}:*'.format(n=key))
-            spider_count = spider_count + (len(spider_keys) - len(time_keys))
-        the_dict['count'] = spider_count
+            spider_count = (len(spider_keys) - len(time_keys))
+            total_spider_count = total_spider_count + spider_count
+            the_dict[key]['count'] = spider_count
+
+        # simple counts
+        the_dict['unique_spider_count'] = len(the_dict.keys())
+        the_dict['total_spider_count'] = total_spider_count
 
         ret_dict = {}
         ret_dict['spiders'] = the_dict

@@ -129,6 +129,10 @@ class RedisMonitor:
                 # only log every X seconds
                 if new_time != old_time:
                     self._dump_stats()
+
+                    if self.settings['STATS_DUMP_CRAWL']:
+                        self._dump_crawl_stats()
+
                     old_time = new_time
 
             time.sleep(0.1)
@@ -324,6 +328,54 @@ class RedisMonitor:
                     json.dumps(extras, indent=4, sort_keys=True)))
         else:
             self.logger.info('Redis Monitor Stats Dump', extra=extras)
+
+    def _dump_crawl_stats(self):
+        '''
+        Dumps flattened crawling stats so the spiders do not have to
+        '''
+        extras = {}
+        spiders = {}
+
+        keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
+
+        # gather response code counts (like stats monitor)
+        for key in keys:
+            # break down key
+            elements = key.split(":")
+            # element 2 is machine (not needed)
+            spider = elements[3]
+            response = elements[4]
+            end = elements[5]
+
+            spiders[spider] = True
+
+            final = '{s}_{r}_{e}'.format(s=spider, r=response, e=end)
+
+            if end == 'lifetime':
+                value = self.redis_conn.execute_command("PFCOUNT", key)
+            else:
+                value = self.redis_conn.zcard(key)
+
+            extras[final] = value
+
+        # gather spider counts (like stats monitor)
+        total_spider_count = 0
+        for key in spiders:
+            time_keys = self.redis_conn.keys(
+                'stats:crawler:*:{n}:*:*'.format(n=key))
+            spider_keys = self.redis_conn.keys(
+                'stats:crawler:*:{n}:*'.format(n=key))
+            spider_count = len(spider_keys) - len(time_keys)
+            total_spider_count = total_spider_count + spider_count
+            extras['{k}_spider_count'.format(k=key)] = spider_count
+
+        extras['total_spider_count'] = total_spider_count
+
+        if not self.logger.json:
+            self.logger.info('Crawler Stats Dump:\n{0}'.format(
+                    json.dumps(extras, indent=4, sort_keys=True)))
+        else:
+            self.logger.info('Crawler Stats Dump', extra=extras)
 
 
 def main():
