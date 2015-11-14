@@ -1,6 +1,8 @@
 import logging
 import sys
 import datetime
+import os
+import errno
 
 from pythonjsonlogger import jsonlogger
 from cloghandler import ConcurrentRotatingFileHandler
@@ -72,6 +74,13 @@ class LogObject(object):
             self.debug("Logging to stdout")
         else:
             # set up to file
+            try:
+                # try to make dir
+                os.makedirs(dir)
+            except OSError as exception:
+                if exception.errno != errno.EEXIST:
+                    raise
+
             file_handler = ConcurrentRotatingFileHandler(dir + '/' + file,
                                                          maxBytes=bytes,
                                                          backupCount=backups)
