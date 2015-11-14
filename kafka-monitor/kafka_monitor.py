@@ -22,6 +22,7 @@ from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.method_timer import MethodTimer
 from scutils.stats_collector import StatsCollector
+from scutils.argparse_helper import ArgparseHelper
 
 try:
     import cPickle as pickle
@@ -451,51 +452,53 @@ class KafkaMonitor:
 
 
 def main():
+    # initial parsing setup
     parser = argparse.ArgumentParser(
         description='Kafka Monitor: Monitors and validates incoming Kafka ' \
-            'topic cluster requests\n',
-        usage='\nkafka_monitor.py -r [-h] [-s SETTINGS]\n' \
-                '    [-ll {DEBUG,INFO,WARNING,CRITICAL,ERROR}]\n' \
-                '    [-lf] [-lj]\n' \
-                '    Run the Kafka Monitor continuously\n\n' \
-                'kafka-monitor -f \'{"my_json":"value"}\' [-h] [-s SETTINGS]'\
-                '\n    [-ll {DEBUG,INFO,WARNING,CRITICAL,ERROR}]\n' \
-                '    [-lf] [-lj]\n' \
-                '    Feed a formatted json request into kafka\n\n' \
-                'NOTE: Command line logging arguments take precedence ' \
-                'over settings')
+            'topic cluster requests\n', add_help=False)
+    parser.add_argument('-h', '--help', action=ArgparseHelper,
+                        help='show this help message and exit')
 
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-r', '--run', action='store_const', const=True,
-                       help='Run the Kafka Monitor')
-    group.add_argument('-f', '--feed', action='store',
-                       help='Feed a JSON formatted request to be sent to Kafka')
+    subparsers = parser.add_subparsers(help='commands', dest='command')
 
-    parser.add_argument('-s', '--settings', action='store', required=False,
-                        help="The settings file to read from", default="localsettings.py")
-    parser.add_argument('-ll', '--log-level', action='store', required=False,
-                        help="The log level", default=None,
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-    parser.add_argument('-lf', '--log-file', action='store_const',
+    base_parser = argparse.ArgumentParser(add_help=False)
+    base_parser.add_argument('-s', '--settings', action='store',
+                             required=False,
+                             help="The settings file to read from",
+                             default="localsettings.py")
+    base_parser.add_argument('-ll', '--log-level', action='store',
+                             required=False, help="The log level",
+                             default=None,
+                             choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+    base_parser.add_argument('-lf', '--log-file', action='store_const',
                         required=False, const=True, default=None,
-                        help='Log the output to the file specified in settings.py. Otherwise '\
-                        'logs to stdout')
-    parser.add_argument('-lj', '--log-json', action='store_const',
+                        help='Log the output to the file specified in '
+                        'settings.py. Otherwise logs to stdout')
+    base_parser.add_argument('-lj', '--log-json', action='store_const',
                         required=False, const=True, default=None,
                         help="Log the data in JSON format")
+
+    feed_parser = subparsers.add_parser('feed', help='Feed a JSON formatted'
+                                        ' request to be sent to Kafka',
+                                        parents=[base_parser])
+    feed_parser.add_argument('json', help='The JSON object as a string')
+
+    run_parser = subparsers.add_parser('run', help='Run the Kafka Monitor',
+                                       parents=[base_parser])
+
     args = vars(parser.parse_args())
 
     kafka_monitor = KafkaMonitor(args['settings'])
     kafka_monitor.setup(level=args['log_level'], log_file=args['log_file'],
                         json=args['log_json'])
 
-    if args['run']:
+    if args['command'] == 'run':
         try:
             kafka_monitor.run()
         except KeyboardInterrupt:
             kafka_monitor.logger.info("Closing Kafka Monitor")
-    if args['feed']:
-        json_req = args['feed']
+    if args['command'] == 'feed':
+        json_req = args['json']
         try:
             parsed = json.loads(json_req)
         except ValueError:
