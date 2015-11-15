@@ -206,7 +206,12 @@ class StatsMonitor(KafkaBaseMonitor):
 
             if response not in the_dict[machine]:
                 the_dict[machine][response] = {}
-            the_dict[machine][response][end] = self._get_key_value(key, end == 'lifetime')
+
+            if end in the_dict[machine][response]:
+                the_dict[machine][response][end] = the_dict[machine][response][end] + \
+                    self._get_key_value(key, end == 'lifetime')
+            else:
+                the_dict[machine][response][end] = self._get_key_value(key, end == 'lifetime')
 
         # simple count
         the_dict['count'] = len(the_dict.keys())

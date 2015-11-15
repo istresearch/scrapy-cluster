@@ -16,6 +16,7 @@ from plugins.base_monitor import BaseMonitor
 from plugins.expire_monitor import ExpireMonitor
 from plugins.info_monitor import InfoMonitor
 from plugins.stop_monitor import StopMonitor
+from plugins.stats_monitor import StatsMonitor
 
 import settings
 import pickle
@@ -403,6 +404,128 @@ class TestExpirePlugin(TestCase, RegexFixer):
             self.fail("Expire not called")
         except BaseException as e:
             self.assertEquals("throw once", e.message)
+
+class TestStatsPlugin(TestCase, RegexFixer):
+    def setUp(self):
+        self.plugin = StatsMonitor()
+        self.plugin.redis_conn = MagicMock()
+        self.plugin.logger = MagicMock()
+        self.plugin._get_key_value = MagicMock(return_value = 5)
+
+    def test_stats_regex(self):
+        regex = self.fix_re(self.plugin.regex)
+        self.assertEquals(re.findall(regex, 'statsrequest:crawler:testApp'),
+                          ['statsrequest:crawler:testApp'])
+        self.assertEquals(re.findall(regex, 'statsrequest:crawler'), [])
+
+    def _assert_thrown(self, key, equals):
+        try:
+            self.plugin.handle(key, 'blah')
+            self.fail(equals + " exception not thrown")
+        except Exception as e:
+            self.assertEquals(equals, e.message)
+
+    def test_stats_handle(self):
+        # trying to make sure that everything is called
+        self.plugin.get_all_stats = MagicMock(side_effect=Exception("all"))
+        self.plugin.get_kafka_monitor_stats = MagicMock(side_effect=Exception("kafka"))
+        self.plugin.get_redis_monitor_stats = MagicMock(side_effect=Exception("redis"))
+        self.plugin.get_crawler_stats = MagicMock(side_effect=Exception("crawler"))
+        self.plugin.get_spider_stats = MagicMock(side_effect=Exception("spider"))
+        self.plugin.get_machine_stats = MagicMock(side_effect=Exception("machine"))
+
+        self._assert_thrown("statsrequest:all:appid", "all")
+        self._assert_thrown("statsrequest:kafka-monitor:appid", "kafka")
+        self._assert_thrown("statsrequest:redis-monitor:appid", "redis")
+        self._assert_thrown("statsrequest:crawler:appid", "crawler")
+        self._assert_thrown("statsrequest:spider:appid", "spider")
+        self._assert_thrown("statsrequest:machine:appid", "machine")
+
+    def test_stats_get_spider(self):
+        link_keys = [
+            'stats:crawler:host1:link:200:3600',
+            'stats:crawler:host2:link:200:lifetime',
+            'stats:crawler:host1:link:504:86400',
+            'stats:crawler:host3:link:200:86400',
+        ]
+        link_spider_keys = [
+            'stats:crawler:host2:link:ABCDEF',
+            'stats:crawler:host3:link:ABCDEF',
+            'stats:crawler:host1:link:123345',
+        ]
+        other_keys = [
+            'stats:crawler:host2:other:403:lifetime',
+            'stats:crawler:host1:other:200:3600',
+        ]
+        other_spider_keys = [
+            'stats:crawler:host2:other:ABCDEF1',
+        ]
+        # set up looping calls to redis_conn.keys()
+        returns = [
+            link_keys + other_keys,
+            other_keys,
+            other_keys + other_spider_keys,
+            link_keys,
+            link_keys + link_spider_keys,
+        ]
+
+        def side_effect(*args):
+            return returns.pop(0)
+
+        self.plugin.redis_conn.keys = MagicMock(side_effect=side_effect)
+
+        result = self.plugin.get_spider_stats()
+        good = {
+            'spiders': {
+                'unique_spider_count': 2,
+                'total_spider_count': 4,
+                'other': {'count': 1, '200': {'3600': 5}, '403': {'lifetime': 5}},
+                'link': {'count': 3, '200': {'lifetime': 5, '86400': 5, '3600': 5}, '504': {'86400': 5}
+                }
+            }
+        }
+        self.assertEquals(result, good)
+
+    def test_stats_get_machine(self):
+        # tests stats on three different machines, with different spiders
+        # contributing to the same or different stats
+        self.plugin.redis_conn.keys = MagicMock(return_value=[
+                                                'stats:crawler:host1:link:200:3600',
+                                                'stats:crawler:host2:link:200:lifetime',
+                                                'stats:crawler:host1:link:504:86400',
+                                                'stats:crawler:host2:other:403:lifetime',
+                                                'stats:crawler:host3:link:200:86400',
+                                                'stats:crawler:host1:other:200:3600',
+                                                ])
+        result = self.plugin.get_machine_stats()
+        good = {
+            'machines': {
+                'count': 3,
+                'host1': {'200': {'3600': 10},'504': {'86400': 5}},
+                'host2': {'200': {'lifetime': 5},'403': {'lifetime': 5}},
+                'host3': {'200': {'86400': 5}}
+            }
+        }
+        self.assertEquals(result, good)
+
+    def test_stats_get_plugin(self):
+        self.plugin.redis_conn.keys = MagicMock(return_value=[
+                                                'stats:main:total:3600',
+                                                'stats:main:total:lifetime',
+                                                'stats:main:pluginX:86400',
+                                                'stats:main:pluginX:lifetime',
+                                                'stats:main:fail:3600',
+                                                'stats:main:fail:68000'
+                                                ])
+        result = self.plugin._get_plugin_stats('main')
+        good = {
+            "plugins": {
+                "pluginX": {"lifetime": 5, "86400": 5}
+            },
+            "total": {"lifetime": 5, "3600": 5},
+            "fail": {"68000": 5, "3600": 5}
+        }
+        self.assertEquals(result, good)
 
 if __name__ == '__main__':
     unittest.main()
