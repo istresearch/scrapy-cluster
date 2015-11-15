@@ -105,5 +105,11 @@ class TestLinkSpider(TestCase):
 
         self.assertEquals(message_count, 1)
 
+    def tearDown(self):
+        keys = self.redis_conn.keys('stats:crawler:*:test-spider:*')
+        keys = keys + self.redis_conn.keys('test-spider:*')
+        for key in keys:
+            self.redis_conn.delete(key)
+
 if __name__ == '__main__':
     unittest.main()
