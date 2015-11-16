@@ -40,10 +40,9 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 4.  `cd /vagrant` to get to the **scrapy-cluster** directory.
 5.  `conda create -n sc scrapy --yes` to create a conda virtualenv with Scrapy pre-installed.
 6.  `source activate sc` to activate your virtual environment.
-7.  `cd utils && python setup.py install` to install the **scutils** packages.
-8.  `cd ../; pip install -r requirements.txt` to install the remaining Scrapy Cluster dependencies.
-9.  `./run_offline_tests.sh` to run offline tests.
-10. `./run_online_tests.sh` to run online tests (relies on kafka, zookeeper, redis).
+7.  `pip install -r requirements.txt` to install Scrapy Cluster dependencies.
+8.  `./run_offline_tests.sh` to run offline tests.
+9.  `./run_online_tests.sh` to run online tests (relies on kafka, zookeeper, redis).
 
 ## Documentation
 
