@@ -1,53 +1,8 @@
+API
+===
+
 Kafka Monitor
-=============
-
-The Kafka Monitor serves as the entry point into the crawler architecture. It validates both incoming crawl requests and incoming action requests. The files included within can be used to submit new crawl requests, gather information about currently running crawls, and dump results to the command line.
-
-Quick Start
------------
-
-First, make sure your `settings_crawler.py` and `settings_actions.py` are updated with your Kafka and Redis hosts.
-
-Then run the kafka monitor for crawl requests:
-
-::
-
-    python kafka-monitor.py run -s settings_crawling.py
-
-Then run the kafka monitor for action requests:
-
-::
-
-    python kafka-monitor.py run -s settings_actions.py
-
-Finally, submit a new crawl request:
-
-::
-
-    python kafka-monitor.py feed -s settings_crawling.py '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
-
-If you have everything else in the pipeline set up correctly you should now see the raw html of the IST Research home page come through. You need both of these to run the full cluster, but at a minimum you should have the ``-s settings_crawling`` monitor running.
-
--  For how to set up the Scrapy crawlers, refer to the :doc:`./crawler` documentation
-
--  To learn more about how to see crawl info, please see the :doc:`./redismonitor` documentation
-
-Design Considerations
----------------------
-
-The design of the Kafka Monitor stemmed from the need to define a format that allowed for the creation of crawls in the crawl architecture from any application. If the application could read and write to the kafka cluster then it could write messages to a particular kafka topic to create crawls.
-
-Soon enough those same applications wanted the ability to retrieve and stop their crawls from that same interface, so we decided to make a dynamic interface that could support all of the request needs, but utilize the same base code. In the future this base code could expanded to handle any different style of request, as long as there was a validation of the request and a place to send the result to.
-
-From our own internal debugging and ensuring other applications were working properly, a utility program was also created on the side in order to be able to interact and monitor the kafka messages coming through. This dump utility can be used to monitor any of the Kafka topics within the cluster.
-
-Components
-----------
-
-This section explains the individual files located within the kafka monitor project.
-
-kafka\_monitor.py
-^^^^^^^^^^^^^^^^^
+-------------
 
 The Kafka Monitor consists of the following two different functionalities
 
@@ -193,3 +148,127 @@ Required
 Optional:
 
 - **crawlid:** The unique ``crawlid`` to act upon. Only needed when stopping a crawl or gathering information about a specific crawl.
+
+Redis Monitor
+-------------
+
+All requests adhere to the following three Kafka topics for input and output:
+
+Incoming Action Request Kafka Topic:
+
+- ``demo.inbound_actions`` - The topic to feed properly formatted action requests to
+
+Outbound Action Result Kafka Topics:
+
+- ``demo.outbound_firehose`` - A firehose topic of all resulting actions within the system. Any single action conducted by the Redis Monitor is guaranteed to come out this pipe.
+
+- ``demo.outbound_<appid>`` - A special topic created for unique applications that submit action requests. Any application can listen to their own specific action results by listening to the the topic created under the ``appid`` they used to submit the request. These topics are a subset of the action firehose data and only contain the results that are applicable to the application who submitted it.
+
+**Information Action**
+
+The ``info`` action can be conducted in two different ways.
+
+Application Info Request
+
+    ::
+
+        python kafka-monitor.py feed -s settings_actions.py '{"action":"info", "appid":"testapp", "uuid":"someuuid", "spiderid":"link"}
+
+    This returns back all information available about the ``appid`` in question. It is a summation of the various ``crawlid`` statistics.
+
+    Application Info Response
+
+    ::
+
+        {
+            u'server_time': 1429216294,
+            u'uuid': u'someuuid',
+            u'total_pending': 12,
+            u'total_domains': 0,
+            u'total_crawlids': 2,
+            u'appid': u'testapp',
+            u'crawlids': {
+                u'2aaabbb': {
+                    u'low_priority': 29,
+                    u'high_priority': 29,
+                    u'expires': u'1429216389'
+                    u'total': 1
+                },
+                u'1aaabbb': {
+                    u'low_priority': 29,
+                    u'high_priority': 39,
+                    u'total': 11
+                }
+            }
+        }
+
+    Here, there were two different ``crawlid``'s in the queue for the ``link`` spider that had the specified ``appid``. The json return value is the basic structure seen above that breaks down the different ``crawlid``'s into their total, their high/low priority in the queue, and if they have an expiration.
+
+Crawl ID Info Request
+
+    ::
+
+        python kafka-monitor.py feed -s settings_actions.py '{"action":"info", "appid":"myapp", "uuid":"someuuid", "crawlid":"abc123", "spiderid":"link"}'
+
+    This is a very specific request that is asking to poll a specific ``crawlid`` in the ``link`` spider queue. Note that this is very similar to the above request but with one extra parameter. The following example response is generated:
+
+Crawl ID Info Response from Kafka
+
+    ::
+
+        {
+            u'server_time': 1429216864,
+            u'crawlid': u'abc123',
+            u'total_pending': 28,
+            u'low_priority': 39,
+            u'high_priority': 39,
+            u'appid': u'testapp',
+            u'uuid': u'someuuid'
+        }
+
+    The response to the info request is a simple json object that gives statistics about the crawl in the system, and is very similar to the results for an ``appid`` request. Here we can see that there were 28 requests in the queue yet to be crawled of all the same priority.
+
+**Stop Action**
+
+The ``stop`` action is used to abruptly halt the current crawl job. A request takes the following form:
+
+Stop Request
+
+    ::
+
+        python kafka-monitor.py feed -s settings_actions.py '{"action":"stop", "appid":"testapp", "uuid":"someuuid2", "crawlid":"ABC123", "spiderid":"link"}'
+
+    After the request is processed, only current spiders within the cluster currently in progress of downloading a page will continue. All other spiders will not crawl that same ``crawlid`` past a depth of 0 ever again, and all pending requests will be purged from the queue.
+
+Stop Response from Kafka
+
+    ::
+
+        {
+            u'total_purged': 524,
+            u'uuid': u'someuuid',
+            u'spiderid': u'link',
+            u'appid': u'testapp',
+            u'action': u'stop',
+            u'crawlid': u'ABC123'
+        }
+
+    The json response tells the application that the stop request was successfully completed, and states how many requests were purged from the particular queue.
+
+**Expire Notification**
+
+An ``expire`` notification is generated by the Redis Monitor any time an on going crawl is halted because it has exceeded the time it was supposed to stop. A crawl request that includes an ``expires`` attribute will generate an expire notification when it is stopped by the Redis Monitor.
+
+Expire Notification from Kafka
+
+    ::
+
+        {
+            u'total_expired': 75,
+            u'crawlid': u'abcdef-1',
+            u'spiderid': u'link',
+            u'appid': u'testapp',
+            u'action': u'expired'
+        }
+
+    This notification states that the ``crawlid`` of "abcdef-1" expired within the system, and that 75 pending requests were removed.

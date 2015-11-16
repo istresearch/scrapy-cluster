@@ -1,5 +1,5 @@
-Crawler
-=======
+Design
+==============
 
 The Scrapy Cluster allows for multiple concurrent spiders located on different machines to coordinate their crawling efforts against a submitted crawl job. The crawl queue is managed by Redis, and each spider utilizes a modified Scrapy Scheduler to pull from the redis queue.
 
@@ -7,34 +7,8 @@ After the page has been successfully crawled by the spider, it is yielded to the
 
 A generic ``link`` spider has been provided as a starting point into cluster based crawling. The link spider simply crawls all links found on the page to the depth specified by the Kafka API request.
 
-Quick Start
------------
-
-This is a complete Scrapy crawling project.
-
-First, make sure your ``settings.py`` is updated with your Kafka and
-Redis hosts.
-
-To run the crawler offline test to make sure nothing is broken:
-
-::
-
-    python tests/tests_offline.py -v
-
-Then run the crawler:
-
-::
-
-    scrapy runspider crawling/spiders/link_spider.py
-
-To run multiple crawlers, simply run in the background across X number of machines. Because the crawlers coordinate their efforts through Redis, any one crawler can be brought up/down in order to add crawling capability.
-
--  To execute a crawl, please refer the :doc:`./kafkamonitor` documentation
-
--  To learn more about how to see crawl info, please see the :doc:`./redismonitor` documentation
-
-Design Considerations
----------------------
+Spiders
+-------
 
 The core design of the provided link spider is that it tries to be simple in concept and easy to extend into further applications. Scrapy itself is a very powerful and extendable crawling framework, and this crawling project utilizes a unique combination of extensions and modifications to try to meet a new cluster based crawling approach.
 
@@ -118,19 +92,6 @@ An extremely basic class that serves as a crawl link duplication filter utilizin
 This allows for a crawl job over a variety of links to not waste resources by crawling the same things. If you would like to recrawl those same urls, simply submit the same url with a different crawl identifier to the API. If you would like to continue to expand your crawl frontier, submit a crawl with the same identifier.
 
 .. note:: If you continue to submit the same ``crawlid`` and none of the urls have changed, the crawl prematurely stop because it found zero new links to spider.
-
-redis\_queue.py
-^^^^^^^^^^^^^^^
-
-A utility class that utilizes Pickle encoding to store and retrieve arbitrary sets of data in Redis. The queues come in three basic forms:
-
-- ``RedisQueue`` - A FIFO queue utilizing a Redis List
-
-- ``RedisStack`` - A Stack implementation utilizing a Redis List
-
-- ``RedisPriorityQueue`` - A prioritized queue utilizing a Redis Sorted Set. This is the queue utilized by the scheduler for prioritized crawls
-
-All three of these classes can handle arbitrary sets of data, and handle the pickle encoding and decoding for you.
 
 redis\_retry\_middleware.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

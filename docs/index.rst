@@ -1,25 +1,22 @@
-.. Scrapy Cluster documentation master file, created by
-   sphinx-quickstart on Wed May  6 19:06:41 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Scrapy Cluster |version| Documentation
 ==========================================
 
-This documentation provides everything you need to know about the Scrapy based distributed crawling project, Scrapy Cluster.
+This documentation provides everything you need to know about the `Scrapy <http://scrapy.org/>`_ based distributed crawling project, Scrapy Cluster.
 
 .. toctree::
     :hidden:
-    :maxdepth: 1
+    :maxdepth: 2
 
-    topics/overview
-    topics/quickstart
-    topics/kafkamonitor
-    topics/crawler
-    topics/redismonitor
-    topics/advanced
+    topics/introduction/index
+    topics/kafka-monitor/index
+    topics/crawler/index
+    topics/redis-monitor/index
+    topics/utils/index
+    topics/advanced/index
+    topics/contributing
     topics/changelog
     topics/license
+
 
 Getting Started
 ---------------
