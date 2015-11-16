@@ -5,7 +5,7 @@ Scrapy Cluster Utilities
 Overview
 --------
 
-The ``scutils`` package is a collection of utilities that are used by the Scrapy Cluster project.  However, these utilities are agnostic enough that they can be used for any application.
+The ``scutils`` package is a collection of utilities that are used by the Scrapy Cluster project.  These utilities are agnostic enough that they can be used by any application.
 
 Requirements
 ------------
@@ -46,20 +46,20 @@ The ``redis_queue`` module provides 3 core queue classes which use Redis as the 
 redis_throttled_queue.py
 ========================
 
-The ``redis_throttled_queue`` module provides a thorttled or moderated redis queue structure that can be used to mitigate the number of pops from the queue within a given time frame.
+The ``redis_throttled_queue`` module provides a throttled or moderated Redis queue structure that can be used to mitigate the number of pops from the queue within a given time frame.
 
 settings_wrapper.py
 ===================
 
-The ``settings_wrapper`` module is a class the handles loading of default python application settings, which can then be overriden or added to by a local settings file. In the end provides a single dictionary object of all your loaded application settings.
+The ``settings_wrapper`` module is a class the handles loading of default python application settings, which can then be overridden or added to by a local settings file. In the end provides a single dictionary object of all your loaded application settings.
 
 
 stats_collector.py
 ==================
 
-The ``stats_collector`` module generates Redis based statistics based on time windows or in total. Statistics collection inculdes time windows, rolling time windows, counters, unique counters, hyperloglog counters, and bitmap counters.
+The ``stats_collector`` module generates Redis based statistics based on time windows or in total. Statistics collection includes time windows, rolling time windows, counters, unique counters, hyperloglog counters, and bitmap counters.
 
 zookeeper_watcher.py
 ====================
 
-The ``zookeeper_watcher`` module provides an easy way to tell an application that it's watched Zookeeper file has changed. Handles Zookeeper session disonnect and reconnections behind the scenes of your application.
+The ``zookeeper_watcher`` module provides an easy way to tell an application that it's watched Zookeeper file has changed. It also handles Zookeeper session disconnects and reconnects behind the scenes of your application.

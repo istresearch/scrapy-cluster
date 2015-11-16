@@ -57,7 +57,6 @@ setup(
     keywords=['scrapy', 'scrapy-cluster', 'utilities'],
     packages=find_packages(),
     package_data={},
-    # data_files=data_files,
     install_requires=install_requires,
     tests_require=tests_require,
     setup_requires=setup_requires,
