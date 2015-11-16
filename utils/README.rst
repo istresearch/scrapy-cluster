@@ -10,7 +10,7 @@ The ``scutils`` package is a collection of utilities that are used by the Scrapy
 Requirements
 ------------
 
-- Unix based machine (Linux of OS X)
+- Unix based machine (Linux or OS X)
 - Python 2.7.x
 
 Installation
