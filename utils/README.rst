@@ -5,7 +5,7 @@ Scrapy Cluster Utilities
 Overview
 --------
 
-The ``scutils`` package is a collection of utilities that are used by the Scrapy Cluster.  However, these utilities are agnostic enough that they can be used for any distributed application.
+The ``scutils`` package is a collection of utilities that are used by the Scrapy Cluster project.  However, these utilities are agnostic enough that they can be used for any application.
 
 Requirements
 ------------
@@ -21,24 +21,45 @@ Inside a virtualenv, run ``pip install -U scutils``.  This will install the late
 Documentation
 -------------
 
-Full documentation for ``scutils`` will be included as part of the Scrapy Cluster 1.1 release.  Basic descriptions are below.
+Full documentation for the ``scutils`` package will be included as part of the Scrapy Cluster 1.1 release.  Basic descriptions are below.
+
+argparse_helper.py
+==================
+
+The ``argparse_helper`` module is used to help print top level ``--help`` arguments from argparse when used with subparsers. Useful for running applications that have multiple combinations of subcommands and command line arguments.
 
 log_factory.py
 ==============
 
-The ``log_factory`` module provides a standardized way for creating log data.  It supports all log levels and various output formats, including JSON.
+The ``log_factory`` module provides a standardized way for creating logs for multithreaded and concurrent process log data.  It supports all log levels, stdout or to a file, and various output formats including JSON.
 
 method_timer.py
 ===============
 
-The ``method_timer`` module provides a simple decorator that can be added to functions or methods requiring a timeout period.
+The ``method_timer`` module provides a simple decorator that can be added to functions or methods requiring an execution timeout period.
+
+redis_queue.py
+==============
+
+The ``redis_queue`` module provides 3 core queue classes which use Redis as the place to store data. Includes FIFO, Stack, and Priority Queues.
+
+redis_throttled_queue.py
+========================
+
+The ``redis_throttled_queue`` module provides a thorttled or moderated redis queue structure that can be used to mitigate the number of pops from the queue within a given time frame.
+
+settings_wrapper.py
+===================
+
+The ``settings_wrapper`` module is a class the handles loading of default python application settings, which can then be overriden or added to by a local settings file. In the end provides a single dictionary object of all your loaded application settings.
+
 
 stats_collector.py
 ==================
 
-The ``stats_collector`` module generates Redis statistics based on time windows.
+The ``stats_collector`` module generates Redis based statistics based on time windows or in total. Statistics collection inculdes time windows, rolling time windows, counters, unique counters, hyperloglog counters, and bitmap counters.
 
 zookeeper_watcher.py
 ====================
 
-The ``zookeeper_watcher.py`` module provides an easy way to tell an application that it's Zookeeper file has changed.
+The ``zookeeper_watcher`` module provides an easy way to tell an application that it's watched Zookeeper file has changed. Handles Zookeeper session disonnect and reconnections behind the scenes of your application.
