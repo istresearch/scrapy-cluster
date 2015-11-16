@@ -53,7 +53,7 @@ setup(
     author='Madison Bahmer',
     author_email='madison.bahmer@istresearch.com',
     license='MIT',
-    url='https://github.com/istresearch/scrapy-cluster/utils',
+    url='https://github.com/istresearch/scrapy-cluster',
     keywords=['scrapy', 'scrapy-cluster', 'utilities'],
     packages=find_packages(),
     package_data={},
