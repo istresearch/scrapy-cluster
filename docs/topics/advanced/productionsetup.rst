@@ -23,3 +23,6 @@ As a friendly reminder, the following processes should be monitored:
 - Kafka Monitor for Action Requests
 
 - Redis Monitor
+
+Spider Complexity
+-----------------
