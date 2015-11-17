@@ -14,6 +14,7 @@ These documents cover more advanced topics within Scrapy Cluster in no particula
    responsetime
    kafkatopics
    rediskeys
+   comparison
 
 :doc:`upgrade`
     How to update an older version of Scrapy Cluster to the latest
@@ -38,3 +39,6 @@ These documents cover more advanced topics within Scrapy Cluster in no particula
 
 :doc:`rediskeys`
     The keys generated when running a Scrapy Cluster in production
+
+:doc:`comparison`
+    A comparison with other Scrapy projects that are distributed in nature
