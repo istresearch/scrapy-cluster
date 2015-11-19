@@ -6,14 +6,14 @@ These documents provide information about the agnostic utility classes used with
 .. toctree::
    :hidden:
 
-    argparse_helper
-    log_factory
-    method_timer
-    redis_queue
-    redis_throttled_queue
-    settings_wrapper
-    stats_collector
-    zookeeper_watcher
+   argparsehelper
+   logfactory
+   methodtimer
+   redisqueue
+   redisthrottled_queue
+   settingswrapper
+   statscollector
+   zookeeperwatcher
 
 :doc:`argparsehelper`
     Simple module to assist in argument parsing with subparsers.
@@ -28,7 +28,7 @@ These documents provide information about the agnostic utility classes used with
     A module for creating easy redis based FIFO, Stack, and Priority Queues.
 
 :doc:`redisthrottledqueue`
-    A wrapper around the ``redis_queue`` module to enable distributed throttled pops from the queue.
+    A wrapper around the :doc:`redisqueue` module to enable distributed throttled pops from the queue.
 
 :doc:`settingswrapper`
     Easy to use module to load both default and local settings for your python application and provides a dictionary object in return.
