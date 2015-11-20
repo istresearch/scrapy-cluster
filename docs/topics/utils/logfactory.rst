@@ -29,6 +29,7 @@ It is designed to be easy to use throughout your application, giving you a stand
     :param level: The logging level string ['DEBUG', 'INFO', 'WARNING', 'ERROR' 'CRITICAL']
     :param format: The log format
     :param propagate: Allow the log to propagate to other ancestor loggers
+    :return: The log instance to use
 
 
 Usage

@@ -10,7 +10,7 @@ These documents provide information about the agnostic utility classes used with
    logfactory
    methodtimer
    redisqueue
-   redisthrottled_queue
+   redisthrottledqueue
    settingswrapper
    statscollector
    zookeeperwatcher
