@@ -1,0 +1,5 @@
+{% for host in zookeeper_host_list %}
+  {%- if host == inventory_hostname -%}
+{{ loop.index }}
+  {%- endif -%}
+{% endfor %}

@@ -1,0 +1,6 @@
+---
+
+miniconda_install_dir: /opt/miniconda
+user_home: /root
+
+miniconda_source: "https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh"

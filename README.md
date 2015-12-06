@@ -29,6 +29,21 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 - Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
 
+## Scrapy Cluster test environment
+
+To set up a pre-canned Scrapy Cluster test environment, make sure you have the latest **Virtualbox** + **Vagrant >= 1.7.4** installed.  Vagrant will automatically mount the base **scrapy-cluster** directory to the **/vagrant** directory, so any code changes you make will be visible inside the VM.
+
+### Steps to launch the test environment:
+1.  `vagrant up` in base **scrapy-cluster** directory.
+2.  `vagrant ssh` to ssh into the VM.
+3.  `sudo supervisorctl status` to check that everything is running.
+4.  `cd /vagrant` to get to the **scrapy-cluster** directory.
+5.  `conda create -n sc scrapy --yes` to create a conda virtualenv with Scrapy pre-installed.
+6.  `source activate sc` to activate your virtual environment.
+7.  `pip install -r requirements.txt` to install Scrapy Cluster dependencies.
+8.  `./run_offline_tests.sh` to run offline tests.
+9.  `./run_online_tests.sh` to run online tests (relies on kafka, zookeeper, redis).
+
 ## Documentation
 
 Please check out our official [Scrapy Cluster documentation](http://scrapy-cluster.readthedocs.org/) for more details on how everything works!
