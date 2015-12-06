@@ -1,0 +1,45 @@
+---
+- name: Check if Miniconda Environment is set up already
+  stat: path={{ miniconda_install_dir }}
+  register: minicondaCheck
+  tags: miniconda
+
+- name: Download miniconda
+  get_url:
+    url="{{ miniconda_source }}"
+    dest=/tmp/Miniconda.sh
+    mode=0755
+    validate_certs=no
+  when: minicondaCheck.stat.exists == false
+  tags: miniconda
+
+- name: Setup Miniconda
+  when: minicondaCheck.stat.exists == false
+  command: "/tmp/Miniconda.sh -b -p {{ miniconda_install_dir }}"
+  tags: miniconda
+
+- name: Install miniconda pip
+  command: "/opt/miniconda/bin/conda install pip --yes"
+  tags:
+    - miniconda
+    - pip
+
+- name: prepend miniconda to path for root
+  lineinfile:
+    dest=/root/.bashrc
+    insertafter=EOF
+    line={{item}}
+    state=present
+  with_items:
+    - PATH={{ miniconda_install_dir }}/bin:$PATH
+  tags: miniconda
+
+- name: prepend miniconda to path for vagrant
+  lineinfile:
+    dest=/home/vagrant/.bashrc
+    insertafter=EOF
+    line={{item}}
+    state=present
+  with_items:
+    - PATH={{ miniconda_install_dir }}/bin:$PATH
+  tags: miniconda
