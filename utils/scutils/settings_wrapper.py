@@ -1,4 +1,6 @@
 import importlib
+import imp
+import sys
 
 
 class SettingsWrapper(object):
@@ -28,6 +30,28 @@ class SettingsWrapper(object):
         '''
         self._load_defaults(default)
         self._load_custom(local)
+
+        return self.settings()
+
+    def load_from_string(self, settings_string='', module_name='customsettings'):
+        '''
+        Loads settings from a settings_string. Expects an escaped string like
+        the following:
+            "NAME=\'stuff\'\nTYPE=[\'item\']\n"
+
+        @param settings_string: The string with your settings
+        @return: A dict of loaded settings
+        '''
+        try:
+            mod = imp.new_module(module_name)
+            exec settings_string in mod.__dict__
+        except TypeError:
+            print "Could not import settings"
+        self.my_settings = {}
+        try:
+            self.my_settings = self._convert_to_dict(mod)
+        except ImportError:
+            print "Settings unable to be loaded"
 
         return self.settings()
 
