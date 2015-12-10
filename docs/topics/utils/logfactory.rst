@@ -56,7 +56,7 @@ Please keep in mind the default values above, and be sure to set them correctly 
     >>> new_logger.info("test")
     {"message": "test", "logger": "logger1", "timestamp": "2015-11-17T21:14:47.657768Z", "level": "INFO"}
 
-Why does this happen? Behind the scenes, the LogFactory is trying to ensure that no matter where or when you call the ``get_instance()`` method, it returns to you the same logger you asked for originally. This allows multithreaded applications to instantiate the logger all the same way, without having to worry about duplicate logs showing up in your output. Once you have your logger object, the following standard logger are available:
+Why does this happen? Behind the scenes, the LogFactory is trying to ensure that no matter where or when you call the ``get_instance()`` method, it returns to you the same logger you asked for originally. This allows multithreaded applications to instantiate the logger all the same way, without having to worry about duplicate logs showing up in your output. Once you have your logger object, the following standard logger methods are available:
 
 .. method:: debug(message, extra={})
 
@@ -194,7 +194,7 @@ Notice that the extra dictionary object we passed into the two logs above is now
 
 ::
 
-    $ python python log_example.py --log-level CRITICAL --log-file --log-file
+    $ python log_example.py --log-level CRITICAL --log-json --log-file
     # Should log only one critical message to our file located at logs/
     $ tail logs/main.log
     {"message": "critical fault, closing", "logger": "scrapy-cluster", "timestamp": "2015-11-17T21:56:28.318056Z", "level": "CRITICAL"}
