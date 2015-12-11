@@ -15,7 +15,7 @@
 
 - name: download zookeeper
   get_url:
-    url="{{ zookeeper_source }}/zookeeper-{{ zookeeper_version }}/zookeeper-{{ zookeeper_version }}.tar.gz"
+    url="{{ zookeeper_source }}/zookeeper-{{ zookeeper_version }}.tar.gz"
     dest=/tmp/zookeeper-{{ zookeeper_version }}.tgz
     mode=0644
     validate_certs=no

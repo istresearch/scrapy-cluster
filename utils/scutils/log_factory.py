@@ -3,6 +3,7 @@ import sys
 import datetime
 import os
 import errno
+import copy
 
 from pythonjsonlogger import jsonlogger
 from cloghandler import ConcurrentRotatingFileHandler
@@ -228,13 +229,14 @@ class LogObject(object):
         '''
         Adds the log level to the dict object
         '''
-        if 'level' not in dict:
-            dict['level'] = level
-        if 'timestamp' not in dict:
-            dict['timestamp'] = self._get_time()
-        if 'logger' not in dict:
-            dict['logger'] = self.name()
-        return dict
+        my_copy = copy.deepcopy(dict)
+        if 'level' not in my_copy:
+            my_copy['level'] = level
+        if 'timestamp' not in my_copy:
+            my_copy['timestamp'] = self._get_time()
+        if 'logger' not in my_copy:
+            my_copy['logger'] = self.name()
+        return my_copy
 
     def _get_time(self):
         '''

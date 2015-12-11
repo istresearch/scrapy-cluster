@@ -7,6 +7,7 @@ from unittest import TestCase
 import os
 import time
 import json
+import copy
 
 from mock import MagicMock
 from testfixtures import LogCapture
@@ -59,8 +60,7 @@ class TestSettingsWrapper(TestCase):
         self.assertEqual(sets, {})
 
     def test_load_default(self):
-        self.wrapper.default_settings = "test_default_settings"
-        self.wrapper._load_defaults()
+        self.wrapper._load_defaults("test_default_settings.py")
         sets = self.wrapper.settings()
         self.assertEqual(sets, self.defaults)
 
@@ -71,15 +71,13 @@ class TestSettingsWrapper(TestCase):
         sets = self.wrapper.settings()
         self.assertEqual(sets, {})
 
-        self.wrapper.default_settings = "test_default_settings"
-        self.wrapper._load_defaults()
+        self.wrapper._load_defaults("test_default_settings.py")
         self.wrapper._load_custom()
         sets = self.wrapper.settings()
         self.assertEqual(sets, self.defaults)
 
     def test_override_default(self):
-        self.wrapper.default_settings = "test_default_settings"
-        self.wrapper._load_defaults()
+        self.wrapper._load_defaults("test_default_settings.py")
         self.wrapper._load_custom("test_override_defaults.py")
         sets = self.wrapper.settings()
         actual = {
@@ -95,6 +93,18 @@ class TestSettingsWrapper(TestCase):
             'NEW_LIST': ['item1']
         }
         self.assertEqual(sets, actual)
+
+    def test_load_string(self):
+        s = """STRING = \"my stuff\"\nMY_STRING = \"cool\"\nNEW_LIST = [\'item2\']"""
+
+        real = {
+            'STRING': 'my stuff',
+            'MY_STRING': 'cool',
+            'NEW_LIST': ['item2']
+        }
+
+        sets = self.wrapper.load_from_string(s)
+        self.assertItemsEqual(real, sets)
 
 
 class TestLogFactory(TestCase):
@@ -157,7 +167,6 @@ class TestLogFactory(TestCase):
             ('test', 'CRITICAL', 'critical message'),
         )
 
-
 class TestLogJSONFile(TestCase):
     def setUp(self):
         self.logger = LogObject(name='test', json=True,
@@ -176,6 +185,15 @@ class TestLogJSONFile(TestCase):
                 "level": "INFO",
                 "logger":"test",
                 "timestamp":"2015-11-12T10:11:12.0Z"})
+
+    def test_preserve_extra(self):
+        self.logger.log_level = 'DEBUG'
+        before = {"some": "dict", "a": 1}
+        preserve = copy.deepcopy(before)
+        with LogCapture() as l:
+            self.logger.debug("my message", extra=before)
+
+        self.assertEqual(preserve, before)
 
     def tearDown(self):
         os.remove(self.test_file + '.log')

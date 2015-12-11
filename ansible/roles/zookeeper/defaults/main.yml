@@ -1,6 +1,6 @@
 ---
 
-zookeeper_version: 3.4.6
+zookeeper_version: 3.4.7
 
 zookeeper_install_dir: /opt/zookeeper
 zookeeper_base_dir: "{{ zookeeper_install_dir }}/default"
@@ -19,4 +19,4 @@ zookeeper_maxClientCnxns: 60
 zookeeper_auto_purge_interval: 24
 zookeeper_auto_purge_snap_retain_count: 5
 
-zookeeper_source: "http://apache.mirrors.hoobly.com/zookeeper"
+zookeeper_source: "http://www.trieuvan.com/apache/zookeeper/stable" 
