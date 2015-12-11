@@ -27,7 +27,7 @@ dependencies:
         - ConcurrentLogHandler==0.9.1
         - testfixtures==4.3.3
         - service-identity==14.0.0
-        - scutils==0.0.3
+        - scutils==0.0.5
         - kafka-python==0.9.4
         - kazoo==2.2.1
         - functools32==3.2.3.post2
