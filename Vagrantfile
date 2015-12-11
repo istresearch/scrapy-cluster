@@ -16,7 +16,7 @@ Vagrant.configure(2) do |config|
     node.vm.hostname = 'scdev'
     node.vm.network "private_network", ip: "192.168.33.99"
     node.vm.provision "ansible" do |ansible|
-      ansible.verbose = true
+      ansible.verbose = false
       ansible.groups = {
         "kafka" => ["scdev"],
         "zookeeper" => ["scdev"],
