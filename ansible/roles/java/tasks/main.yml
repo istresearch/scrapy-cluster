@@ -5,7 +5,7 @@
   apt: 
     name=default-jdk
     state=present
-    # update-cache=yes
+    update-cache=yes
   tags: java
   when: ansible_os_family == "Debian"
 
