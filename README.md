@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg)](https://travis-ci.org/istresearch/scrapy-cluster)
+
 # Scrapy Cluster
 
 This Scrapy project uses Redis and Kafka to create a distributed on demand scraping cluster.
