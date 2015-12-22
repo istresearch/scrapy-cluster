@@ -1,7 +1,7 @@
 Scrapy Cluster |version| Documentation
 ==========================================
 
-This documentation provides everything you need to know about the `Scrapy <http://scrapy.org/>`_ based distributed crawling project, Scrapy Cluster.
+This documentation provides everything you need to know about the `Scrapy <http://scrapy.org/>`_ based distributed crawling project, `Scrapy Cluster <https://github.com/istresearch/scrapy-cluster>`_.
 
 .. toctree::
     :hidden:
@@ -60,6 +60,9 @@ Crawler
 
 :doc:`topics/crawler/design`
     Learn about the design considerations for the Scrapy Cluster Crawler
+
+:doc:`topics/crawler/quickstart`
+    How to use and run the distributed crawlers
 
 :doc:`topics/crawler/controlling`
     Learning how to control your Scrapy Cluster will enable you to get the most out of it
@@ -144,6 +147,9 @@ Advanced Topics
 
 Miscellaneous
 -------------
+
+:doc:`topics/contributing`
+    Learn how to contribute to Scrapy Cluster
 
 :doc:`topics/changelog`
     View the changes between versions of Scrapy Cluster.

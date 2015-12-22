@@ -20,6 +20,8 @@ Date: ??/??/????
 
 - Added new ``scutils`` package for accessing modules across different components.
 
+- Added significantly more documentation and improved layout
+
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 

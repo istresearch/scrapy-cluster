@@ -41,9 +41,15 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
 
-Architecture Diagram
----------------------
+- Allows for coordinated throttling of spiders crawling behind different machines but reach out from the same IP address.
 
-.. figure:: ./img/ArchitectureOverview.jpg
+Architecture
+------------
+
+.. figure:: ../img/ArchitectureOverview.png
    :alt: Architecture Diagram
    :align:   center
+
+At the highest level, Scrapy Cluster operates on a single input Kafka topic, and two separate output Kafka topics. All incoming requests to the cluster go through the ``demo.incoming`` kafka topic, and depending on what the request is will generate output from either the ``demo.outbound_firehose`` topic for action requests or ``demo.crawled_firehose`` topics for html crawl requests.
+
+Each of the three core pieces are extendable in order add or enhance their functionality. Both the Kafka Monitor and Redis Monitor use 'Plugins' in order to enhance their abilities, whereas Scrapy uses 'Middlewares', 'Pipelines', and 'Spiders' to allow you to customize your crawling. Together these three components allow for scaled and distributed crawling across many machines.

@@ -16,7 +16,7 @@ Every spider in the cluster is stand alone, meaning that it can function as a co
 
 Each crawl job that is submitted to the cluster is given a priority, and for every subsequent level deep in the crawl that priority decreases by 10. An example diagram is shown below:
 
-.. figure:: ./img/BreadthFirst.jpg
+.. figure:: ../img/BreadthFirst.jpg
    :alt: Breath First
    :align:   center
 
@@ -26,7 +26,7 @@ When a spider encounters a link it has already seen, the duplication filter base
 
 When a crawl is submitted to the cluster, the request it placed into its own specialized spider based queue. This allows you to have multiple spiders doing vastly different link strategies coordinated via the same Redis instance, and even on the same machines!
 
-.. figure:: ./img/RedisPriorityQueues.jpg
+.. figure:: ../img/RedisPriorityQueues.jpg
    :alt: Priority Queues
    :align:   center
 
@@ -126,3 +126,4 @@ lxmlhtml.py
 This is actually a duplicate of the Scrapy ``LxmlParserLinkExtractor`` but with one slight alteration. We do not want Scrapy to throw link extraction parsing errors when encountering a site with malformed html or bad encoding, so we changed it to ignore errors instead of complaining. This allows for the continued processing of the scraped page all the way through the pipeline even if there are utf encoding problems.
 
 In the future this may just be an extended class but for now it is the full copy/paste.
+

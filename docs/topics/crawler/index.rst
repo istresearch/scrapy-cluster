@@ -7,12 +7,16 @@ These documents give you an overview of the core Scrapy Cluster Crawler and how 
    :hidden:
 
    design
+   quickstart
    controlling
    extension
    settings
 
 :doc:`design`
     Learn about the design considerations for the Scrapy Cluster Crawler
+
+:doc:`quickstart`
+    How to use and run the distributed crawlers
 
 :doc:`controlling`
     Learning how to control your Scrapy Cluster will enable you to get the most out of it
