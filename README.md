@@ -32,3 +32,9 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 ## Documentation
 
 Please check out our official [Scrapy Cluster documentation](http://scrapy-cluster.readthedocs.org/) for more details on how everything works!
+
+## Branches
+
+The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.0`.
+
+The `dev` branch contains bleeding edge code and is currently working towards `Scrapy Cluster 1.1`. Please note that not everything is documented, finished, tested, or finalized but we are happy to help guide those who are interested.
