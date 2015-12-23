@@ -17,6 +17,7 @@ This documentation provides everything you need to know about the `Scrapy <http:
     topics/changelog
     topics/license
 
+.. warning:: THIS DOCUMENT IS CURRENTLY UNDER HEAVY CONSTURCTION AND DOES NOT REFLECT THE CURRENT STATE OF SCRAPY CLUSTER 1.1.
 
 Introduction
 ---------------
