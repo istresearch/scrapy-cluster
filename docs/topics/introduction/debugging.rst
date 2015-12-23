@@ -1,2 +1,4 @@
-Debugging
-=============
+.. _debugging:
+
+Troubleshooting
+===============

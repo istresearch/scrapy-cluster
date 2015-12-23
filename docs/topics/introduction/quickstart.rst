@@ -1,7 +1,11 @@
+.. _quickstart:
+
 Quick Start
 ===========
 
 *This guide does not go into detail as to how everything works, but hopefully will get you scraping quickly. For more information about each process works please see the rest of the documentation.*
+
+.. _vagrant_setup:
 
 Vagrant Quickstart
 ------------------
