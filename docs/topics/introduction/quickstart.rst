@@ -92,7 +92,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
     Ran 1 test in 26.489s
 
 
-.. warning:: If this test fails, it most likely means the Virtual Machine's Kafka is in a finky state. Issue the following command and then retry the online test to fix Kafka.
+.. warning:: If this test fails, it most likely means the Virtual Machine's Kafka is in a finicky state. Issue the following command and then retry the online test to fix Kafka.
 ``sudo supervisorctl restart kafka``
 
 
@@ -180,7 +180,7 @@ Add the following to your new custom local settings.
     REDIS_HOST = 'scdev'
     KAFKA_HOSTS = 'scdev:9092'
 
-8) Run the onlien integration tests
+8) Run the online integration tests
 
 ::
 
@@ -311,7 +311,7 @@ You will see the following output on the command line for that successful reques
         "crawlid": "abc123",
         "appid": "testapp"
     }
-    2015-12-22 15:45:37,459 [kafka-monitor] INFO: Successly fed item to Kafka
+    2015-12-22 15:45:37,459 [kafka-monitor] INFO: Successfully fed item to Kafka
 
 You will see an error message in the log if the script cannot connect to Kafka in time.
 
@@ -328,7 +328,7 @@ Crawl Request:
 
 ::
 
-    python kafka_monitor.py feed '{"action":"info", "appid":"testapp", "uuid":"someuuid", "crawlid":"abc1234", "spiderid":"link"}'
+    python kafka_monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"abc1234", "maxdepth":1}'
 
 Now send an ``info`` action request to see what is going on with the
 crawl:

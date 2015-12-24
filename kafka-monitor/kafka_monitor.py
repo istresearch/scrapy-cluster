@@ -446,7 +446,7 @@ class KafkaMonitor:
         result = _feed(json_item)
 
         if result:
-            self.logger.info("Successly fed item to Kafka")
+            self.logger.info("Successfully fed item to Kafka")
         else:
             self.logger.error("Failed to feed item into Kafka")
 

@@ -124,7 +124,8 @@ Scrapy Cluster's many components use arguments from the command line to set comm
 
     - Whether to write to a file or not
 
-**Argparse Example**
+Example
+-------
 
 Add the following python code to a new file:
 
