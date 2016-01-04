@@ -13,6 +13,8 @@ This documentation provides everything you need to know about the `Scrapy <http:
     topics/redis-monitor/index
     topics/utils/index
     topics/advanced/index
+    topics/faq
+    topics/debugging
     topics/contributing
     topics/changelog
     topics/license
@@ -27,12 +29,6 @@ Introduction
 
 :doc:`topics/introduction/quickstart`
     A Quick Start guide to those who want to jump right in.
-
-:doc:`topics/introduction/example`
-    An example on how to develop your own spider for Scrapy Cluster
-
-:doc:`topics/introduction/debugging`
-    Debugging distributed applications is hard, learn how easy it is to debug Scrapy Cluster.
 
 Architectural Components
 ------------------------
@@ -148,6 +144,12 @@ Advanced Topics
 
 Miscellaneous
 -------------
+
+:doc:`topics/faq`
+    Scrapy Cluster FAQ
+
+:doc:`topics/debugging`
+    Debugging distributed applications is hard, learn how easy it is to debug Scrapy Cluster.
 
 :doc:`topics/contributing`
     Learn how to contribute to Scrapy Cluster

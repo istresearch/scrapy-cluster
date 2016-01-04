@@ -1,7 +1,9 @@
 Contributing
-=======================
+============
 
 There are a number of ways to contribute to Scrapy Cluster.
+
+.. _report_issue:
 
 Raising Issues
 ----------------
@@ -64,6 +66,8 @@ Change requests cover both architectural and functional changes to how Scrapy Cl
 
 3. Label your issue with ``change request`` to help identify it within the issue tracker.
 
+.. _pull_requests:
+
 Submitting Pull Requests
 ------------------------
 
@@ -108,6 +112,8 @@ Please see the :ref:`vagrant_setup` guide for a Vagrant Image to use to test sma
 
 If something goes wrong, please see the :ref:`debugging` guide first.
 
+.. _lfstwo:
+
 Looking for something to work on?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -123,7 +129,7 @@ If you're interested in contributing to Scrapy Cluster and don't know where to s
 
 * Test and use the `Scrapy Cluster Utils Package <https://pypi.python.org/pypi/scutils>`_ in your other projects! We would love feedback on how to improve the utilities package, it has been extremely helpful to us in developing Scrapy Cluster. More documentation can be found in the :ref:`scutils` section.
 
-* Feel like you have a pretty good grasp with Scrapy Cluster? Please consider doing large scale testing of crawlers (10-20 machines at least, with 10-20 spiders per machine), and have the cluster crawl what ever your heart desires. Where are the runtime bottlenecks? Where can our algorithms be improved? Does certain cluster setups slow down crawling considerably? We are always looking to improve.
+* Feel like you have a pretty good grasp with Scrapy Cluster? Please consider doing **large scale testing** of crawlers (10-20 machines at least, with 10-20 spiders per machine), and have the cluster crawl what ever your heart desires. Where are the runtime bottlenecks? Where can our algorithms be improved? Does certain cluster setups slow down crawling considerably? We are always looking to improve.
 
 * Are you an expert in some other field where we lack? (Docker, Mesos, Conda, Python 3, etc) Please consider how you you can contribute to the project and talk with us on where we think you can best help.
 
