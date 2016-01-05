@@ -60,7 +60,7 @@ Where ``<your_host>`` is the machine where Redis, Kafka, or Zookeeper would resi
 
     $ python tests/tests_online.py -v
 
-If your system is properly configured you will see the test pass, otherwise, hopefully the debug and error log output should indicate what is failing.
+If your system is properly configured you will see the test pass, otherwise, the debug and error log output should indicate what is failing.
 
 .. note:: The Crawler online test takes a little over 20 seconds to complete, so be patient!
 
@@ -81,6 +81,11 @@ If you need to add extra lines to debug the Kafka Monitor, the LogFactory logger
 * **Core**: ``self.logger``
 * **Plugins**: ``self.logger``
 
+**Typical Issues**
+
+* Cannot connect to Redis/Kafka, look into your network configuration.
+* Kafka is in an unhappy state, debugging should be done for Kafka.
+
 Crawler
 ^^^^^^^
 
@@ -95,6 +100,12 @@ If you need to add extra lines to debug an item within the Scrapy Project, you c
 
 The LogFactory does not interfere with the Scrapy based logger, so if you are more comfortable using it then you are free to tinker with the Scrapy logging settings `here <http://doc.scrapy.org/en/latest/topics/logging.html>`_.
 
+**Typical Issues**
+
+* Continuous 504 Timeouts may indicate your spider machines cannot reach the public internet
+* Cannot connect to Redis/Kafka/Zookeeper, look into your network configuration.
+* Lots of errors when writing to a Kafka topic - Kafka is in an unhappy state and should be looked at.
+
 Redis Monitor
 ^^^^^^^^^^^^^
 
@@ -102,6 +113,11 @@ To add further debug lines within the Redis Monitor, you can use the following v
 
 * **Core**: ``self.logger``
 * **Plugins**: ``self.logger``
+
+**Typical Issues**
+
+* Cannot connect to Redis/Kafka, look into your network configuration.
+* Lots of errors when writing to a Kafka topic - Kafka is in an unhappy state and should be looked at.
 
 Utilities
 ^^^^^^^^^

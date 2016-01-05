@@ -1,3 +1,5 @@
+.. _crawler:
+
 Quick Start
 ===========
 
