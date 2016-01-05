@@ -1,3 +1,5 @@
+.. _log_factory:
+
 Log Factory
 ===========
 
