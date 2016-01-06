@@ -35,6 +35,8 @@ JSON Object feeder into your desired Kafka Topic. This takes a valid JSON object
 
     $ python kafka_monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
 
+The command line feed is very slow and should not be used in production. Instead, you should write your own continuously running application to feed Kafka the desired API requests that you require.
+
 kafkadump.py
 ------------
 
@@ -48,6 +50,8 @@ Dumps the messages from a particular topic.
 ::
 
     $ python kafkadump.py dump -t demo.crawled_firehose
+
+This utility by default consumes from the end of the desired Kafka Topic, and can be useful if left running in helping you debug the messages currently flowing through.
 
 List
 ^^^^
