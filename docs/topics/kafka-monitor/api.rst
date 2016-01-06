@@ -207,7 +207,7 @@ The ``info`` action can be conducted in two different ways.
 
             $ python kafka_monitor.py feed '{"action": "info", "appid":"testapp", "crawlid":"ABC123", "uuid":"abc12333", "spiderid":"link"}'
 
-     Kafka Response:
+    Kafka Response:
 
         ::
 
