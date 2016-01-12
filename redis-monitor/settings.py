@@ -18,7 +18,7 @@ PLUGINS = {
 }
 
 # logging setup
-LOGGER_NAME = 'sc-logger'
+LOGGER_NAME = 'redis-monitor'
 LOG_DIR = 'logs'
 LOG_FILE = 'main.log'
 LOG_MAX_BYTES = '10MB'
