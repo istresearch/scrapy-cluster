@@ -1,3 +1,5 @@
+.. _changelog:
+
 Change Log
 =============
 
@@ -19,6 +21,8 @@ Date: ??/??/????
 - Modified demo incoming kafka topic from ``demo.incoming_urls`` to just ``demo.incoming`` as now all crawl/info/stop requests are serviced through a single topic
 
 - Added new ``scutils`` package for accessing modules across different components.
+
+- Added significantly more documentation and improved layout
 
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^

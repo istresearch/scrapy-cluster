@@ -21,7 +21,7 @@ PLUGINS = {
 }
 
 # logging setup
-LOGGER_NAME = 'sc-logger'
+LOGGER_NAME = 'kafka-monitor'
 LOG_DIR = 'logs'
 LOG_FILE = 'kafka_monitor.log'
 LOG_MAX_BYTES = '10MB'
