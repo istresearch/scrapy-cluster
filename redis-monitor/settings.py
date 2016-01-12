@@ -20,7 +20,7 @@ PLUGINS = {
 # logging setup
 LOGGER_NAME = 'redis-monitor'
 LOG_DIR = 'logs'
-LOG_FILE = 'main.log'
+LOG_FILE = 'redis_monitor.log'
 LOG_MAX_BYTES = '10MB'
 LOG_BACKUPS = 5
 LOG_STDOUT = True

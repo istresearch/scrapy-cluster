@@ -123,7 +123,7 @@ DOWNLOAD_TIMEOUT = 10
 # log setup scrapy cluster crawler
 SC_LOG_STDOUT = True
 SC_LOG_DIR = 'logs'
-SC_LOG_FILE = 'main.log'
+SC_LOG_FILE = 'sc_crawler.log'
 SC_LOG_MAX_BYTES = '10MB'
 SC_LOG_JSON = False
 SC_LOG_LEVEL = 'INFO'
