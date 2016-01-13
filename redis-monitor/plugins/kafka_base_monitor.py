@@ -32,6 +32,7 @@ class KafkaBaseMonitor(BaseMonitor):
                 return False
             return True
         ret_val = _hidden_setup()
+        self.use_appid_topics = settings['KAFKA_APPID_TOPICS']
 
         if ret_val:
             self.logger.debug("Successfully connected to Kafka in {name}"
@@ -54,11 +55,12 @@ class KafkaBaseMonitor(BaseMonitor):
         firehose_topic = "{prefix}.outbound_firehose".format(
                                                     prefix=self.topic_prefix)
         try:
-            self.kafka_conn.ensure_topic_exists(appid_topic)
             self.kafka_conn.ensure_topic_exists(firehose_topic)
             # dont want logger in outbound kafka message
             dump = json.dumps(master)
-            self.producer.send_messages(appid_topic, dump)
+            if self.use_appid_topics:
+                self.kafka_conn.ensure_topic_exists(appid_topic)
+                self.producer.send_messages(appid_topic, dump)
             self.producer.send_messages(firehose_topic, dump)
 
             return True

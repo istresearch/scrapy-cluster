@@ -6,6 +6,7 @@ import json
 import datetime as dt
 import sys
 import traceback
+import base64
 
 from kafka import KafkaClient, SimpleProducer
 from kafka.common import KafkaUnavailableError
@@ -70,7 +71,8 @@ class KafkaPipeline(object):
     Pushes a serialized item to appropriate Kafka topics.
     '''
 
-    def __init__(self, producer, topic_prefix, aKafka, logger, appids):
+    def __init__(self, producer, topic_prefix, aKafka, logger, appids,
+                 use_base64):
         self.producer = producer
         self.topic_prefix = topic_prefix
         self.topic_list = []
@@ -78,6 +80,7 @@ class KafkaPipeline(object):
         self.appid_topics = appids
         self.logger = logger
         self.logger.debug("Setup kafka pipeline")
+        self.use_base64 = use_base64
 
     @classmethod
     def from_settings(cls, settings):
@@ -105,8 +108,10 @@ class KafkaPipeline(object):
                 # this is critical so we choose to exit
                 sys.exit(1)
         topic_prefix = settings['KAFKA_TOPIC_PREFIX']
+        use_base64 = settings['KAFKA_BASE_64_ENCODE']
 
-        return cls(producer, topic_prefix, kafka, logger, appids=my_appids)
+        return cls(producer, topic_prefix, kafka, logger, appids=my_appids,
+                   use_base64=use_base64)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -120,6 +125,8 @@ class KafkaPipeline(object):
             prefix = self.topic_prefix
 
             try:
+                if self.use_base64:
+                    datum['body'] = base64.b64encode(datum['body'])
                 message = json.dumps(datum)
             except:
                 message = 'json failed to parse'
