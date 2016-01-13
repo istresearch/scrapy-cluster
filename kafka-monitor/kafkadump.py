@@ -6,6 +6,7 @@ import sys
 import traceback
 import time
 import argparse
+import base64
 
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.log_factory import LogFactory
@@ -55,6 +56,9 @@ def main():
     dump_parser.add_argument('-p', '--pretty', action='store_const',
                              required=False, const=True, default=False,
                              help="Pretty print the json objects consumed")
+    dump_parser.add_argument('-d', '--decode-base64', action='store_const',
+                             required=False, const=True, default=False,
+                             help="Decode the base64 encoded raw html body")
 
     args = vars(parser.parse_args())
 
@@ -132,6 +136,9 @@ def main():
                     val = message.message.value
                     try:
                         item = json.loads(val)
+                        if args['decode_base64'] and 'body' in item:
+                            item['body'] = base64.b64decode(item['body'])
+
                         if args['no_body'] and 'body' in item:
                             del item['body']
                     except ValueError:
