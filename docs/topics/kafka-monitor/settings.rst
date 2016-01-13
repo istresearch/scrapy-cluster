@@ -60,6 +60,8 @@ Default: ``'plugins/'``
 
 The folder containing all of the Kafka Monitor plugins.
 
+.. _km_plugins:
+
 **PLUGINS**
 
 Default:
