@@ -25,7 +25,7 @@ Kafka
 
 Default: ``'localhost:9092'``
 
-The Kafka host. May have multiple hosts separated by commas within the single string like ``h1:9092,h2:9092``.
+The Kafka host. May have multiple hosts separated by commas within the single string like ``'h1:9092,h2:9092'``.
 
 **KAFKA_INCOMING_TOPIC**
 
