@@ -41,7 +41,7 @@ Extension
 
 Creating your own Plugin for the Kafka Monitor allows you to customize your own Kafka API's or processing python scripts to allow new functionality to be added to the Kafka Monitor. You will need two new files in the ``plugins`` directory, a **json** file for schema validation, and a **python** plugin file to define how you would like to process valid incoming objects.
 
-The following code python code template should be used when creating a new plugin:
+The following python code template should be used when creating a new plugin:
 
 **plugins/new_plugin.py**
 
@@ -68,7 +68,7 @@ The following code python code template should be used when creating a new plugi
             '''
             pass
 
-The plugin class should inherit from the BaseHandler plugin class, which will allow easy integration into the plugin framework. The ``setup()`` method is a dictionary created from the settings loaded from your local and default settings files. You should set up connections or other variables here to be used in your handle method.
+The plugin class should inherit from the BaseHandler plugin class, which will allow easy integration into the plugin framework. The ``setup()`` method is passed a dictionary created from the settings loaded from your local and default settings files. You should set up connections or other variables here to be used in your handle method.
 
 The ``handle()`` method is passed a dictionary object when a valid object comes into the Kafka Monitor. It will **not** receive invalid objects, so you can assume that any object passed into the function is valid according to your json schema file defined in the ``schema`` variable at the top of the class.
 

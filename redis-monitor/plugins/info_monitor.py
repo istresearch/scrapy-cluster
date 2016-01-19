@@ -56,8 +56,6 @@ class InfoMonitor(KafkaBaseMonitor):
             self.logger.error('Failed to send info to kafka',
                               extra=extras)
 
-        self.redis_conn.delete(key)
-
     def _get_bin(self, key):
         '''
         Returns a binned dictionary based on redis zscore
