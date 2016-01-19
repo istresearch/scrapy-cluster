@@ -10,7 +10,7 @@ First, create a ``localsettings.py`` file to track your custom settings. You can
     LOG_LEVEL = 'DEBUG'
 
 kafka_monitor.py
--------------
+----------------
 
 The Kafka Monitor allows two modes of operation.
 
