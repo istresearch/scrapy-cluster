@@ -19,7 +19,7 @@ This documentation provides everything you need to know about the `Scrapy <http:
     topics/changelog
     topics/license
 
-.. warning:: THIS DOCUMENT IS CURRENTLY UNDER HEAVY CONSTURCTION AND DOES NOT REFLECT THE CURRENT STATE OF SCRAPY CLUSTER 1.1.
+.. warning:: THIS DOCUMENT IS CURRENTLY UNDER HEAVY CONSTURCTION AND MAY NOT REFLECT THE CURRENT STATE OF SCRAPY CLUSTER 1.1. PLEASE SEE `THIS <https://github.com/istresearch/scrapy-cluster/issues/7#issue-93865019>`_ GITHUB ISSUE TO DETERMINE WHAT PAGES ARE UP TO DATE.
 
 Introduction
 ---------------
