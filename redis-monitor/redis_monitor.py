@@ -152,6 +152,7 @@ class RedisMonitor:
             except Exception:
                 self.logger.error(traceback.format_exc())
                 self._increment_fail_stat('{k}:{v}'.format(k=key, v=val))
+                self.redis_conn.delete(key)
 
     def _process_key_val(self, instance, key, val):
         '''
@@ -169,6 +170,7 @@ class RedisMonitor:
                 instance.__class__.__name__,
                 combined)
             instance.handle(key, val)
+            self.redis_conn.delete(key)
 
     def _setup_stats(self):
         '''

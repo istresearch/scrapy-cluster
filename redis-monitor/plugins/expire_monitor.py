@@ -69,5 +69,3 @@ class ExpireMonitor(StopMonitor):
             master['success'] = False
             self.logger.error('Failed to send expired ack to kafka',
                               extra=master)
-
-        self.redis_conn.delete(key)

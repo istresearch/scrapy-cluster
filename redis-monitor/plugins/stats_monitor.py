@@ -62,8 +62,6 @@ class StatsMonitor(KafkaBaseMonitor):
             extras['success'] = False
             self.logger.error('Failed to send stats to kafka', extra=extras)
 
-        self.redis_conn.delete(key)
-
     def get_all_stats(self):
         '''
         Gather all stats objects

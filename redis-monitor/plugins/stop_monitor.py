@@ -69,8 +69,6 @@ class StopMonitor(KafkaBaseMonitor):
             extras['success'] = False
             self.logger.error('Failed to send stop ack to kafka', extra=extras)
 
-        self.redis_conn.delete(key)
-
     def _purge_crawl(self, spiderid, appid, crawlid):
         '''
         Wrapper for purging the crawlid from the queues
