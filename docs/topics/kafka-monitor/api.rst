@@ -133,6 +133,8 @@ Optional:
 Examples
 ^^^^^^^^
 
+.. _info_action:
+
 **Information Action**
 
 The ``info`` action can be conducted in two different ways.
@@ -239,6 +241,8 @@ The ``info`` action can be conducted in two different ways.
 
     The response to the info request is a simple json object that gives statistics about the crawl in the system, and is very similar to the results for an ``appid`` request. Here we can see that there were 582 requests in the queue yet to be crawled of all the same priority.
 
+.. _stop_action:
+
 **Stop Action**
 
 The ``stop`` action is used to abruptly halt the current crawl job. A request takes the following form:
@@ -266,6 +270,8 @@ Kafka Response:
         }
 
 The json response tells the application that the stop request was successfully completed, and states how many requests were purged from the particular queue.
+
+.. _expire_action:
 
 **Expire Notification**
 

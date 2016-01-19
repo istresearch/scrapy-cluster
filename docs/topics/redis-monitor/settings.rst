@@ -177,5 +177,3 @@ Default:
 Rolling time window settings for statistics collection, the above settings indicate stats will be collected for the past 15 minutes, the past hour, the past 6 hours, etc.
 
 .. note:: For more information about stats collection, please see the :ref:`stats_collector` documentation.
-
-
