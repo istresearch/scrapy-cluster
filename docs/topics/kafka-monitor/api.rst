@@ -22,6 +22,7 @@ Kafka Topics
 
 .. note:: The outbound ``appid`` topics are disabled by default, as they create duplicate data within Kafka. You can override the :ref:`setting <rm_kafka_appid_topics>` for the Redis Monitor if you wish to turn this on.
 
+.. _crawl_api:
 
 Crawl API
 ---------
@@ -107,6 +108,8 @@ Kafka Response:
         }
 
     All of your crawl response objects will come in a well formatted JSON object like the above example.
+
+.. _action_api:
 
 Action API
 ----------
@@ -282,6 +285,8 @@ Kafka Response:
         }
 
 This notification states that the ``crawlid`` of "ist234" expired within the system, and that 84 pending requests were removed.
+
+.. _stats_api:
 
 Stats API
 --------
