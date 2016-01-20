@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg)](https://travis-ci.org/istresearch/scrapy-cluster)
+[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg)](https://travis-ci.org/istresearch/scrapy-cluster) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # Scrapy Cluster
 
