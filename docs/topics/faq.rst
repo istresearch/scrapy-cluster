@@ -52,6 +52,11 @@ General
 
     You can find suggestions of things we could use help on :ref:`here <lfstwo>`.
 
+**How do I contact the community surrounding Scrapy Cluster?**
+
+   Feel free to reach out by joining the `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room, or for more formal issues please :ref:`raise an issue <report_issue>`.
+
+
 Kafka Monitor
 -------------
 
