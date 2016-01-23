@@ -338,40 +338,47 @@ class RedisMonitor:
         extras = {}
         spiders = {}
 
-        keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
-
-        # gather response code counts (like stats monitor)
-        for key in keys:
-            # break down key
-            elements = key.split(":")
-            # element 2 is machine (not needed)
-            spider = elements[3]
-            response = elements[4]
-            end = elements[5]
-
-            spiders[spider] = True
-
-            final = '{s}_{r}_{e}'.format(s=spider, r=response, e=end)
-
-            if end == 'lifetime':
-                value = self.redis_conn.execute_command("PFCOUNT", key)
-            else:
-                value = self.redis_conn.zcard(key)
-
-            extras[final] = value
-
-        # gather spider counts (like stats monitor)
+        spider_set = set()
         total_spider_count = 0
-        for key in spiders:
-            time_keys = self.redis_conn.keys(
-                'stats:crawler:*:{n}:*:*'.format(n=key))
-            spider_keys = self.redis_conn.keys(
-                'stats:crawler:*:{n}:*'.format(n=key))
-            spider_count = len(spider_keys) - len(time_keys)
-            total_spider_count = total_spider_count + spider_count
-            extras['{k}_spider_count'.format(k=key)] = spider_count
 
+        keys = self.redis_conn.keys('stats:crawler:*:*:*')
+        for key in keys:
+            # we only care about the spider
+            elements = key.split(":")
+            spider = elements[3]
+
+            if spider not in spiders:
+                spiders[spider] = 0
+
+            if len(elements) == 6:
+                # got a time based stat
+                response = elements[4]
+                end = elements[5]
+
+                final = '{s}_{r}_{e}'.format(s=spider, r=response, e=end)
+
+                if end == 'lifetime':
+                    value = self.redis_conn.execute_command("PFCOUNT", key)
+                else:
+                    value = self.redis_conn.zcard(key)
+
+                extras[final] = value
+
+            elif len(elements) == 5:
+                # got a spider identifier
+                spiders[spider] += 1
+                total_spider_count += 1
+                spider_set.add(spider)
+
+            else:
+                self.logger.warn("Unknown crawler stat key", {"key":key})
+
+        # simple counts
+        extras['unique_spider_count'] = len(spider_set)
         extras['total_spider_count'] = total_spider_count
+
+        for spider in spiders:
+            extras['{k}_spider_count'.format(k=spider)] = spiders[spider]
 
         if not self.logger.json:
             self.logger.info('Crawler Stats Dump:\n{0}'.format(

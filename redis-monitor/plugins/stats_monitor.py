@@ -144,38 +144,40 @@ class StatsMonitor(KafkaBaseMonitor):
         '''
         self.logger.debug("Gathering spider stats")
         the_dict = {}
-        keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
+        spider_set = set()
+        total_spider_count = 0
 
+        keys = self.redis_conn.keys('stats:crawler:*:*:*')
         for key in keys:
-            # break down key
+            # we only care about the spider
             elements = key.split(":")
-            machine = elements[2]
             spider = elements[3]
-            response = elements[4]
-            end = elements[5]
 
-            # we only care about the spider, not machine
             if spider not in the_dict:
                 the_dict[spider] = {}
+                the_dict[spider]['count'] = 0
 
-            if response not in the_dict[spider]:
-                the_dict[spider][response] = {}
+            if len(elements) == 6:
+                # got a time based stat
+                response = elements[4]
+                end = elements[5]
 
-            the_dict[spider][response][end] = self._get_key_value(key, end == 'lifetime')
+                if response not in the_dict[spider]:
+                    the_dict[spider][response] = {}
 
-        # get count of unique spiders
-        total_spider_count = 0
-        for key in the_dict:
-            time_keys = self.redis_conn.keys(
-                'stats:crawler:*:{n}:*:*'.format(n=key))
-            spider_keys = self.redis_conn.keys(
-                'stats:crawler:*:{n}:*'.format(n=key))
-            spider_count = (len(spider_keys) - len(time_keys))
-            total_spider_count = total_spider_count + spider_count
-            the_dict[key]['count'] = spider_count
+                the_dict[spider][response][end] = self._get_key_value(key, end == 'lifetime')
+
+            elif len(elements) == 5:
+                # got a spider identifier
+                the_dict[spider]['count'] += 1
+                total_spider_count += 1
+                spider_set.add(spider)
+
+            else:
+                self.logger.warn("Unknown crawler stat key", {"key":key})
 
         # simple counts
-        the_dict['unique_spider_count'] = len(the_dict.keys())
+        the_dict['unique_spider_count'] = len(spider_set)
         the_dict['total_spider_count'] = total_spider_count
 
         ret_dict = {}

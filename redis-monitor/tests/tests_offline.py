@@ -442,35 +442,22 @@ class TestStatsPlugin(TestCase, RegexFixer):
         self._assert_thrown("statsrequest:machine:appid", "machine")
 
     def test_stats_get_spider(self):
-        link_keys = [
+        stat_keys = [
             'stats:crawler:host1:link:200:3600',
             'stats:crawler:host2:link:200:lifetime',
             'stats:crawler:host1:link:504:86400',
             'stats:crawler:host3:link:200:86400',
-        ]
-        link_spider_keys = [
             'stats:crawler:host2:link:ABCDEF',
             'stats:crawler:host3:link:ABCDEF',
             'stats:crawler:host1:link:123345',
-        ]
-        other_keys = [
             'stats:crawler:host2:other:403:lifetime',
             'stats:crawler:host1:other:200:3600',
-        ]
-        other_spider_keys = [
             'stats:crawler:host2:other:ABCDEF1',
         ]
-        # set up looping calls to redis_conn.keys()
-        returns = [
-            link_keys + other_keys,
-            other_keys,
-            other_keys + other_spider_keys,
-            link_keys,
-            link_keys + link_spider_keys,
-        ]
 
+        # set up looping calls to redis_conn.keys()
         def side_effect(*args):
-            return returns.pop(0)
+            return stat_keys
 
         self.plugin.redis_conn.keys = MagicMock(side_effect=side_effect)
 
