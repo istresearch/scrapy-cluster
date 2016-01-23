@@ -24,9 +24,6 @@ PUBLIC_IP_URL = 'http://ip.42.pl/raw'
 # Don't cleanup redis queues, allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 
-# Schedule requests using a priority queue. (default)
-SCHEDULER_QUEUE_CLASS = 'crawling.redis_queue.RedisPriorityQueue'
-
 # seconds to wait between seeing new queues, cannot be faster than spider_idle time of 5
 SCHEDULER_QUEUE_REFRESH = 10
 
@@ -77,12 +74,15 @@ SCHEDULER_IP_ENABLED = True
 SCHEUDLER_ITEM_RETRIES = 3
 
 # log setup scrapy cluster crawler
-SC_LOG_STDOUT = True
+SC_LOGGER_NAME = 'sc-crawler'
 SC_LOG_DIR = 'logs'
 SC_LOG_FILE = 'sc_crawler.log'
 SC_LOG_MAX_BYTES = '10MB'
+SC_LOG_BACKUPS = 5
+SC_LOG_STDOUT = True
 SC_LOG_JSON = False
 SC_LOG_LEVEL = 'INFO'
+
 
 # stats setup
 STATS_STATUS_CODES = True
