@@ -81,6 +81,10 @@ Crawler
 
     Yes, you can. Our core logic relies on a heavily customized Scheduler which is not normally exposed to users. If Scrapy Cluster hinders use of a Scrapy ability you need please let us know.
 
+**Do I have to restart my Scrapy Cluster Crawlers when I push a new domain specific configuration?**
+
+    No, the crawlers will receive a notification from Zookeeper that their configuration has changed. They will then automatically update to the new desired settings, without a restart. For more information please see :ref:`here <domain_specific_configuration>`.
+
 Redis Monitor
 -------------
 
