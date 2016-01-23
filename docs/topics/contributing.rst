@@ -8,13 +8,15 @@ There are a number of ways to contribute to Scrapy Cluster.
 Raising Issues
 ----------------
 
-If you're thinking about raising an issue because think you've found a problem with Scrapy Cluster, or you'd like to make a request for a new feature in the codebase, or any other reason… please read this first.
+If you're thinking about raising an issue because think you've found a problem with Scrapy Cluster, you'd like to make a request for a new feature in the codebase, or any other reason… please read this first.
 
 The GitHub issue tracker is the preferred channel for `Bug Reports`_, `Feature Requests`_, or `Change Requests`_, but please respect the following restrictions:
 
 * Please **search for existing issues**. Help us keep duplicate issues to a minimum by checking to see if someone has already reported your problem or requested your idea.
 
 * Please **do not** use the issue tracker for personal setup or support requests. If the symptom doesn't appear in the :ref:`vagrant_setup` but appears in your production setup, it is not a Scrapy Cluster issue.
+
+For all other chatter, feel free to join the `Community Chat`_ set up for Scrapy Cluster.
 
 Bug Reports
 ^^^^^^^^^^^
@@ -66,6 +68,11 @@ Change requests cover both architectural and functional changes to how Scrapy Cl
 
 3. Label your issue with ``change request`` to help identify it within the issue tracker.
 
+Community Chat
+^^^^^^^^^^^^^^
+
+If you would like to add a comment about Scrapy Cluster or to interact with the community surrounding and supporting Scrapy Cluster, feel free to join our `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room. This is a place where both developers and community users can get together to talk about and discuss Scrapy Cluster.
+
 .. _pull_requests:
 
 Submitting Pull Requests
@@ -102,7 +109,7 @@ Essentially:
 Documentation
 ^^^^^^^^^^^^^
 
-Scrapy Cluster's documentation can be found on `Read the Docs <http://scrapy-cluster.readthedocs.org/en/latest/>`_. If you have feedback or would like to write some user documentation, please let us know by emailing the core developers or raising and issue and submitting a PR on how our documentation could be improved.
+Scrapy Cluster's documentation can be found on `Read the Docs <http://scrapy-cluster.readthedocs.org/en/latest/>`_. If you have feedback or would like to write some user documentation, please let us know in our `Community Chat`_ room or by raising and issue and submitting a PR on how our documentation could be improved.
 
 Working on Scrapy Cluster Core
 ------------------------------
@@ -133,7 +140,7 @@ If you're interested in contributing to Scrapy Cluster and don't know where to s
 
 * Are you an expert in some other field where we lack? (Docker, Mesos, Conda, Python 3, etc) Please consider how you you can contribute to the project and talk with us on where we think you can best help.
 
-If you're still stuck, feel free to send any of the core developers an email as we are always happy to chat.
+If you're still stuck, feel free to send any of the core developers an message in the `Community Chat`_ as we are always happy to help.
 
 Key Branches
 ^^^^^^^^^^^^

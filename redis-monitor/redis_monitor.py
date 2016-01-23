@@ -43,7 +43,7 @@ class RedisMonitor:
         my_json = json if json else self.settings['LOG_JSON']
         self.logger = LogFactory.get_instance(json=my_json,
                                               stdout=my_output, level=my_level,
-                                              name='redis-monitor',
+                                              name=self.settings['LOGGER_NAME'],
                                               dir=self.settings['LOG_DIR'],
                                               file=self.settings['LOG_FILE'],
                                               bytes=self.settings['LOG_MAX_BYTES'],

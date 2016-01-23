@@ -52,6 +52,11 @@ General
 
     You can find suggestions of things we could use help on :ref:`here <lfstwo>`.
 
+**How do I contact the community surrounding Scrapy Cluster?**
+
+   Feel free to reach out by joining the `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room, or for more formal issues please :ref:`raise an issue <report_issue>`.
+
+
 Kafka Monitor
 -------------
 
@@ -75,6 +80,10 @@ Crawler
 **Can I use everything else that the original Scrapy has to offer, like middlewares, pipelines, etc?**
 
     Yes, you can. Our core logic relies on a heavily customized Scheduler which is not normally exposed to users. If Scrapy Cluster hinders use of a Scrapy ability you need please let us know.
+
+**Do I have to restart my Scrapy Cluster Crawlers when I push a new domain specific configuration?**
+
+    No, the crawlers will receive a notification from Zookeeper that their configuration has changed. They will then automatically update to the new desired settings, without a restart. For more information please see :ref:`here <domain_specific_configuration>`.
 
 Redis Monitor
 -------------
