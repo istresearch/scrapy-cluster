@@ -46,14 +46,14 @@ def main():
     q = RedisPriorityQueue(conn, queue)
     t = RedisThrottledQueue(conn, q, window, num, mod)
 
-    def f(amount):
+    def push_items(amount):
         for i in range(0, amount):
             t.push('item-'+str(i), i)
 
     print "Adding", num * 2, "items for testing"
-    f(num * 2)
+    push_items(num * 2)
 
-    def g():
+    def read_items():
         print "Kill when satisfied ^C"
         ti = time.time()
         count = 0
@@ -64,7 +64,7 @@ def main():
                 count += 1
 
     try:
-        g()
+        read_items()
     except KeyboardInterrupt:
         pass
     t.clear()

@@ -1,13 +1,15 @@
+.. _redis_queue:
+
 Redis Queue
 ===========
 
 A utility class that utilizes `Pickle <https://docs.python.org/2/library/pickle.html>`_ encoding to store and retrieve arbitrary sets of data in Redis. The queues come in three basic forms:
 
-- ``RedisQueue`` - A FIFO queue utilizing a Redis List
+- ``RedisQueue`` - A `FIFO <https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>`_ queue utilizing a Redis List
 
-- ``RedisStack`` - A Stack implementation utilizing a Redis List
+- ``RedisStack`` - A `Stack <https://en.wikipedia.org/wiki/Stack_(abstract_data_type)>`_ implementation utilizing a Redis List
 
-- ``RedisPriorityQueue`` - A prioritized queue utilizing a Redis Sorted Set. This is the queue utilized by the scheduler for prioritized crawls
+- ``RedisPriorityQueue`` - A `Priority Queue <https://en.wikipedia.org/wiki/Priority_queue>`_ utilizing a Redis Sorted Set. This is the queue utilized by the scheduler for prioritized crawls
 
 All three of these classes can handle arbitrary sets of data, and handle the pickle encoding and decoding for you.
 
@@ -18,18 +20,30 @@ All three of these classes can handle arbitrary sets of data, and handle the pic
 
     .. method:: push(item)
 
-        :param item: The item to insert into the List
+        Pushes an item into the Queue
+
+        :param item: The item to insert into the Queue
         :returns: None
 
     .. method:: pop(timeout=0)
 
+        Removes and returns an item from the Queue
+
         :param int timeout: If greater than 0, use the Redis blocking pop method for the specified timeout.
         :returns: None if no object can be found, otherwise returns the object.
 
+    .. method:: clear()
+
+        Removes all data in the Queue.
+
+        :returns: None
+
     .. method:: __len__
 
+        Get the number of items in the Queue.
+
         :returns: The number of items in the RedisQueue
-        :usage: len(my_queue_instance)
+        :usage: ``len(my_queue_instance)``
 
 .. class:: RedisStack(server, key)
 
@@ -38,18 +52,30 @@ All three of these classes can handle arbitrary sets of data, and handle the pic
 
     .. method:: push(item)
 
+        Pushes an item into the Stack
+
         :param item: The item to insert into the Stack
         :returns: None
 
     .. method:: pop(timeout=0)
 
+        Removes and returns an item from the Stack
+
         :param int timeout: If greater than 0, use the Redis blocking pop method for the specified timeout.
         :returns: None if no object can be found, otherwise returns the object.
 
+    .. method:: clear()
+
+        Removes all data in the Stack.
+
+        :returns: None
+
     .. method:: __len__
 
+        Get the number of items in the Stack.
+
         :returns: The number of items in the RedisStack
-        :usage: len(my_stack_instance)
+        :usage: ``len(my_stack_instance)``
 
 .. class:: RedisPriorityQueue(server, key)
 
@@ -58,19 +84,31 @@ All three of these classes can handle arbitrary sets of data, and handle the pic
 
     .. method:: push(item, priority)
 
+        Pushes an item into the PriorityQueue
+
         :param item: The item to insert into the Priority Queue
         :param int priority: The priority of the item. Higher numbered items take precedence over lower priority items.
         :returns: None
 
     .. method:: pop(timeout=0)
 
+        Removes and returns an item from the PriorityQueue
+
         :param int timeout: Not used
         :returns: None if no object can be found, otherwise returns the object.
 
+    .. method:: clear()
+
+        Removes all data in the PriorityQueue.
+
+        :returns: None
+
     .. method:: __len__
 
+        Get the number of items in the PriorityQueue.
+
         :returns: The number of items in the RedisPriorityQueue
-        :usage: len(my_pqueue_instance)
+        :usage: ``len(my_pqueue_instance)``
 
 Usage
 -----
