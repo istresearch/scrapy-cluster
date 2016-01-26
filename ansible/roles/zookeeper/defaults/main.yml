@@ -1,6 +1,6 @@
 ---
 
-zookeeper_version: 3.4.7
+zookeeper_version: 3.4.6
 
 zookeeper_install_dir: /opt/zookeeper
 zookeeper_base_dir: "{{ zookeeper_install_dir }}/default"
