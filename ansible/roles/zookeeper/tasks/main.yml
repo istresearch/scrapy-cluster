@@ -56,7 +56,7 @@
   tags: zookeeper
 
 - name: copy supervisord config
-  template: 
+  template:
     src=zookeeper-supervisord.conf.j2
     dest={{ supervisord_programs_dir }}/zookeeper-supervisord.conf
     mode=0644
@@ -65,7 +65,7 @@
   tags: zookeeper
 
 - name: setup zoo.cfg
-  template: 
+  template:
     dest={{ zookeeper_conf_dir }}/zoo.cfg
     src=zoo.cfg.j2
   notify:
@@ -84,7 +84,7 @@
 #   tags: zookeeper
 
 - name: setup myid file for zookeeper
-  template: 
+  template:
     dest={{zookeeper_data_dir}}/myid
     src=myid.j2
   notify:
@@ -93,6 +93,7 @@
   tags: zookeeper
 
 - name: set up aliases
-  lineinfile: dest="~/.bashrc" line="export ZOO={{ zookeeper_base_dir }}"
-  lineinfile: dest="~/.bashrc" line="alias zkcli='{{ zookeeper_base_dir }}/bin/zkCli.sh'"
+  lineinfile:
+    dest: "~/.bashrc"
+    line: "alias zkcli='{{ zookeeper_base_dir }}/bin/zkCli.sh'"
   tags: alias

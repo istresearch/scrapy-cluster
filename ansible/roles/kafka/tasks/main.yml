@@ -83,8 +83,9 @@
   tags: kafka
 
 - name: set up aliases
-  lineinfile: dest="/root/.bashrc" line="export KAFKA={{ kafka_install_dir }}/default"
-  lineinfile: dest="/root/.bashrc" line="export PATH={{ kafka_install_dir }}/default/bin:$PATH"
+  lineinfile:
+    dest: "/root/.bashrc"
+    line: "export KAFKA={{ kafka_install_dir }}/default"
   tags: env
 
 - cron: name="clear old kafka app logs" job="find /opt/kafka/default/logs -mtime +7 -exec rm {} \; > /dev/null" minute="0"
