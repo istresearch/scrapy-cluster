@@ -263,7 +263,7 @@ At this point you should have a Vagrant or Cluster setup that has been tested an
 
 **Fully Operational:**
 
--  The Kafka Monitor for Crawling:
+-  The Kafka Monitor:
 
    ::
 
