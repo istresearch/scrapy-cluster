@@ -21,10 +21,11 @@ pycparser==2.14
 pyOpenSSL==0.15.1
 python-json-logger>=0.1.2
 PyYAML==3.11
+py-getch==1.0.1
 queuelib==1.2.2
 redis>=2.10.3
 Scrapy==1.0.4
-scutils==0.0.6
+scutils==0.0.7
 service-identity==14.0.0
 six==1.10.0
 testfixtures>=4.3.3
