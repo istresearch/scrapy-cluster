@@ -239,7 +239,7 @@ class AbstractCounter():
         '''
         Deletes the key being used
         '''
-        self.redis_conn.delete(self.key)
+        self.redis_conn.delete(self.get_key())
 
     def _time(self):
         '''
