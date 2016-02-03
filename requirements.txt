@@ -5,7 +5,7 @@ cryptography==0.9.1
 cssselect==0.9.1
 enum34==1.0.4
 funcsigs==0.4
-functools32==3.2.3.post2
+functools32==3.2.3-2
 idna==2.0
 ipaddress==1.0.14
 jsonschema==2.5.1
