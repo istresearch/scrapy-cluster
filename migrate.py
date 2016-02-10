@@ -14,9 +14,9 @@ def main():
     from scutils.redis_throttled_queue import RedisThrottledQueue
 
     parser = argparse.ArgumentParser(description="Scrapy Cluster Migration "
-                                     "script. Use to upgrade your Scrapy"
-                                     " Cluster's Redis Request Queues. Not "
-                                     "recommended for use while your cluster"
+                                     "script. Use to upgrade any part of "
+                                     "Scrapy Cluster. Not  recommended for "
+                                     "use while your cluster"
                                      " is running.")
     parser.add_argument('-r', '--redis-host', action='store', required=True,
                         help="The Redis host ip")
