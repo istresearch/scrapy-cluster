@@ -3,7 +3,7 @@
 Zookeeper Watcher
 =================
 
-The Zookeeper Watcher utility class is a `circuit breaker <circuitbreaklink>`_ design pattern around `Apache Zookeeper <http://zookeeper.apache.org>`_ that allows you to watch a one or two files in order to be notified when when they are updated. The circuit breaker allows your application the ability to function normally while your connection is interrupted to Zookeeper, and reestablish the connection and watches automatically.
+The Zookeeper Watcher utility class is a `circuit breaker <https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern>`_ design pattern around `Apache Zookeeper <http://zookeeper.apache.org>`_ that allows you to watch a one or two files in order to be notified when when they are updated. The circuit breaker allows your application the ability to function normally while your connection is interrupted to Zookeeper, and reestablish the connection and watches automatically.
 
 Behind the scenes, the Zookeeper Watcher utility uses `kazoo <http://kazoo.readthedocs.org/>`_, and extends Kazoo's functionality by allowing automatic reconnection, automatic file watch reestablishment, and management.
 
