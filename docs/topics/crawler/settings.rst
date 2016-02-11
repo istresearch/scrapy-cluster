@@ -41,6 +41,8 @@ Default: ``False``
 
 Flag to send data to both the firehose and Application ID specific Kafka topics. If set to ``True``, results will be sent to both the ``demo.outbound_firehose`` **and** ``demo.outbound_<appid>`` Kafka topics, where ``<appid>`` is the Application ID used to submit the request. This is useful if you have many applications utilizing your cluster but only would like to listen to results for your specific application.
 
+.. _c_base64:
+
 **KAFKA_BASE_64_ENCODE**
 
 Default: ``False``

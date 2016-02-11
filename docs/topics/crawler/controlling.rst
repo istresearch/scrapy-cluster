@@ -1,4 +1,4 @@
-.. _controlling::
+.. _controlling:
 
 Controlling
 ===========

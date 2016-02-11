@@ -111,7 +111,7 @@ If you have a :ref:`Crawler <crawler>` running, you should see the html come thr
 ::
 
     {
-    "body": "<body omitted>",
+        "body": "<body omitted>",
         "crawlid": "ABC123",
         "response_headers": {
             <headers omitted>
