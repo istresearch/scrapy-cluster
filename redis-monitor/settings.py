@@ -34,6 +34,7 @@ STATS_PLUGINS = True
 STATS_CYCLE = 5
 STATS_DUMP = 60
 STATS_DUMP_CRAWL = True
+STATS_DUMP_QUEUE = True
 # from time variables in scutils.stats_collector class
 STATS_TIMES = [
     'SECONDS_15_MINUTE',

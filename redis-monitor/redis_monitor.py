@@ -133,6 +133,9 @@ class RedisMonitor:
                     if self.settings['STATS_DUMP_CRAWL']:
                         self._dump_crawl_stats()
 
+                    if self.settings['STATS_DUMP_QUEUE']:
+                        self._dump_queue_stats()
+
                     old_time = new_time
 
             time.sleep(0.1)
@@ -386,6 +389,36 @@ class RedisMonitor:
         else:
             self.logger.info('Crawler Stats Dump', extra=extras)
 
+    def _dump_queue_stats(self):
+        '''
+        Dumps basic info about the queue lengths for the spider types
+        '''
+        extras = {}
+        keys = self.redis_conn.keys('*:*:queue')
+        total_backlog = 0
+        for key in keys:
+            elements = key.split(":")
+            spider = elements[0]
+            domain = elements[1]
+            spider = 'queue_' + spider
+
+            if spider not in extras:
+                extras[spider] = {}
+                extras[spider]['spider_backlog'] = 0
+                extras[spider]['num_domains'] = 0
+
+            count = self.redis_conn.zcard(key)
+            total_backlog += count
+            extras[spider]['spider_backlog'] += count
+            extras[spider]['num_domains'] += 1
+
+        extras['total_backlog'] = total_backlog
+
+        if not self.logger.json:
+            self.logger.info('Queue Stats Dump:\n{0}'.format(
+                    json.dumps(extras, indent=4, sort_keys=True)))
+        else:
+            self.logger.info('Queue Stats Dump', extra=extras)
 
 def main():
     parser = argparse.ArgumentParser(

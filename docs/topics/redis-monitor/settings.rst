@@ -159,6 +159,12 @@ Default: ``True``
 
 Dump :ref:`statistics <c_stats>` collected by the Scrapy Cluster Crawlers. The crawlers may be spread out across many machines, and the log dump of their statistics is consolidated and done in a single place where the Redis Monitor is installed. Will be dumped at the same interval the ``STATS_DUMP`` is set to.
 
+**STATS_DUMP_QUEUE**
+
+Default: ``True``
+
+Dump queue metrics about the real time backlog of the Scrapy Cluster Crawlers. This includes queue length, and total number of domains currently in the backlog. Will be dumped at the same interval the ``STATS_DUMP`` is set to.
+
 **STATS_TIMES**
 
 Default:
