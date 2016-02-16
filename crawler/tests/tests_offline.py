@@ -75,7 +75,7 @@ class ThrottleMixin(object):
     def setUp(self, u, z):
         self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
                                               MagicMock(), 10, 60, False, 60,
-                                              False, False)
+                                              False, False, '.*')
         self.scheduler.open(MagicMock())
         self.scheduler.my_ip = 'ip'
         self.scheduler.spider.name = 'link'
