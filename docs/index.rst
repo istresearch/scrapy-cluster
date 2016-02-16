@@ -1,3 +1,8 @@
+.. figure:: topics/img/scrapy-cluster-logo.png
+    :alt: Scrapy Cluster Logo
+    :align: center
+    :width: 400px
+
 Scrapy Cluster |version| Documentation
 ==========================================
 
