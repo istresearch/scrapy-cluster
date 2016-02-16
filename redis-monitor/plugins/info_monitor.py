@@ -32,13 +32,13 @@ class InfoMonitor(KafkaBaseMonitor):
         dict['appid'] = elements[2]
 
         # log we received the info message
-        extras = self.get_log_dict('info', dict['spiderid'],
-                                   dict['appid'], master['uuid'])
+        extras = self.get_log_dict('info', dict['appid'],
+                                   dict['spiderid'], master['uuid'])
 
         if len(elements) == 4:
             dict['crawlid'] = elements[3]
-            extras = self.get_log_dict('info', dict['spiderid'],
-                                       dict['appid'], master['uuid'],
+            extras = self.get_log_dict('info', dict['appid'],
+                                       dict['spiderid'], master['uuid'],
                                        elements[3])
         self.logger.info('Received info request', extra=extras)
 

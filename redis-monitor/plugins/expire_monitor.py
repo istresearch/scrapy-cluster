@@ -39,8 +39,8 @@ class ExpireMonitor(StopMonitor):
         crawlid = elements[3]
 
         # log ack of expire
-        extras = self.get_log_dict('expire', spiderid,
-                                   appid, crawlid=crawlid)
+        extras = self.get_log_dict('expire', appid,
+                                   spiderid, crawlid=crawlid)
         self.logger.info("Expiring crawl found", extra=extras)
 
         # add crawl to blacklist so it doesnt propagate

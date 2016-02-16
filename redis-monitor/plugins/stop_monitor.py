@@ -32,8 +32,8 @@ class StopMonitor(KafkaBaseMonitor):
         uuid = value
 
         # log we received the stop message
-        extras = self.get_log_dict('stop', spiderid,
-                                   appid, uuid, crawlid)
+        extras = self.get_log_dict('stop', appid,
+                                   spiderid, uuid, crawlid)
         self.logger.info('Received stop request', extra=extras)
 
         redis_key = spiderid + ":blacklist"

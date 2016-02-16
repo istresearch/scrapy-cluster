@@ -27,7 +27,7 @@ class StatsMonitor(KafkaBaseMonitor):
         uuid = value
 
         # log we received the stats request
-        extras = self.get_log_dict('stats', appid, uuid)
+        extras = self.get_log_dict('stats', appid, uuid=uuid)
         self.logger.info('Received {s} stats request'.format(s=stats),
             extra=extras)
 
