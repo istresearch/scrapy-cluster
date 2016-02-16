@@ -11,6 +11,7 @@ import yaml
 import sys
 import uuid
 import socket
+import re
 
 from redis_dupefilter import RFPDupeFilter
 from kazoo.handlers.threading import KazooTimeoutError
@@ -60,7 +61,7 @@ class DistributedScheduler(object):
     my_assignment = None  # Zookeeper path to read actual yml config
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
-                 hits, window, mod, ip_refresh, add_type, add_ip):
+                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex):
         '''
         Initialize the scheduler
         '''
@@ -77,6 +78,7 @@ class DistributedScheduler(object):
         self.add_ip = add_ip
         self.item_retires = retries
         self.logger = logger
+        self.ip_regex = re.compile(ip_regex)
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
@@ -253,7 +255,11 @@ class DistributedScheduler(object):
         try:
             obj = urllib2.urlopen(settings.get('PUBLIC_IP_URL',
                                   'http://ip.42.pl/raw'))
-            self.my_ip = obj.read()
+            results = self.ip_regex.findall(obj.read())
+            if len(results) > 0:
+                self.my_ip = results[0]
+            else:
+                raise IOError("Could not get valid IP Address")
             obj.close()
             self.logger.debug("Current public ip: {ip}".format(ip=self.my_ip))
         except IOError:
@@ -290,6 +296,7 @@ class DistributedScheduler(object):
         add_type = settings.get('SCHEDULER_TYPE_ENABLED', False)
         add_ip = settings.get('SCHEDULER_IP_ENABLED', False)
         retries = settings.get('SCHEUDLER_ITEM_RETRIES', 3)
+        ip_regex = settings.get('IP_ADDR_REGEX', '.*')
 
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
@@ -310,7 +317,7 @@ class DistributedScheduler(object):
                                          backups=my_backups)
 
         return cls(server, persist, up_int, timeout, retries, logger, hits,
-                   window, mod, ip_refresh, add_type, add_ip)
+                   window, mod, ip_refresh, add_type, add_ip, ip_regex)
 
     @classmethod
     def from_crawler(cls, crawler):

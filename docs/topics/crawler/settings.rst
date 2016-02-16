@@ -120,6 +120,18 @@ Default: ``60``
 
 The number of seconds to wait between refreshing the Scrapy process's public IP address.
 
+**PUBLIC_IP_URL**
+
+Default: ``'http://ip.42.pl/raw'``
+
+The default URL to grab the Crawler's public IP Address from.
+
+**IP_ADDR_REGEX**
+
+Default: ``(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})``
+
+The regular expression used to find the Crawler's public IP Address from the ``PUBLIC_IP_URL``. The first element from the results of this regex will be used as the ip address.
+
 **SCHEDULER_TYPE_ENABLED**
 
 Default: ``True``

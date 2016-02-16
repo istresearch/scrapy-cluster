@@ -20,6 +20,7 @@ ZOOKEEPER_ID = 'all'
 ZOOKEEPER_HOSTS = 'localhost:2181'
 
 PUBLIC_IP_URL = 'http://ip.42.pl/raw'
+IP_ADDR_REGEX = '(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
 # Don't cleanup redis queues, allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
@@ -154,7 +155,7 @@ RETRY_TIMES = 3
 DOWNLOAD_TIMEOUT = 10
 
 # Avoid in-memory DNS cache. See Advanced topics of docs for info
-DNSCACHE_ENABLED = False
+DNSCACHE_ENABLED = True
 
 # Local Overrides
 # ~~~~~~~~~~~~~~~
