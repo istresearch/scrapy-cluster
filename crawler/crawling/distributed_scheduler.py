@@ -166,6 +166,7 @@ class DistributedScheduler(object):
         extras['message'] = message
         extras['revert_window'] = self.window
         extras['revert_hits'] = self.hits
+        extras['spiderid'] = self.spider.name
         self.logger.info("Lost config from Zookeeper", extra=extras)
         # lost connection to zookeeper, reverting back to defaults
         for key in self.domain_config:
@@ -335,7 +336,7 @@ class DistributedScheduler(object):
                                         self.rfp_timeout)
 
     def close(self, reason):
-        self.logger.info("Closing Spider")
+        self.logger.info("Closing Spider", {'spiderid':self.spider.name})
         if not self.persist:
             self.logger.warning("Clearing crawl queues")
             self.dupefilter.clear()
