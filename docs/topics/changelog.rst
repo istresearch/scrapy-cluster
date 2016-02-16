@@ -26,6 +26,8 @@ Date: ??/??/????
 
 - Added significantly more documentation and improved layout
 
+- Created new ``elk`` folder for sample Elasticsearch, Logstash, Kibana integration
+
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
