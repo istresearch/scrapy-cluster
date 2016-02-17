@@ -48,4 +48,4 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 
 ## Documentation
 
-Please check out [Scrapy Cluster's 1.1 documentation](http://scrapy-cluster.readthedocs.org/en/1.1-docs/) in progress for more details on how everything works!
+Please check out [Scrapy Cluster's 1.1 documentation](http://scrapy-cluster.readthedocs.org/en/dev/) in progress for more details on how everything works!
