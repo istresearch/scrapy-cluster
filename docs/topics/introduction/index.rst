@@ -1,7 +1,7 @@
 Introduction
 =======================
 
-This set of documentation serves to give an intorduction to Scrapy Cluster, including goals, architecture designs, and how to get started using the cluster.
+This set of documentation serves to give an introduction to Scrapy Cluster, including goals, architecture designs, and how to get started using the cluster.
 
 .. toctree::
    :hidden:
