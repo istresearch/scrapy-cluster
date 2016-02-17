@@ -165,13 +165,13 @@ The Scrapy Cluster logger name.
 
 Default: ``'logs'``
 
-The directory to write logs into.
+The directory to write logs into. Only applicable when ``SC_LOG_STDOUT`` is set to ``False``.
 
 **SC_LOG_FILE**
 
 Default: ``'sc_crawler.log'``
 
-The file to write the logs into. When this file rolls it will have ``.1`` or ``.2`` appended to the file name.
+The file to write the logs into. When this file rolls it will have ``.1`` or ``.2`` appended to the file name. Only applicable when ``SC_LOG_STDOUT`` is set to ``False``.
 
 **SC_LOG_MAX_BYTES**
 
@@ -183,7 +183,7 @@ The maximum number of bytes to keep in the file based log before it is rolled.
 
 Default: ``5``
 
-The number of rolled file logs to keep before data is discarded. A setting of ``5`` here means that there will be one main log and five rolled logs on the system, totaling six log files total.
+The number of rolled file logs to keep before data is discarded. A setting of ``5`` here means that there will be one main log and five rolled logs on the system, totaling six log files.
 
 **SC_LOG_STDOUT**
 

@@ -86,13 +86,13 @@ The logger name.
 
 Default: ``'logs'``
 
-The directory to write logs into.
+The directory to write logs into. Only applicable when ``LOG_STDOUT`` is set to ``False``.
 
 **LOG_FILE**
 
 Default: ``'redis_monitor.log'``
 
-The file to write the logs into. When this file rolls it will have ``.1`` or ``.2`` appended to the file name.
+The file to write the logs into. When this file rolls it will have ``.1`` or ``.2`` appended to the file name. Only applicable when ``LOG_STDOUT`` is set to ``False``.
 
 **LOG_MAX_BYTES**
 

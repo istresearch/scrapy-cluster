@@ -5,7 +5,7 @@ Controlling
 
 Scrapy Cluster requires coordination between the different crawling machines in order to ensure maximum content throughput with enabling the cluster manager to control how fast their machines hit different websites.
 
-Scrapy Cluster comes with two major focal points for controlling how fast your pool of spiders hit different domains.
+Scrapy Cluster comes with two major strategies for controlling how fast your pool of spiders hit different domains. This is determined by spider type and/or IP Address, but both act upon the different Domain Queues.
 
 Domain Queues
 -------------
@@ -122,7 +122,7 @@ IP and Type throttling combines both of the above throttle styles, and allows yo
 Settings
 ^^^^^^^^
 
-To utilize the different throttle mechanisms you can alter the following settings in your ``localsettings.py`` file. You then need to restart your crawling processes for the new settings to take affect.
+To utilize the different throttle mechanisms you can alter the following settings in your ``localsettings.py`` file. You then need to restart your crawling processes for the new settings to take effect.
 
 **SCHEDULER_TYPE_ENABLED** - Flag to set the **Type** Style throttling
 

@@ -8,7 +8,7 @@ There are a number of ways to contribute to Scrapy Cluster.
 Raising Issues
 ----------------
 
-If you're thinking about raising an issue because think you've found a problem with Scrapy Cluster, you'd like to make a request for a new feature in the codebase, or any other reason… please read this first.
+If you're thinking about raising an issue because you think you've found a problem with Scrapy Cluster, you'd like to make a request for a new feature in the codebase, or any other reason… please read this first.
 
 The GitHub issue tracker is the preferred channel for `Bug Reports`_, `Feature Requests`_, or `Change Requests`_, but please respect the following restrictions:
 

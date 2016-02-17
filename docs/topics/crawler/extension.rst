@@ -8,14 +8,14 @@ This page outlines how you can extend Scrapy but still work within Scrapy Cluste
 General
 -------
 
-In general, Scrapy Cluster does not hinder user of Scrapy Middlewares, Item Pipelines, or Spiders. You can see some instances of this within the Scrapy project, as Scrapy Cluster by default needs to use some middlewares and item pipelines to fit things together.
+In general, Scrapy Cluster embraces the extension and flexibility of Scrapy, while providing new hooks and frameworks in order to do highly distributed crawling and orchestration. You can see some instances of this within the Scrapy project, as Scrapy Cluster by default needs to use some middlewares and item pipelines to fit things together.
 
 The most heavily customized components of the Scrapy Cluster project involve a distributed scheduler and base spider class. These two classes work together to allow for distributed crawling, but otherwise do not interfere with normal Scrapy processes.
 
 Additional Info
 ^^^^^^^^^^^^^^^
 
-There is a Scrapy Cluster logger available throughout the project, and there should be plently of examples on how to create a logger at any one part of your Scrapy Project. You should see examples for how to create a logger in the ``pipelines.py`` file and the ``log_retry_middleware.py`` file.
+There is a Scrapy Cluster logger available throughout the project, and there should be plenty of examples on how to create a logger at any one part of your Scrapy Project. You should see examples for how to create a logger in the ``pipelines.py`` file and the ``log_retry_middleware.py`` file.
 
 .. note:: Spiders that use the base ``RedisSpider`` class already have a Scrapy Cluster logger, located at ``self._logger``.
 
@@ -42,7 +42,7 @@ Below is an outline of the spider file.
             self._increment_status_code_stat(response)
 
             # process your response here
-            # yeild Scrapy Requests and Items like normal
+            # yield Scrapy Requests and Items like normal
 
 That is it! Your spider is now hooked into your scraping cluster, and can do any kind of processing with your responses like normal.
 
@@ -225,7 +225,7 @@ If you are looking at your ``demo.crawled_firehose`` Kafka Topic using the ``kaf
 
 Notice the ``attrs`` field has our step value, and we can now track all of the hops the Scrapy Cluster is making. Your cluster is now serially working on that particular crawl job until it hits a page it has already seen, or does not find any links in the response.
 
-You can also fire up more than one crawl job at a time, and track the steps that jobs makes. After creating some more jobs and letting the cluster run for a while, here is a snapshot of the Redis Monitor crawl data dump.
+You can also fire up more than one crawl job at a time, and track the steps that job makes. After creating some more jobs and letting the cluster run for a while, here is a snapshot of the Redis Monitor crawl data dump.
 
 ::
 
@@ -250,4 +250,4 @@ You can also fire up more than one crawl job at a time, and track the steps that
         "wandering_spider_count": 4
     }
 
-You now have two different examples of how Scrapy Cluster extends Scrapy to give you distribtued crawling capabilities.
+You now have two different examples of how Scrapy Cluster extends Scrapy to give you distributed crawling capabilities.

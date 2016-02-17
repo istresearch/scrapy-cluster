@@ -33,15 +33,17 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 
 - Coordinate and prioritize their scraping effort for desired sites
 
-- Persist across scraping jobs or have multiple scraping jobs going at the same time
+- Persist data across scraping jobs
 
-- Allows for unparalleled access into the information about your scraping job, what is upcoming, and how the sites are ranked
+- Execute multiple scraping jobs concurrently
+
+- Allows for in depth access into the information about your scraping job, what is upcoming, and how the sites are ranked
 
 - Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
 
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
 
-- Allows for coordinated throttling of spiders crawling behind different machines but reach out from the same IP address.
+- Allows for coordinated throttling of crawls from independent spiders on separate machines, but behind the same IP Address
 
 Architecture
 ------------

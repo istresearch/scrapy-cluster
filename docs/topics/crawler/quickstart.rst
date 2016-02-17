@@ -93,7 +93,7 @@ If you are still listening to the Kafka Topic in Terminal 1, the following shoul
 ::
 
     {
-        "body": "<body ommitted",
+        "body": "<body ommitted>",
         "crawlid": "09876abc",
         "response_headers": {
             <headers omitted>
