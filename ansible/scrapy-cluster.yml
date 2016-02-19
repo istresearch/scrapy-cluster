@@ -9,13 +9,6 @@
     - miniconda
 
 # Install kafka, zookeeper, redis
-- include: kafka.yml
 - include: zookeeper.yml
+- include: kafka.yml
 - include: redis.yml
-
-# Restart Kafka because its finicky like that
-- hosts: scdev
-  sudo: yes
-  tasks:
-    - name: Restart kafka
-      supervisorctl: name='kafka' state=restarted
