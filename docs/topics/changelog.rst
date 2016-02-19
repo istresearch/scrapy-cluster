@@ -61,7 +61,7 @@ Redis Monitor Changes
 Crawler Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
-- Upgraded Crawler to be compatible with Scrapy 1.0.4
+- Upgraded Crawler to be compatible with Scrapy 1.0
 
 - Improved code structure for overriding url.encode in default LxmlParserLinkExtractor
 
