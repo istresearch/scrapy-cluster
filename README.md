@@ -24,7 +24,6 @@ Other important components required to run the cluster
 This project tries to bring together a bunch of new concepts to Scrapy and large scale distributed crawling in general. Some bullet points include:
 
 - The spiders are dynamic and on demand, meaning that they allow the arbitrary collection of any web page that is submitted to the scraping cluster
-
 - Scale Scrapy instances across a single machine or multiple machines
 - Coordinate and prioritize their scraping effort for desired sites
 - Persist data across scraping jobs
