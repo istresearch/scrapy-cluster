@@ -10,7 +10,7 @@ Each plugin consists of a class inherited from the base plugin class, and one or
 Default Plugins
 ---------------
 
-By default, plugins live in the ``plugins`` directory within the Kafka Monitor. The following plugins come by default.
+By default, plugins live in the ``plugins`` directory within the Kafka Monitor. The following plugins come with the Kafka Monitor.
 
 Action Handler
 ^^^^^^^^^^^^^^

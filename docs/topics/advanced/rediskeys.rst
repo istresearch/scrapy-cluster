@@ -14,24 +14,24 @@ Production
 
 - **<spiderid>:blacklist** - A permanent blacklist of all stopped and expired ``crawlid``'s . This is used by the Scrapy scheduler prevent crawls from continuing once they have been halted via a stop request or an expiring crawl. Any subsequent crawl requests with a ``crawlid`` in this list will not be crawled past the initial request url.
 
-.. warning:: The Duplication Filter is only temporary, otherwise every single crawl request will continue to fill up the Redis instance! Since the the goal is to utilize Redis in a way that does not consume too much memory, the filter utilizes Redis's `EXPIRE <http://redis.io/commands/expire>`_ feature, and the key will self delete after a specified time window. The default window provided is 60 seconds, which means that if your crawl job with a unique ``crawlid`` goes for more than 60 seconds without a request, the key will be deleted and you may end up crawling pages you have already seen. Since there is an obvious increase in memory used with an increased timeout window, that is up to the application using Scrapy Cluster to determine what a safe tradeoff is.
+.. warning:: The Duplication Filter is only temporary, otherwise every single crawl request will continue to fill up the Redis instance! Since the the goal is to utilize Redis in a way that does not consume too much memory, the filter utilizes Redis's `EXPIRE <http://redis.io/commands/expire>`_ feature, and the key will self delete after a specified time window. The :ref:`default <dupe_timeout>` window provided is 600 seconds, which means that if your crawl job with a unique ``crawlid`` goes for more than 600 seconds without a request, the key will be deleted and you may end up crawling pages you have already seen. Since there is an obvious increase in memory used with an increased timeout window, that is up to the application using Scrapy Cluster to determine what a safe tradeoff is.
 
-- **<spiderid>:<ip_address>:domain:throttle_time** - Stores the value for the future calculation on when the next time a moderated throttle key is available to pop. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`.
+- **<spiderid>:<ip_address>:domain:throttle_time** - Stores the value for the future calculation on when the next time a moderated throttle key is available to pop. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
 
-- **<spiderid>:<ip_address>:domain:throttle_window** - Stores the number of hits for a particular domain given the Type and IP Throttle Style. Is used by the Scrapy Scheduler to do coordinated throttling across a particular domain. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`.
+- **<spiderid>:<ip_address>:domain:throttle_window** - Stores the number of hits for a particular domain given the Type and IP Throttle Style. Is used by the Scrapy Scheduler to do coordinated throttling across a particular domain. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
 
 Statistics
 ^^^^^^^^^^
 
-- **stats:kafka-monitor:<plugin>:<window>** - Used to collect plugin statistics of requests that are received by the Kafka Monitor. These keys hold information about the number of sucessful hits on that plugin in a specific time winow.
+- **stats:kafka-monitor:<plugin>:<window>** - Used to collect plugin statistics of requests that are received by the Kafka Monitor. These keys hold information about the number of successful hits on that plugin in a specific time window.
 
-- **stats:kafka-monitor:total:<window>** - Holds statistics on the total number of requests received by the Kafka Monitor. This contains both successful and unseccussful API reqests.
+- **stats:kafka-monitor:total:<window>** - Holds statistics on the total number of requests received by the Kafka Monitor. This contains both successful and unsuccessful API requests.
 
 - **stats:kafka-monitor:fail:<window>** - Holds statistics on the total number of failed API validation attempts by the Kafka Monitor for requests it receives. The value here is based on the defined statistics collection time window.
 
-- **stats:redis-monitor:<plugin>:<window>** - Used to collect plugin statistics of requests that are received by the Redis Monitor. These keys hold information about the number of sucessful hits on that plugin in a specific time winow.
+- **stats:redis-monitor:<plugin>:<window>** - Used to collect plugin statistics of requests that are received by the Redis Monitor. These keys hold information about the number of successful hits on that plugin in a specific time window.
 
-- **stats:redis-monitor:total:<window>** - Holds statistics on the total number of requests received by the Redis Monitor. This contains both successful and unseccussful attempts at processing in monitored key.
+- **stats:redis-monitor:total:<window>** - Holds statistics on the total number of requests received by the Redis Monitor. This contains both successful and unsuccessful attempts at processing in monitored key.
 
 - **stats:redis-monitor:fail:<window>** - Holds statistics on the total number of failed attempts by the Redis Monitor for requests it receives. The value here is based on the defined statistics collection time window.
 

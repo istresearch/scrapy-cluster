@@ -104,7 +104,7 @@ The maximum number of bytes to keep in the file based log before it is rolled.
 
 Default: ``5``
 
-The number of rolled file logs to keep before data is discarded. A setting of ``5`` here means that there will be one main log and five rolled logs on the system, totaling six log files total.
+The number of rolled file logs to keep before data is discarded. A setting of ``5`` here means that there will be one main log and five rolled logs on the system, generating six log files total.
 
 **LOG_STDOUT**
 

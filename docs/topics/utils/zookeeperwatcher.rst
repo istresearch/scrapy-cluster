@@ -9,7 +9,7 @@ Behind the scenes, the Zookeeper Watcher utility uses `kazoo <http://kazoo.readt
 
 In practice, the Zookeeper Watcher is used to watch configuration files stored within Zookeeper, so that your application may update its configuration automatically. In two-file mode, the utility assumes the first file it is watching actually has a full path to another Zookeeper file where the actual configuration is stored, enabling you to dynamically switch to distinct configurations files stored in Zookeeper as well as see updates to those files.
 
-Within this configuration file watcher, the Zookeeper Watcher also has the ability to function in both **event driven** and **polling mode** (or a combination thereof). Depending on your application setup, it may be more beneficial to use one or the other types of modes for your particular kind of setup.
+Within this configuration file watcher, the Zookeeper Watcher also has the ability to function in both **event driven** and **polling mode** (or a combination thereof). Depending on your application setup, it may be more beneficial to use one or the other types of modes.
 
 .. class:: ZookeeperWatcher (hosts, filepath, valid_handler=None, config_handler=None, error_handler=None, pointer=False, ensure=False, valid_init=True)
 
@@ -265,7 +265,7 @@ So now we have two configuration files located at ``/tmp/``, and one pointer fil
 
 ::
 
-    $ python example_watcher.py -z scdev -f/tmp_pointers/pointer1 --event -p
+    $ python example_watcher.py -z scdev -f /tmp_pointers/pointer1 --event -p
     Your file contents: EVENT TRIGGER My configuration string here. Typically YAML or JSON
 
     The valid state is now True

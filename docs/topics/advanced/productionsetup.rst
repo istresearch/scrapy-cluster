@@ -46,7 +46,7 @@ In production, we typically run everything on their own boxes, or a little overl
 
 **Zookeeper** - 3 nodes to help ensure Kafka is running smoothly, with a little overhead for the crawlers. These boxes typically can be all around or 'general' boxes; with decent IO, RAM, and disk.
 
-**Kafka** - 5 nodes to ensure your cluster is able to pump and read as much data as you can throw at it. Setting up Kafka can be its own art form, so you want to make sure your data packet size is fairly large, and that you make sure you settings on how much data you store are properly configured. These boxes rely heavily on the internal network, so high IO and no crawlers on these machines.
+**Kafka** - 5 nodes to ensure your cluster is able to pump and read as much data as you can throw at it. Setting up Kafka can be its own art form, so you want to make sure your data packet size is fairly large, and that you make sure your settings on how much data you store are properly configured. These boxes rely heavily on the internal network, so high IO and no crawlers on these machines.
 
 **Redis** - 1 node, since Redis is an in memory database you will want a lot of RAM on this box. Your database should only become a problem if your periodic back up files are too large to fit on your machine. This means either that you cannot crawl fast enough and your database is filling up, or you have that much stuff to where it fills your disk. Either way, disk and RAM are the important things here
 
@@ -67,10 +67,10 @@ Crawler configuration is very important, and it can take some time to find setti
 
 * Have as many different IP addresses as you can. If you can get one IP Address per machine - awesome. The more you stack machines out the same IP Address, the lower the throughput will be on your cluster due to the domain throttling.
 
-* Run the IP Type throttle only if you have many different spiders coming from your cluster. It will allow them to orchestrate themselves across spider types to crawl at your desired rate limits. Turning on the Spider Type throttle will eliminate this benefit.
+* Run the IP Address throttle only (no Spider Type) if you have many different spiders coming from your cluster. It will allow them to orchestrate themselves across spider types to crawl at your desired rate limits. Turning on the Spider Type throttle will eliminate this benefit.
 
 * Don't set your ``QUEUE_WINDOW`` and ``QUEUE_HITS`` too high. There is a reason the defaults are ``60`` and ``10``. If you can scale horizontally, you can get your throughput to ``10 * (num machines)`` and should be able to fit your throughput needs.
 
-* Flip the :ref:`Base 64 <c_base64>` encode flag on your crawlers. You **will** run across malformed utf-8 characters that will breaks ``json.dumps()``. It  will save you headaches in the long run by ensuring your html is always transmitted to Kafka.
+* Flip the :ref:`Base 64 <c_base64>` encode flag on your crawlers. You **will** run across malformed utf-8 characters that breaks ``json.dumps()``. It  will save you headaches in the long run by ensuring your html is always transmitted to Kafka.
 
 

@@ -3,7 +3,7 @@
 Controlling
 ===========
 
-Scrapy Cluster requires coordination between the different crawling machines in order to ensure maximum content throughput with enabling the cluster manager to control how fast their machines hit different websites.
+Scrapy Cluster requires coordination between the different crawling machines in order to ensure maximum content throughput while enabling the cluster manager to control how fast their machines hit different websites.
 
 Scrapy Cluster comes with two major strategies for controlling how fast your pool of spiders hit different domains. This is determined by spider type and/or IP Address, but both act upon the different Domain Queues.
 
@@ -13,6 +13,8 @@ Domain Queues
 Registered domain names are what are commonly used to reference a general website. Some examples are ``google.com``, ``wikipedia.org``, ``amazon.com``, ``scrapy.org``... you get the idea.
 
 Scrapy Cluster allows you to control how fast your cluster hits each of these domains, without interfering with other domains. Each domain is independently coordinated and throttled by the collective Spiders running, allowing both fine tuned and generalized control of how fast your spiders react to new domains and how fast they should crawl them.
+
+.. _general_domain_settings:
 
 General Domain Settings
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -27,7 +29,7 @@ Putting these two together, this means that you can control X number of ``QUEUE_
 
 This is **not** the same as the Scrapy `Auto Throttle <http://doc.scrapy.org/en/latest/topics/autothrottle.html>`_! Scrapy's Auto Throttle works great when running a single Scrapy Spider process, but falls short when coordinating concurrent processes across different machines. Scrapy Cluster's throttling mechanism allows for spiders to coordinate crawls spread across machines.
 
-.. warning:: Scrapy Cluster by default comes with a `very modest` 10 hits per 60 seconds, for any domain it sees. This may seem very slow, but when scaled horizontally across many IP addresses allows you to crawl at a large scale with minimal fear of any individual IP addresses being blocked.
+.. warning:: Scrapy Cluster by default comes with a `very modest` 10 hits per 60 seconds, for any domain it sees. This may seem very slow, but when scaled horizontally across many IP addresses allows you to crawl at a large scale with minimal fear of any individual IP address being blocked.
 
 **SCHEDULER_QUEUE_REFRESH** - Controls how often your spiders check for new domains (other than the ones they have already seen). This is time intensive and means your spider is not crawling, so a higher but responsive time is recommended here.
 
@@ -57,11 +59,11 @@ This is a yaml configuration file for overriding the general settings on a site 
             hits: <QUEUE_HITS>
             scale: 0.5
 
-The yaml syntax dictates a series of domains, and within each domain there is required at minimum to be both a ``window`` and ``hits`` value. These correspond to the ``QUEUE_HITS`` and ``QUEUE_WINDOW`` above. There is also an optional value called ``scale``, where you can apply a scale value between 0 and 1 to the domain of choice. The combination of the window, hits, and scale values allows you to fine tune your cluster.
+The yaml syntax dictates a series of domains, and within each domain there is required at minimum to be both a ``window`` and ``hits`` value. These correspond to the ``QUEUE_HITS`` and ``QUEUE_WINDOW`` above. There is also an optional value called ``scale``, where you can apply a scale value between 0 and 1 to the domain of choice. The combination of the window, hits, and scale values allows you to fine tune your cluster for targeted domains, but to apply the :ref:`general settings <general_domain_settings>` to any other domain.
 
 **file_pusher.py**
 
-Once you have a desired yaml configuration, the next step is to push it into Zookeeper using the ``file_pusher.py`` script. This is a small file that allows you to deploy crawler configuration to the cluster.
+Once you have a desired yaml configuration, the next step is to push it into Zookeeper using the ``file_pusher.py`` script. This is a small script that allows you to deploy crawler configuration to the cluster.
 
 ::
 

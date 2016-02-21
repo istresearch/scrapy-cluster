@@ -42,11 +42,11 @@ General
 
 **How do I deploy my cluster in an automated fashion?**
 
-    Deploying a scrapy cluster in an automated fashion is highly dependent on the environment **you** are working in. Because we cannot control the OS you are running, packages installed, or network setup, it is best recommended you use an automated deployment framework that fits your needs. Some suggestions include Ansible, Puppet, Chef, Salt, Anaconda Cluster, etc.
+    Deploying a scrapy cluster in an automated fashion is highly dependent on the environment **you** are working in. Because we cannot control the OS you are running, packages installed, or network setup, it is best recommended you use an automated deployment framework that fits your needs. Some suggestions include `Ansible <https://www.ansible.com/>`_, `Puppet <https://puppetlabs.com/>`_, `Chef <https://www.chef.io/chef/>`_, `Salt <http://saltstack.com/>`_, `Anaconda Cluster <http://docs.continuum.io/anaconda-cluster/index>`_, etc.
 
 **Are there other distributed Scrapy projects?**
 
-    Yes! Please see our breakdown on pros and cons at :ref:`other_projects`
+    Yes! Please see our breakdown at :ref:`other_projects`
 
 **I would like to contribute but do not know where to begin, how can I help?**
 

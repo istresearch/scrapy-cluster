@@ -22,7 +22,7 @@ An example diagram of the breadth first crawling is shown below:
    :alt: Breath First
    :align:   center
 
-As you can see above, the initial seed url generates 4 new links. Scrapy Cluster uses a Redis priority based queue, the spiders continue to attempt to pop from the highest priority crawl request for each domain. New links found upon subsequent requests are decreased in priority, and then put back into their respective domain based queues. This allows for the equal priority links to be crawled first.
+As you can see above, the initial seed url generates 4 new links. Scrapy Cluster uses a Redis priority based queue, so the spiders continue to attempt to pop from the highest priority crawl request for each domain. New links found upon subsequent requests are decreased in priority, and then put back into their respective domain based queues. This allows for the equal priority links to be crawled first.
 
 When a spider encounters a link it has already seen, the duplication filter based on the request’s ``crawlid`` will filter it out. The spiders will continue to traverse the resulting graph generated until they have reached either their maximum link depth or have exhausted all possible urls.
 
@@ -97,7 +97,7 @@ Logs and collects statistics about the Spider receiving 504 timeout status codes
 pipelines.py
 ^^^^^^^^^^^^
 
-The pipelines file is a basic Scrapy Item Pipeline with a three classes contained within. The pipeline classes log to ensure we received the item, it was sent (successfully or not), and then to log that the item was sent. The pipeline also checks to make sure that the Kafka topic exists before sending the message to it.
+The pipelines file is a basic Scrapy Item Pipeline with a three classes contained within. The pipeline classes log to ensure we received the item, it was sent (successfully or not) to Kafka, and then to log that the item's result. The pipeline also checks to make sure that the Kafka topic exists before sending the message to it.
 
 redis\_dupefilter.py
 ^^^^^^^^^^^^^^^^^^^^

@@ -44,14 +44,13 @@ If you've got a great idea, we want to hear about it! Please label the issue you
 
 Before making a suggestion, here are a few handy tips on what to consider:
 
-1. Visit the `Milestones <https://github.com/istresearch/scrapy-cluster/milestones>`_ and search through the known `feature requests <https://github.com/istresearch/scrapy-cluster/issues?utf8=%E2%9C%93&q=label%3A%22feature+request%22+>`_ to see if the feature has already been requested, or is on our roadmap already.
+#. Visit the `Milestones <https://github.com/istresearch/scrapy-cluster/milestones>`_ and search through the known `feature requests <https://github.com/istresearch/scrapy-cluster/issues?utf8=%E2%9C%93&q=label%3A%22feature+request%22+>`_ to see if the feature has already been requested, or is on our roadmap already.
 
-2. Check out `Working on Scrapy Cluster Core`_ - this explains the guidelines for what fits into the scope and aims of the project.
+#. Check out `Working on Scrapy Cluster Core`_ - this explains the guidelines for what fits into the scope and aims of the project.
 
-3. Have a quick think about whether your feature is for the Kafka Monitor, Redis Monitor, the Crawlers, or does it affect multiple areas? This can help when describing your idea.
+#. Think about whether your feature is for the Kafka Monitor, Redis Monitor, the Crawlers, or does it affect multiple areas? This can help when describing your idea.
 
-4. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of a new feature. Please provide as much detail and context as possible - this means explaining the use case and why it is
-likely to be common.
+#. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of a new feature. Please provide as much detail and context as possible - this means explaining the use case and why it is likely to be common.
 
 Change Requests
 ^^^^^^^^^^^^^^^

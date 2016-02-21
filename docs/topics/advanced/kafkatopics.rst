@@ -14,7 +14,7 @@ For production deployments you will have at a minimum three operational Kafka To
 
 * **demo.outbound_firehose** - All of the Action, Stop, Expire, and Statistics based request results will come out of this topic.
 
-If you have configured Application specific topics for the :ref:`Redis Monitor <rm_kafka_appid_topics>` or the :ref:`Crawler <c_kafka_appid_topics>`, you will have these topics.
+If you have configured Application ID specific topics for the :ref:`Redis Monitor <rm_kafka_appid_topics>` or the :ref:`Crawler <c_kafka_appid_topics>`, you will have these topics.
 
 * **demo.crawled_<appid>** - Crawl data specific to the ``appid`` used to submit the request
 

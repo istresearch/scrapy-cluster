@@ -102,7 +102,7 @@ Why does this happen? Behind the scenes, the LogFactory is trying to ensure that
     :param message: The message to write to the logs
     :param extra: A dictionary of extra fields to include with the written object if writing in json
 
-When setting you application log level, you determine what amount of logs it will produce. Typically the most verbose logging is done in ``DEBUG``, and increasing the log level decrease the amount of logs generated.
+When setting you application log level, you determine what amount of logs it will produce. Typically the most verbose logging is done in ``DEBUG``, and increasing the log level decreases the amount of logs generated.
 
 +----------------+------------------------------------------+
 | App Log Level  | Output Log levels                        |

@@ -3,7 +3,7 @@ Integration with ELK
 
 Scrapy Cluster's :ref:`Log Factory<log_factory>` has the ability to change the log output from human readable to JSON, which integrates very nicely with tools like `Elasticsearch <https://www.elastic.co/products/elasticsearch>`_, `Logstash <https://www.elastic.co/products/logstash>`_, and `Kibana <https://www.elastic.co/products/kibana>`_. This page will guide you on how to set up basic monitoring and visualizations of your Scrapy Cluster through the ELK stack.
 
-.. warning:: This guide does not cover how to set up or maintain any of the technologies used within. You should already be familiar with ELK stack and have a working Scrapy Cluster before you begin.
+.. warning:: This guide does not cover how to set up or maintain any of the technologies used within. You should already be familiar with the ELK stack and have a working Scrapy Cluster before you begin.
 
 Scrapy Cluster Setup
 --------------------
@@ -14,7 +14,7 @@ You should alter a couple of settings used within each of the main components of
 
 * ``LOG_STDOUT = False`` - Forces the Kafka Monitor logs to be written to a file on the machine
 
-* ``LOG_JSON = False`` - Flips logging output from human readable to JSON.
+* ``LOG_JSON = True`` - Flips logging output from human readable to JSON.
 
 * ``LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
 
@@ -22,7 +22,7 @@ You should alter a couple of settings used within each of the main components of
 
 * ``LOG_STDOUT = False`` - Forces the Redis Monitor logs to be written to a file on the machine
 
-* ``LOG_JSON = False`` - Flips logging output from human readable to JSON.
+* ``LOG_JSON = True`` - Flips logging output from human readable to JSON.
 
 * ``LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
 
@@ -30,7 +30,7 @@ You should alter a couple of settings used within each of the main components of
 
 * ``SC_LOG_STDOUT = False`` - Forces the Crawler logs to be written to a file on the machine
 
-* ``SC_LOG_JSON = False`` - Flips logging output from human readable to JSON.
+* ``SC_LOG_JSON = True`` - Flips logging output from human readable to JSON.
 
 * ``SC_LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
 
@@ -121,7 +121,7 @@ Now we need to configure Logstash to use the template, and read from our logs. F
     }
 
 
-Save this file as ``scrapy-cluster-logstash.conf``, and put it into the folder where Logstash reads its configuration files. This logstash template says that we are going to read from any file that matches our pattern ``*.log`` within the Scrapy Cluster log folder we defined prior. The output of this operation says to ship that log to our Elasticsearch hosts, using the template we created one step above. This will write our logs to the index ``logs-scrapy-cluster``, with the document `type <https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html>`_ defined as the logger.
+Save this file as ``scrapy-cluster-logstash.conf``, and put it into the folder where Logstash reads its configuration files. This logstash template says that we are going to read from any file that matches our pattern ``*.log`` within the Scrapy Cluster log folder we defined prior. The output of this operation says to ship that log to our Elasticsearch hosts, using the template we created one step above. This will write our logs to the Elasticsearch index ``logs-scrapy-cluster``, with the document `type <https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html>`_ defined as the logger name.
 
 What we end up with is one single index where our logs are stored, and each type of log (Kafka Monitor, Redis Monitor, and Crawler) split into a different series of documents.
 
@@ -153,14 +153,14 @@ From here, you can play around with the different searching and visualization fu
 
 If you would like to use some preconfigured searches and visualizations, go to **Settings** and (at time of writing) click **Objects**, then **Import**. We are going to import a sample set of visualizations and searches from the Scrapy Cluster project under the folder ``elk``. Select the ``export.json`` file to import everything in.
 
-You should now have a number of different Visualizations and Searches so you can better understand how your cluster is operating at scale.
+You should now have a number of different Visualizations, Dashboards, and Searches so you can better understand how your cluster is operating at scale.
 
 .. note:: The graphs below only show a sample series of three or four crawl requests over a span of four hours. A typical cluster will have hundreds or thousands of requests per minute!
 
 Overall
 ^^^^^^^
 
-This is a high level overview of all three components of your Scrapy Cluster. This is the typical view to go to when you would like to know what is going on across all of your different components.
+This is a high level overview dashboard of all three components of your Scrapy Cluster. This is the typical view to go to when you would like to know what is going on across all of your different components.
 
 .. figure:: ../img/overall_kibana.png
     :alt: Overall Kibana
@@ -170,7 +170,7 @@ This is a high level overview of all three components of your Scrapy Cluster. Th
 Crawler
 ^^^^^^^
 
-The Crawler detail view shows you a much more in depth view of your current Scrapy Crawlers. Here you see breakdowns of response codes, machine load balances, and successful outbound Kafka messages.
+The Crawler dashboard view shows you a much more in depth view of your current Scrapy Crawlers. Here you see breakdowns of response codes, machine load balances, and successful outbound Kafka messages.
 
 .. figure:: ../img/crawler_kibana.png
     :alt: Crawler Kibana

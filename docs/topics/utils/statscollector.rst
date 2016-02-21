@@ -64,7 +64,7 @@ You should use the following static class methods to generate your counter objec
 
     .. method:: get_rolling_time_window(redis_conn=None, host='localhost', port=6379, key='rolling_time_window_counter', cycle_time=5, window=SECONDS_1_HOUR)
 
-        Generates a new RollingTimeWindow
+        Generates a new RollingTimeWindow.
         Useful for collect data about the number of hits in the past X seconds
 
         :param redis_conn: A premade redis connection (overrides host and port)
@@ -77,7 +77,7 @@ You should use the following static class methods to generate your counter objec
 
     .. method:: get_counter(redis_conn=None, host='localhost', port=6379, key='counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12, start_at=0)
 
-        Generate a new Counter
+        Generate a new Counter.
         Useful for generic distributed counters
 
         :param redis_conn: A premade redis connection (overrides host and port)
@@ -126,7 +126,7 @@ You should use the following static class methods to generate your counter objec
 
     .. method:: get_bitmap_counter(redis_conn=None, host='localhost', port=6379, key='bitmap_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
 
-        Generate a new BitMapCounter
+        Generate a new BitMapCounter.
         Useful for creating different bitsets about users/items that have unique indices.
 
         :param redis_conn: A premade redis connection (overrides host and port)

@@ -10,7 +10,7 @@ Each plugin consists of a class inherited from the base plugin class, and a coup
 Default Plugins
 ---------------
 
-By default, plugins live in the ``plugins`` directory within the Redis Monitor. The following plugins come by default.
+By default, plugins live in the ``plugins`` directory within the Redis Monitor. The following plugins come standard.
 
 Info Monitor
 ^^^^^^^^^^^^

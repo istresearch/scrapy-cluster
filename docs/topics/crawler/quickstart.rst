@@ -3,9 +3,9 @@
 Quick Start
 ===========
 
-This is a complete Scrapy crawling project.
+This is a complete Scrapy crawling project located in ``crawler/``.
 
-First, create a ``localsettings.py`` file to track your custom settings. You can override any setting in the normal ``settings.py`` file, and a typical file may look like the following:
+First, create a ``crawling/localsettings.py`` file to track your custom settings. You can override any setting in the normal ``settings.py`` file, and a typical file may look like the following:
 
 ::
 

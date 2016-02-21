@@ -108,6 +108,8 @@ Default: ``True``
 
 Moderates the outbound domain request flow to evenly spread the ``QUEUE_HITS`` throughout the ``QUEUE_WINDOW``.
 
+.. _dupe_timeout:
+
 **DUPEFILTER_TIMEOUT**
 
 Default: ``600``
@@ -118,7 +120,7 @@ Number of seconds to keep **crawlid** specific duplication filters around after 
 
 Default: ``60``
 
-The number of seconds to wait between refreshing the Scrapy process's public IP address.
+The number of seconds to wait between refreshing the Scrapy process's public IP address. Used when doing :ref:`IP <throttle_mechanism>` based throttling.
 
 **PUBLIC_IP_URL**
 
@@ -130,7 +132,7 @@ The default URL to grab the Crawler's public IP Address from.
 
 Default: ``(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})``
 
-The regular expression used to find the Crawler's public IP Address from the ``PUBLIC_IP_URL``. The first element from the results of this regex will be used as the ip address.
+The regular expression used to find the Crawler's public IP Address from the ``PUBLIC_IP_URL`` response. The first element from the results of this regex will be used as the ip address.
 
 **SCHEDULER_TYPE_ENABLED**
 

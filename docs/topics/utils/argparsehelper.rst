@@ -10,7 +10,7 @@ The ArgparseHelper class does not have any direct method calls. Instead, the cla
 Usage
 -----
 
-Using the ArgeparseHelper class to display help information requires modidication to the following two lines when setting up the parser.
+Using the ArgparseHelper class to display help information requires modification to the following two lines when setting up the parser.
 
 ::
 

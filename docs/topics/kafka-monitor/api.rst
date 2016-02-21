@@ -49,7 +49,7 @@ The crawl API defines the type of crawl you wish to have the cluster execute. Th
 
 - **allow_regex:** A list of regular expressions to apply to the links to crawl. Any hits within from any regex will allow that link to be crawled next.
 
-- **deny_regex:** A list of regular expressions that will deny links to be crawled. Any hits from these regular expressions will deny that particular url to be crawled next, as it has precedence over allow_regex.
+- **deny_regex:** A list of regular expressions that will deny links to be crawled. Any hits from these regular expressions will deny that particular url to be crawled next, as it has precedence over ``allow_regex``.
 
 - **deny_extensions:** A list of extensions to deny crawling, defaults to the extensions provided by Scrapy (which are pretty substantial).
 
@@ -253,7 +253,7 @@ Kafka Request
 
         $ python kafka_monitor.py feed '{"action": "stop", "appid":"testapp", "crawlid":"ist234",  "uuid":"1ist234", "spiderid":"link"}'
 
-After the request is processed, only current spiders within the cluster currently in progress of downloading a page will continue. All other spiders will not crawl that same ``crawlid`` past a depth of 0 ever again, and all pending requests will be purged from the queue.
+After the request is processed, only spiders within the cluster currently in progress of downloading a page will continue. All other spiders will not crawl that same ``crawlid`` past a depth of 0 ever again, and all pending requests will be purged from the queue.
 
 Kafka Response:
 
@@ -317,7 +317,7 @@ The Stats API allows you to gather metrics, health, and general crawl statistics
     * **machine** - Gathers information about the different spider machines in your cluster
 
 
-Stats request results typically have numeric values for dictionary keys, like ``900``, ``3600``, ``86400``, or in the special case ``lifetime``. These numbers indicate **rolling time windows** in seconds for processing throughput. So if you see a value like ``"3600":14`` you can interpret this like `in the last 3600 seconds, the kafka-monitor saw 14 requests"`. In the case of lifetime, it is the total count over the cluster's operation.
+Stats request results typically have numeric values for dictionary keys, like ``900``, ``3600``, ``86400``, or in the special case ``lifetime``. These numbers indicate **rolling time windows** in seconds for processing throughput. So if you see a value like ``"3600":14`` you can interpret this as `in the last 3600 seconds, the kafka-monitor saw 14 requests"`. In the case of lifetime, it is the total count over the cluster's operation.
 
 Examples
 ^^^^^^^^

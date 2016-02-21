@@ -57,7 +57,7 @@ In the future, this script will manage all upgrades to any component needed. For
 Post Upgrade
 ^^^^^^^^^^^^
 
-After upgrading, you should use the various version quick start documentations for each component, to ensure it is properly running. Afterwards in your production level run mode, you should begin to monitor log output to check for any anomalies within your cluster.
+After upgrading, you should use the various version quick start documentations for each component, to ensure it is properly configured, restarted, and running. Afterwards in your production level run mode, you should begin to monitor log output to check for any anomalies within your cluster.
 
 Upgrade Notes
 -------------

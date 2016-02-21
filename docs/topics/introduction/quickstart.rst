@@ -152,7 +152,7 @@ It is recommended you use this 'local' override instead of altering the default 
 
 ::
 
-    python tests/tests_online.py -v
+    $ python tests/tests_online.py -v
     test_feed (__main__.TestKafkaMonitor) ... ok
     test_run (__main__.TestKafkaMonitor) ... ok
 
@@ -184,7 +184,7 @@ Add the following to your new custom local settings.
 
 ::
 
-    python tests/tests_online.py -v
+  $ python tests/tests_online.py -v
   test_process_item (__main__.TestRedisMonitor) ... ok
   test_sent_to_kafka (__main__.TestRedisMonitor) ... ok
 
@@ -208,7 +208,7 @@ Add the following fields to override the defaults
 
 ::
 
-    # Here, 'scdev' is the host with Kafka and Redis
+    # Here, 'scdev' is the host with Kafka, Redis, and Zookeeper
     REDIS_HOST = 'scdev'
     KAFKA_HOSTS = 'scdev:9092'
     ZOOKEEPER_HOSTS = 'scdev:2181'
@@ -225,7 +225,7 @@ Add the following fields to override the defaults
 
   OK
 
-This test spins up a spider using the internal Scrapy API, directs it a real webpage to go crawl, then ensures it writes the result to Kafka.
+This test spins up a spider using the internal Scrapy API, directs it to a real webpage to go crawl, then ensures it writes the result to Kafka.
 
 .. note:: This test takes around 20 - 25 seconds to complete, in order to compensate for server response times or potential crawl delays.
 
@@ -356,7 +356,7 @@ Action Request:
 
 ::
 
-    python kafka_monitor.py feed  '{"action":"stop", "appid":"testapp", "uuid":"someuuid", "crawlid":"abc1234", "spiderid":"link"}'``
+    python kafka_monitor.py feed  '{"action":"stop", "appid":"testapp", "uuid":"someuuid", "crawlid":"abc1234", "spiderid":"link"}'
 
 The following things will occur for this action request:
 
