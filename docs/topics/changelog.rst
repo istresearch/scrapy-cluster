@@ -6,9 +6,9 @@ Change Log
 This page serves to document any changes made between releases.
 
 Scrapy Cluster 1.1
------------
+------------------
 
-Date: ??/??/????
+Date: 02/23/2016
 
 - Added domain based queue mechanism for better management and control across all components of the cluster
 
