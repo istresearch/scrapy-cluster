@@ -50,4 +50,10 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 
 ## Documentation
 
-Please check out [Scrapy Cluster's 1.1 documentation](http://scrapy-cluster.readthedocs.org/en/dev/) in progress for more details on how everything works!
+Please check out our official [Scrapy Cluster documentation](http://scrapy-cluster.readthedocs.org/) for more details on how everything works!
+
+## Branches
+
+The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.1`.
+
+The `dev` branch contains bleeding edge code and is currently working towards `Scrapy Cluster 1.2`. Please note that not everything may be documented, finished, tested, or finalized but we are happy to help guide those who are interested.
