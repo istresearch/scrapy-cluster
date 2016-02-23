@@ -295,7 +295,7 @@ This notification states that the ``crawlid`` of "ist234" expired within the sys
 .. _stats_api:
 
 Stats API
---------
+---------
 
 The Stats API allows you to gather metrics, health, and general crawl statistics about your cluster. This is not the same as the `Action API`_, which allows you to alter or gather information about specific jobs within the cluster.
 

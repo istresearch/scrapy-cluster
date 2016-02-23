@@ -38,7 +38,7 @@ General
 
     By keeping your settings separate, you can also have more than one setting configuration at a time! For example, you can use the Kafka Monitor to push json into to different Kafka topics for various testing, or have a local debugging vs production setup on your machines. Use the ``--settings`` flag for either the Kafka Monitor or Redis Monitor to alter their configuration.
 
-    .. note:: The local settings override flag does not apply to the Scrapy settings, Scrapy uses its own style for settings overrides that can be found `here <http://doc.scrapy.org/en/latest/topics/settings.html>`_
+    .. note:: The local settings override flag does not apply to the Scrapy settings, Scrapy uses its own style for settings overrides that can be found on this `page <http://doc.scrapy.org/en/latest/topics/settings.html>`_
 
 **How do I deploy my cluster in an automated fashion?**
 

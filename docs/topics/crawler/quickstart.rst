@@ -84,8 +84,6 @@ Next, you should see your Spider in Terminal 3 state the crawl was successful.
     2016-01-21 23:22:35,976 [scrapy-cluster] INFO: Scraped page
     2016-01-21 23:22:35,979 [scrapy-cluster] INFO: Sent page to Kafka
 
-::
-
 At this point, your Crawler is up and running!
 
 If you are still listening to the Kafka Topic in Terminal 1, the following should come through.

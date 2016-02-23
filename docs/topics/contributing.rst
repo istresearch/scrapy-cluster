@@ -144,8 +144,8 @@ If you're still stuck, feel free to send any of the core developers an message i
 Key Branches
 ^^^^^^^^^^^^
 
-* ``master`` - (`link <https://github.com/istresearch/scrapy-cluster>`_) this branch reflects the lastest stable release. Hotfixes done to this branch should also be reflected in the ``dev`` branch
+* ``master`` - (`link to master <https://github.com/istresearch/scrapy-cluster>`_) this branch reflects the lastest stable release. Hotfixes done to this branch should also be reflected in the ``dev`` branch
 
-* ``dev`` - (`link <https://github.com/istresearch/scrapy-cluster/tree/dev>`_) the main developer branch. Go here for the latest bleeding edge code
+* ``dev`` - (`link to dev <https://github.com/istresearch/scrapy-cluster/tree/dev>`_) the main developer branch. Go here for the latest bleeding edge code
 
 Other branches represent other features core developers are working on and will be merged back into the main ``dev`` branch once the feature is complete.

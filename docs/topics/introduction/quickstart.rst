@@ -92,8 +92,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
     Ran 1 test in 26.489s
 
 
-.. warning:: If this test fails, it most likely means the Virtual Machine's Kafka is in a finicky state. Issue the following command and then retry the online test to fix Kafka.
-``sudo supervisorctl restart kafka``
+.. warning:: If this test fails, it most likely means the Virtual Machine's Kafka is in a finicky state. Issue the following command and then retry the online test to fix Kafka: ``sudo supervisorctl restart kafka``
 
 
 You now appear to have a working test environment, so jump down to `Your First Crawl`_ to finish the quickstart.

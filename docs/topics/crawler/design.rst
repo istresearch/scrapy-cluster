@@ -1,5 +1,5 @@
 Design
-==============
+======
 
 The Scrapy Cluster allows for multiple concurrent spiders located on different machines to coordinate their crawling efforts against a submitted crawl job. The crawl queue is managed by Redis, and each spider utilizes a modified Scrapy Scheduler to pull from the redis queue.
 
@@ -125,7 +125,7 @@ settings.py
 Holds both `Scrapy <http://doc.scrapy.org/en/latest/topics/settings.html>`_ and :doc:`Scrapy Cluster <settings>` settings. To override these variables please create a ``localsettings.py`` file, and add your variables in there.
 
 spiders/link\_spider.py
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 An introduction into generic link crawling, the LinkSpider inherits from the base class RedisSpider to take advantage of a simple html content parse. The spider’s main purpose is to generate two things:
 
@@ -138,12 +138,12 @@ These two things enable generic depth based crawling, and the majority of the co
 .. note:: We do not need to use the duplication filter here, as the scheduler handles that for us. All this spider cares about is generating the two items listed above.
 
 spiders/lxmlhtml.py
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 This is actually a custom version of the Scrapy ``LxmlParserLinkExtractor`` but with one slight alteration. We do not want Scrapy to throw link extraction parsing errors when encountering a site with malformed html or bad encoding, so we changed it to ignore errors instead of complaining. This allows for the continued processing of the scraped page all the way through the pipeline even if there are utf encoding problems.
 
 spiders/redis\_spider.py
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 A base class that extends the default Scrapy Spider so we can crawl continuously in cluster mode. All you need to do is implement the ``parse`` method and everything else is taken care of behind the scenes.
 
