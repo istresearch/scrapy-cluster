@@ -4,6 +4,7 @@
 
 from scrapy import Item, Field
 
+
 class RawResponseItem(Item):
     appid = Field()
     crawlid = Field()
@@ -11,7 +12,10 @@ class RawResponseItem(Item):
     response_url = Field()
     status_code = Field()
     status_msg = Field()
-    headers = Field()
+    response_headers = Field()
+    request_headers = Field()
     body = Field()
     links = Field()
     attrs = Field()
+    success = Field()
+    exception = Field()
