@@ -25,7 +25,7 @@ py-getch==1.0.1
 queuelib==1.2.2
 redis>=2.10.3
 Scrapy==1.0.5
-scutils==0.0.7
+scutils==1.1
 service-identity==14.0.0
 six==1.10.0
 testfixtures>=4.3.3

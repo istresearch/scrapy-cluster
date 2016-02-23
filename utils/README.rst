@@ -21,7 +21,7 @@ Inside a virtualenv, run ``pip install -U scutils``.  This will install the late
 Documentation
 -------------
 
-Full documentation for the ``scutils`` package is included as part of the Official Scrapy Cluster Documentation, which can be found `here <http://scrapy-cluster.readthedocs.org/>`_ under the **Utilities** section.
+Full documentation for the ``scutils`` package is included as part of the Official Scrapy Cluster Documentation, which can be found `here <http://scrapy-cluster.readthedocs.org/en/latest/topics/utils/index.html>`_ under the **Utilities** section.
 
 argparse_helper.py
 ==================
