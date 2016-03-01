@@ -16,9 +16,9 @@ Production
 
 .. warning:: The Duplication Filter is only temporary, otherwise every single crawl request will continue to fill up the Redis instance! Since the the goal is to utilize Redis in a way that does not consume too much memory, the filter utilizes Redis's `EXPIRE <http://redis.io/commands/expire>`_ feature, and the key will self delete after a specified time window. The :ref:`default <dupe_timeout>` window provided is 600 seconds, which means that if your crawl job with a unique ``crawlid`` goes for more than 600 seconds without a request, the key will be deleted and you may end up crawling pages you have already seen. Since there is an obvious increase in memory used with an increased timeout window, that is up to the application using Scrapy Cluster to determine what a safe tradeoff is.
 
-- **<spiderid>:<ip_address>:domain:throttle_time** - Stores the value for the future calculation on when the next time a moderated throttle key is available to pop. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
+- **<spiderid>:<ip_address>:<domain>:throttle_time** - Stores the value for the future calculation on when the next time a moderated throttle key is available to pop. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
 
-- **<spiderid>:<ip_address>:domain:throttle_window** - Stores the number of hits for a particular domain given the Type and IP Throttle Style. Is used by the Scrapy Scheduler to do coordinated throttling across a particular domain. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
+- **<spiderid>:<ip_address>:<domain>:throttle_window** - Stores the number of hits for a particular domain given the Type and IP Throttle Style. Is used by the Scrapy Scheduler to do coordinated throttling across a particular domain. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
 
 Statistics
 ^^^^^^^^^^
