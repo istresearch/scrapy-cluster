@@ -449,6 +449,7 @@ class KafkaMonitor:
             self.logger.info("Successfully fed item to Kafka")
         else:
             self.logger.error("Failed to feed item into Kafka")
+        return result
 
 
 def main():
