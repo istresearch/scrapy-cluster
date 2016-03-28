@@ -177,7 +177,7 @@ The file to write the logs into. When this file rolls it will have ``.1`` or ``.
 
 **SC_LOG_MAX_BYTES**
 
-Default: ``'10MB'``
+Default: ``10 * 1024 * 1024``
 
 The maximum number of bytes to keep in the file based log before it is rolled.
 
