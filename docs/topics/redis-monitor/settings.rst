@@ -18,6 +18,12 @@ Default: ``6379``
 
 The port to use when connecting to the ``REDIS_HOST``.
 
+**REDIS_DB**
+
+Default: ``0``
+
+The Redis database to use when connecting to the ``REDIS_HOST``.
+
 Kafka
 -----
 

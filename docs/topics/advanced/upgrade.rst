@@ -21,7 +21,8 @@ For all upgrades you should use the ``migrate.py`` script at the root level of t
 ::
 
     $ python migrate.py -h
-    usage: migrate.py [-h] -r REDIS_HOST [-p REDIS_PORT] -sv {1.0} -ev {1.1}
+    usage: migrate.py [-h] -r REDIS_HOST [-p REDIS_PORT] [-d REDIS_DB] -sv {1.0}
+                      -ev {1.1}
 
     Scrapy Cluster Migration script. Use to upgrade any part of Scrapy Cluster.
     Not recommended for use while your cluster is running.
@@ -32,6 +33,8 @@ For all upgrades you should use the ``migrate.py`` script at the root level of t
                             The Redis host ip
       -p REDIS_PORT, --redis-port REDIS_PORT
                             The Redis port
+      -d REDIS_DB, --redis-db REDIS_DB
+                            The Redis db
       -sv {1.0}, --start-version {1.0}
                             The current cluster version
       -ev {1.1}, --end-version {1.1}
