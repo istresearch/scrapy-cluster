@@ -4,6 +4,7 @@
 # Redis host configuration
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+REDIS_DB = 0
 
 KAFKA_HOSTS = 'localhost:9092'
 KAFKA_TOPIC_PREFIX = 'demo'

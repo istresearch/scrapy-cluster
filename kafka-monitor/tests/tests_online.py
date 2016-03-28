@@ -48,7 +48,8 @@ class TestKafkaMonitor(TestCase):
 
         self.redis_conn = redis.Redis(
             host=self.kafka_monitor.settings['REDIS_HOST'],
-            port=self.kafka_monitor.settings['REDIS_PORT'])
+            port=self.kafka_monitor.settings['REDIS_PORT'],
+            db=self.kafka_monitor.settings['REDIS_DB'])
 
     def test_feed(self):
         json_req = "{\"uuid\":\"mytestid\"," \

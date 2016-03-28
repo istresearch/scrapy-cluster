@@ -45,7 +45,8 @@ class TestLinkSpider(TestCase):
         self.settings.set('KAFKA_TOPIC_PREFIX', "demo_test")
         # set up redis
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
-                                      port=self.settings['REDIS_PORT'])
+                                      port=self.settings['REDIS_PORT'],
+                                      db=self.settings['REDIS_DB'])
         try:
             self.redis_conn.info()
         except ConnectionError:

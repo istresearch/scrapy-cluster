@@ -116,7 +116,8 @@ class KafkaMonitor:
         self.stats_dict = {}
 
         redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
-                                 port=self.settings['REDIS_PORT'])
+                                 port=self.settings['REDIS_PORT'],
+                                 db=self.settings.get('REDIS_DB'))
 
         try:
             redis_conn.info()

@@ -7,6 +7,7 @@
 # Specify the host and port to use when connecting to Redis.
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
+REDIS_DB = 0
 
 # Kafka server information
 KAFKA_HOSTS = 'localhost:9092'

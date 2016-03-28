@@ -286,7 +286,8 @@ class DistributedScheduler(object):
     @classmethod
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
-                             port=settings.get('REDIS_PORT'))
+                             port=settings.get('REDIS_PORT'),
+                             db=settings.get('REDIS_DB'))
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         hits = settings.get('QUEUE_HITS', 10)

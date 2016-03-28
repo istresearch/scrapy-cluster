@@ -57,7 +57,8 @@ class TestRedisMonitor(TestCase):
         }
         self.redis_monitor.redis_conn = redis.Redis(
             host=self.redis_monitor.settings['REDIS_HOST'],
-            port=self.redis_monitor.settings['REDIS_PORT'])
+            port=self.redis_monitor.settings['REDIS_PORT'],
+            db=self.redis_monitor.settings['REDIS_DB'])
 
         self.redis_monitor._load_plugins()
         self.redis_monitor.stats_dict = {}

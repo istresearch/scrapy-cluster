@@ -22,7 +22,8 @@ def main():
                         help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
-
+    parser.add_argument('-d', '--redis-db', action='store', default='0',
+                        help="The Redis db")
     parser.add_argument('-sv', '--start-version', action='store',
                         help="The current cluster version", required=True,
                         choices=['1.0'])
@@ -33,7 +34,8 @@ def main():
     args = vars(parser.parse_args())
     current_version = args['start_version']
     start_time = time.time()
-    redis_conn = redis.Redis(args['redis_host'], args['redis_port'])
+    redis_conn = redis.Redis(host=args['redis_host'], port=args['redis_port'],
+                             db=args['redis_db'])
 
     try:
         # in the future there may be more versions that need upgraded

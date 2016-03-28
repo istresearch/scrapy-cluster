@@ -50,7 +50,8 @@ class RedisMonitor:
                                               backups=self.settings['LOG_BACKUPS'])
 
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
-                                      port=self.settings['REDIS_PORT'])
+                                      port=self.settings['REDIS_PORT'],
+                                      db=self.settings['REDIS_DB'])
         try:
             self.redis_conn.info()
             self.logger.debug("Successfully connected to Redis")

@@ -56,7 +56,8 @@ class LogRetryMiddleware(object):
         self.name = self.settings['SPIDER_NAME']
         if self.settings['STATS_STATUS_CODES']:
             self.redis_conn = redis.Redis(host=self.settings.get('REDIS_HOST'),
-                                          port=self.settings.get('REDIS_PORT'))
+                                          port=self.settings.get('REDIS_PORT'),
+                                          db=settings.get('REDIS_DB'))
             self._setup_stats_status_codes()
 
     @classmethod
