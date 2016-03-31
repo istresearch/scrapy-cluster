@@ -17,6 +17,7 @@ import settings
 import redis
 import json
 import time
+from scutils.method_timer import MethodTimer
 
 
 # setup custom class to handle our requests
@@ -42,10 +43,17 @@ class TestKafkaMonitor(TestCase):
 
         self.kafka_monitor.wrapper.load = MagicMock(return_value=new_settings)
         self.kafka_monitor.setup()
-        self.kafka_monitor._setup_kafka()
+
+        @MethodTimer.timeout(10, False)
+        def timer():
+            self.kafka_monitor._setup_kafka()
+            return True
+
+        retval = timer()
+        if not retval:
+            self.fail("Unable to connect to Kafka")
         self.kafka_monitor._load_plugins()
         self.kafka_monitor._setup_stats()
-        self.kafka_monitor.logger = MagicMock()
 
         self.redis_conn = redis.Redis(
             host=self.kafka_monitor.settings['REDIS_HOST'],

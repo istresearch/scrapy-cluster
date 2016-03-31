@@ -33,6 +33,8 @@ except ImportError:
 
 class KafkaMonitor:
 
+    consumer = None
+
     def __init__(self, settings_name, unit_test=False):
         '''
         @param settings_name: the local settings file name
@@ -443,7 +445,7 @@ class KafkaMonitor:
             self.logger.error('Missing setting named ' + str(e),
                                {'ex': traceback.format_exc()})
         except:
-            self.logger.error("Couldn't initialize kafka consumer for topic " + self._topic,
+            self.logger.error("Couldn't initialize kafka consumer for topic",
                                {'ex': traceback.format_exc(),
                                 'topic': self.settings['KAFKA_INCOMING_TOPIC']})
             raise
