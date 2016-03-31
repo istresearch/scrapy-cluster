@@ -16,6 +16,7 @@ from plugins.action_handler import ActionHandler
 import settings
 import redis
 import json
+import time
 
 
 # setup custom class to handle our requests
@@ -59,6 +60,12 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor.feed(parsed)
 
     def test_run(self):
+        time.sleep(5)
+        # triple check we consumed the message
+        self.kafka_monitor._process_messages()
+        time.sleep(.1)
+        self.kafka_monitor._process_messages()
+        time.sleep(.1)
         self.kafka_monitor._process_messages()
         self.assertTrue(self.redis_conn.exists("cluster:test"))
         value = self.redis_conn.get("cluster:test")
@@ -66,6 +73,7 @@ class TestKafkaMonitor(TestCase):
 
     def tearDown(self):
         self.redis_conn.delete("cluster:test")
+        self.kafka_monitor.close()
 
 if __name__ == '__main__':
     unittest.main()

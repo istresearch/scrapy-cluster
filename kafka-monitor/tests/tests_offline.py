@@ -190,7 +190,7 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor.stats_dict = {}
 
         # handle kafka offset errors
-        self.kafka_monitor.consumer.get_messages = MagicMock(
+        self.kafka_monitor.consumer = MagicMock(
                         side_effect=OffsetOutOfRangeError("1"))
         try:
             self.kafka_monitor._process_messages()
@@ -203,30 +203,28 @@ class TestKafkaMonitor(TestCase):
         # fake class so we can use dot notation
         class a:
             pass
+
         m = a()
-        m.message = a()
-        m.message.value = message_string
+        m.value = message_string
         messages = [m]
-        self.kafka_monitor.consumer.get_messages = MagicMock(
-                                                        return_value=messages)
+
+        self.kafka_monitor.consumer = MagicMock()
+        self.kafka_monitor.consumer.__iter__.return_value = messages
         try:
             self.kafka_monitor._process_messages()
         except OffsetOutOfRangeError:
             self.fail("_process_messages did not handle bad json")
 
         # set up to process messages
-        self.kafka_monitor.consumer.get_messages = MagicMock(
-                                                        return_value=messages)
         self.kafka_monitor._load_plugins()
         self.kafka_monitor.validator = self.kafka_monitor.extend_with_default(Draft4Validator)
         self.kafka_monitor.plugins_dict.items()[0][1]['instance'].handle = MagicMock(side_effect=AssertionError("scrape"))
         self.kafka_monitor.plugins_dict.items()[1][1]['instance'].handle = MagicMock(side_effect=AssertionError("action"))
 
-
         #  test that handler function is called for the scraper
         message_string = "{\"url\":\"www.stuff.com\",\"crawlid\":\"1234\"," \
             "\"appid\":\"testapp\"}"
-        m.message.value = message_string
+        m.value = message_string
         messages = [m]
         try:
             self.kafka_monitor._process_messages()
@@ -237,7 +235,7 @@ class TestKafkaMonitor(TestCase):
         # test that handler function is called for the actions
         message_string = "{\"uuid\":\"blah\",\"crawlid\":\"1234\"," \
             "\"appid\":\"testapp\",\"action\":\"info\",\"spiderid\":\"link\"}"
-        m.message.value = message_string
+        m.value = message_string
         messages = [m]
         try:
             self.kafka_monitor._process_messages()
