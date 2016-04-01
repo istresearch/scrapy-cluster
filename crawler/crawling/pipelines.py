@@ -8,9 +8,7 @@ import sys
 import traceback
 import base64
 
-from kafka import KafkaClient, SimpleProducer
-from kafka.common import KafkaUnavailableError
-
+from kafka import KafkaProducer
 from crawling.items import RawResponseItem
 from scutils.log_factory import LogFactory
 
@@ -24,6 +22,7 @@ class LoggingBeforePipeline(object):
     def __init__(self, logger):
         self.logger = logger
         self.logger.debug("Setup before pipeline")
+
 
     @classmethod
     def from_settings(cls, settings):
@@ -109,17 +108,21 @@ class KafkaPipeline(object):
                                          backups=my_backups)
 
         try:
-            kafka = KafkaClient(settings['KAFKA_HOSTS'])
-            producer = SimpleProducer(kafka)
-        except KafkaUnavailableError:
+            producer = KafkaProducer(bootstrap_servers=settings['KAFKA_HOSTS'],
+                                 retries=3,
+                                 linger_ms=settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
+                                 buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'])
+        except Exception as e:
                 logger.error("Unable to connect to Kafka in Pipeline"\
                     ", raising exit flag.")
-                # this is critical so we choose to exit
+                # this is critical so we choose to exit.
+                # exiting because this is a different thread from the crawlers
+                # and we want to ensure we can connect to Kafka when we boot
                 sys.exit(1)
         topic_prefix = settings['KAFKA_TOPIC_PREFIX']
         use_base64 = settings['KAFKA_BASE_64_ENCODE']
 
-        return cls(producer, topic_prefix, kafka, logger, appids=my_appids,
+        return cls(producer, topic_prefix, producer, logger, appids=my_appids,
                    use_base64=use_base64)
 
     @classmethod
@@ -141,14 +144,12 @@ class KafkaPipeline(object):
                 message = 'json failed to parse'
 
             firehose_topic = "{prefix}.crawled_firehose".format(prefix=prefix)
-            self.checkTopic(firehose_topic)
-            self.producer.send_messages(firehose_topic, message)
+            self.producer.send(firehose_topic, message)
 
             if self.appid_topics:
                 appid_topic = "{prefix}.crawled_{appid}".format(
                         prefix=prefix, appid=datum["appid"])
-                self.checkTopic(appid_topic)
-                self.producer.send_messages(appid_topic, message)
+                self.producer.send(appid_topic, message)
 
             item['success'] = True
         except Exception:
@@ -156,11 +157,6 @@ class KafkaPipeline(object):
             item['exception'] = traceback.format_exc()
 
         return item
-
-    def checkTopic(self, topicName):
-        if topicName not in self.topic_list:
-            self.kafka.ensure_topic_exists(topicName)
-            self.topic_list.append(topicName)
 
 
 class LoggingAfterPipeline(object):
