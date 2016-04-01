@@ -436,7 +436,7 @@ class KafkaMonitor:
                 self.settings['KAFKA_INCOMING_TOPIC'],
                 group_id=self.settings['KAFKA_GROUP'],
                 bootstrap_servers=brokers,
-                consumer_timeout_ms=50,
+                consumer_timeout_ms=self.settings['KAFKA_CONSUMER_TIMEOUT'],
                 auto_offset_reset=self.settings['KAFKA_CONSUMER_AUTO_OFFSET_RESET'],
                 auto_commit_interval_ms=self.settings['KAFKA_CONSUMER_COMMIT_INTERVAL_MS'],
                 enable_auto_commit=self.settings['KAFKA_CONSUMER_AUTO_COMMIT_ENABLE'],

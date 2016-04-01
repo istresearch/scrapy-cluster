@@ -33,6 +33,7 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor = KafkaMonitor("localsettings.py")
         new_settings = self.kafka_monitor.wrapper.load("localsettings.py")
         new_settings['KAFKA_INCOMING_TOPIC'] = "demo.incoming_test"
+        new_settings['KAFKA_CONSUMER_TIMEOUT'] = 5000
         new_settings['STATS_TOTAL'] = False
         new_settings['STATS_PLUGINS'] = False
         new_settings['PLUGINS'] = {
@@ -68,12 +69,6 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor.feed(parsed)
 
     def test_run(self):
-        time.sleep(5)
-        # triple check we consumed the message
-        self.kafka_monitor._process_messages()
-        time.sleep(.1)
-        self.kafka_monitor._process_messages()
-        time.sleep(.1)
         self.kafka_monitor._process_messages()
         self.assertTrue(self.redis_conn.exists("cluster:test"))
         value = self.redis_conn.get("cluster:test")
