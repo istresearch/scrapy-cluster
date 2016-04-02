@@ -421,6 +421,15 @@ class RedisMonitor:
         else:
             self.logger.info('Queue Stats Dump', extra=extras)
 
+    def close(self):
+        '''
+        Closes the Redis Monitor and plugins
+        '''
+        for plugin_key in self.plugins_dict:
+            obj = self.plugins_dict[plugin_key]
+            instance = obj['instance']
+            instance.close()
+
 def main():
     parser = argparse.ArgumentParser(
         description='Redis Monitor: Monitor the Scrapy Cluster Redis '
@@ -442,12 +451,14 @@ def main():
     args = vars(parser.parse_args())
 
     redis_monitor = RedisMonitor(args['settings'])
-    redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
-                        json=args['log_json'])
+
     try:
+        redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
+                        json=args['log_json'])
         redis_monitor.run()
     except KeyboardInterrupt:
         redis_monitor.logger.info("Closing Redis Monitor")
+        redis_monitor.close()
 
 if __name__ == "__main__":
     sys.exit(main())
