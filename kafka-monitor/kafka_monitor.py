@@ -412,6 +412,8 @@ class KafkaMonitor:
 
             if producer is not None:
                 producer.send(topic, json_item)
+                producer.flush()
+                producer.close(timeout=10)
                 return True
             else:
                 return False
