@@ -158,6 +158,11 @@ class KafkaPipeline(object):
 
         return item
 
+    def close_spider(self, spider):
+        self.logger.info("Closing Kafka Pipeline")
+        self.producer.flush()
+        self.producer.close(timeout=10)
+
 
 class LoggingAfterPipeline(object):
 

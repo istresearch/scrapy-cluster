@@ -64,9 +64,8 @@ class TestLinkSpider(TestCase):
             "demo_test.crawled_firehose",
             bootstrap_servers=self.settings['KAFKA_HOSTS'],
             group_id="demo-id",
-            consumer_timeout_ms=1000,
+            consumer_timeout_ms=5000,
         )
-        # move cursor to end of kafka topic
 
     def test_crawler_process(self):
         runner = CrawlerRunner(self.settings)
