@@ -18,7 +18,7 @@ from crawling.spiders.link_spider import LinkSpider
 from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor
 from scrapy.crawler import CrawlerRunner
-from kafka import KafkaClient, SimpleConsumer
+from kafka import KafkaConsumer
 
 
 class CustomSpider(LinkSpider):
@@ -60,24 +60,17 @@ class TestLinkSpider(TestCase):
             self.redis_conn.delete(key)
 
         # set up kafka to consumer potential result
-        self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
-        self.kafka_conn.ensure_topic_exists("demo_test.crawled_firehose")
-        self.consumer = SimpleConsumer(
-            self.kafka_conn,
-            "demo-id",
+        self.consumer = KafkaConsumer(
             "demo_test.crawled_firehose",
-            buffer_size=1024*100,
-            fetch_size_bytes=1024*100,
-            max_buffer_size=None
+            bootstrap_servers=self.settings['KAFKA_HOSTS'],
+            group_id="demo-id",
+            consumer_timeout_ms=5000,
         )
-        # move cursor to end of kafka topic
-        self.consumer.seek(0, 2)
 
     def test_crawler_process(self):
         runner = CrawlerRunner(self.settings)
         d = runner.crawl(CustomSpider)
         d.addBoth(lambda _: reactor.stop())
-
         # add crawl to redis
         key = "test-spider:istresearch.com:queue"
         self.redis_conn.zadd(key, self.example_feed, -99)
@@ -90,16 +83,15 @@ class TestLinkSpider(TestCase):
 
         thread = threading.Thread(target=thread_func)
         thread.start()
-
         reactor.run()
 
         # ensure it was sent out to kafka
         message_count = 0
-        for message in self.consumer.get_messages():
+        for message in self.consumer:
             if message is None:
                 break
             else:
-                the_dict = json.loads(message.message.value)
+                the_dict = json.loads(message.value)
                 if the_dict is not None and the_dict['appid'] == 'testapp' \
                         and the_dict['crawlid'] == '01234567890abcdefghijklmn':
                     message_count += 1
@@ -111,6 +103,7 @@ class TestLinkSpider(TestCase):
         keys = keys + self.redis_conn.keys('test-spider:*')
         for key in keys:
             self.redis_conn.delete(key)
+        self.consumer.close()
 
 if __name__ == '__main__':
     unittest.main()

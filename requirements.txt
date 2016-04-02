@@ -9,7 +9,7 @@ functools32==3.2.3-2
 idna==2.0
 ipaddress==1.0.14
 jsonschema==2.5.1
-kafka-python==0.9.5
+kafka-python==1.0.2
 kazoo>=2.2.1
 lxml==3.4.4
 mock>=1.3.0
@@ -24,6 +24,7 @@ PyYAML==3.11
 py-getch==1.0.1
 queuelib==1.2.2
 redis>=2.10.3
+retrying==1.3.3
 Scrapy==1.0.5
 scutils==1.1
 service-identity==14.0.0

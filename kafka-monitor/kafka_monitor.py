@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
-from kafka.client import KafkaClient
-from kafka.consumer import SimpleConsumer
-from kafka.producer import SimpleProducer
+from kafka import KafkaConsumer,KafkaProducer
+from kafka.common import KafkaError
 from kafka.common import OffsetOutOfRangeError
 from collections import OrderedDict
 from kafka.common import KafkaUnavailableError
+from retrying import retry
+import traceback
 
 import time
 import json
@@ -31,6 +32,8 @@ except ImportError:
 
 
 class KafkaMonitor:
+
+    consumer = None
 
     def __init__(self, settings_name, unit_test=False):
         '''
@@ -213,32 +216,8 @@ class KafkaMonitor:
         '''
         Sets up kafka connections
         '''
-        @MethodTimer.timeout(self.settings['KAFKA_CONN_TIMEOUT'], False)
-        def _hidden_setup():
-            try:
-                self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
-                self.kafka_conn.ensure_topic_exists(
-                        self.settings['KAFKA_INCOMING_TOPIC'])
-                self.consumer = SimpleConsumer(self.kafka_conn,
-                                               self.settings['KAFKA_GROUP'],
-                                               self.settings['KAFKA_INCOMING_TOPIC'],
-                                               auto_commit=True,
-                                               iter_timeout=1.0)
-            except KafkaUnavailableError as ex:
-                message = "An exception '{0}' occured. Arguments:\n{1!r}" \
-                    .format(type(ex).__name__, ex.args)
-                self.logger.error(message)
-                sys.exit(1)
-            return True
-        ret_val = _hidden_setup()
-
-        if ret_val:
-            self.logger.debug("Successfully connected to Kafka")
-        else:
-            self.logger.error("Failed to set up Kafka Connection within"
-                              " timeout")
-            # this is essential to running the kafka monitor
-            sys.exit(1)
+        self.consumer = self._create_consumer()
+        self.logger.debug("Successfully connected to Kafka")
 
     def extend_with_default(self, validator_class):
         '''
@@ -281,13 +260,13 @@ class KafkaMonitor:
 
     def _process_messages(self):
         try:
-            for message in self.consumer.get_messages():
+            for message in self.consumer:
                 if message is None:
                     self.logger.debug("no message")
                     break
                 try:
-                    self._increment_total_stat(message.message.value)
-                    the_dict = json.loads(message.message.value)
+                    self._increment_total_stat(message.value)
+                    the_dict = json.loads(message.value)
                     found_plugin = False
                     for key in self.plugins_dict:
                         obj = self.plugins_dict[key]
@@ -318,14 +297,13 @@ class KafkaMonitor:
                     extras = {}
                     extras['parsed'] = False
                     extras['valid'] = False
-                    extras['data'] = message.message.value
+                    extras['data'] = message.value
                     self.logger.warning('Unparseable JSON Received',
                                         extra=extras)
-                    self._increment_fail_stat(message.message.value)
-
+                    self._increment_fail_stat(message.value)
         except OffsetOutOfRangeError:
             # consumer has no idea where they are
-            self.consumer.seek(0, 2)
+            self.consumer.seek_to_end()
             self.logger.error("Kafka offset out of range error")
 
     def _increment_total_stat(self, string):
@@ -339,7 +317,6 @@ class KafkaMonitor:
             self.logger.debug("Incremented total stats")
             for key in self.stats_dict['total']:
                 if key == 'lifetime':
-
                     self.stats_dict['total'][key].increment(string)
                 else:
                     self.stats_dict['total'][key].increment()
@@ -424,14 +401,8 @@ class KafkaMonitor:
         '''
         @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
         def _feed(json_item):
-            try:
-                self.kafka_conn = KafkaClient(self.settings['KAFKA_HOSTS'])
-                topic = self.settings['KAFKA_INCOMING_TOPIC']
-                producer = SimpleProducer(self.kafka_conn)
-            except KafkaUnavailableError:
-                self.logger.error("Unable to connect to Kafka")
-                return False
-
+            producer = self._create_producer()
+            topic = self.settings['KAFKA_INCOMING_TOPIC']
             if not self.logger.json:
                 self.logger.info('Feeding JSON into {0}\n{1}'.format(
                     topic, json.dumps(json_item, indent=4)))
@@ -439,10 +410,13 @@ class KafkaMonitor:
                 self.logger.info('Feeding JSON into {0}\n'.format(topic),
                                  extra={'value': json_item})
 
-            self.kafka_conn.ensure_topic_exists(topic)
-            producer.send_messages(topic, json.dumps(json_item))
-
-            return True
+            if producer is not None:
+                producer.send(topic, json_item)
+                producer.flush()
+                producer.close(timeout=10)
+                return True
+            else:
+                return False
 
         result = _feed(json_item)
 
@@ -451,6 +425,60 @@ class KafkaMonitor:
         else:
             self.logger.error("Failed to feed item into Kafka")
 
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
+    def _create_consumer(self):
+        """Tries to establing the Kafka consumer connection"""
+        try:
+            brokers = self.settings['KAFKA_HOSTS']
+            self.logger.debug("Creating new kafka consumer using brokers: " +
+                               str(brokers) + ' and topic ' +
+                               self.settings['KAFKA_INCOMING_TOPIC'])
+
+            return KafkaConsumer(
+                self.settings['KAFKA_INCOMING_TOPIC'],
+                group_id=self.settings['KAFKA_GROUP'],
+                bootstrap_servers=brokers,
+                consumer_timeout_ms=self.settings['KAFKA_CONSUMER_TIMEOUT'],
+                auto_offset_reset=self.settings['KAFKA_CONSUMER_AUTO_OFFSET_RESET'],
+                auto_commit_interval_ms=self.settings['KAFKA_CONSUMER_COMMIT_INTERVAL_MS'],
+                enable_auto_commit=self.settings['KAFKA_CONSUMER_AUTO_COMMIT_ENABLE'],
+                max_partition_fetch_bytes=self.settings['KAFKA_CONSUMER_FETCH_MESSAGE_MAX_BYTES'])
+        except KeyError as e:
+            self.logger.error('Missing setting named ' + str(e),
+                               {'ex': traceback.format_exc()})
+        except:
+            self.logger.error("Couldn't initialize kafka consumer for topic",
+                               {'ex': traceback.format_exc(),
+                                'topic': self.settings['KAFKA_INCOMING_TOPIC']})
+            raise
+
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
+    def _create_producer(self):
+        """Tries to establish a Kafka consumer connection"""
+        try:
+            brokers = self.settings['KAFKA_HOSTS']
+            self.logger.debug("Creating new kafka producer using brokers: " +
+                               str(brokers))
+
+            return KafkaProducer(bootstrap_servers=brokers,
+                                 value_serializer=lambda m: json.dumps(m),
+                                 retries=3,
+                                 linger_ms=self.settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
+                                 buffer_memory=self.settings['KAFKA_PRODUCER_BUFFER_BYTES'])
+        except KeyError as e:
+            self.logger.error('Missing setting named ' + str(e),
+                               {'ex': traceback.format_exc()})
+        except:
+            self.logger.error("Couldn't initialize kafka producer.",
+                               {'ex': traceback.format_exc()})
+            raise
+
+    def close(self):
+        '''
+        Call to properly tear down the Kafka Monitor
+        '''
+        if self.consumer is not None:
+            self.consumer.close()
 
 def main():
     # initial parsing setup
@@ -498,6 +526,7 @@ def main():
             kafka_monitor.run()
         except KeyboardInterrupt:
             kafka_monitor.logger.info("Closing Kafka Monitor")
+            kafka_monitor.close()
     if args['command'] == 'feed':
         json_req = args['json']
         try:

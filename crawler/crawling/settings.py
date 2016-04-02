@@ -10,11 +10,13 @@ REDIS_PORT = '6379'
 REDIS_DB = 0
 
 # Kafka server information
-KAFKA_HOSTS = 'localhost:9092'
+KAFKA_HOSTS = ['localhost:9092']
 KAFKA_TOPIC_PREFIX = 'demo'
 KAFKA_APPID_TOPICS = False
 # base64 encode the html body to avoid json dump errors due to malformed text
 KAFKA_BASE_64_ENCODE = False
+KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
+KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
 
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'
@@ -131,17 +133,17 @@ ITEM_PIPELINES = {
 SPIDER_MIDDLEWARES = {
     # disable built-in DepthMiddleware, since we do our own
     # depth management per crawl request
-    'scrapy.contrib.spidermiddleware.depth.DepthMiddleware': None,
+    'scrapy.spidermiddlewares.depth.DepthMiddleware': None,
 }
 
 DOWNLOADER_MIDDLEWARES = {
     # Handle timeout retries with the redis scheduler and logger
-    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': None,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
     'crawling.redis_retry_middleware.RedisRetryMiddleware': 510,
     # exceptions processed in reverse order
     'crawling.log_retry_middleware.LogRetryMiddleware': 520,
     # custom cookies to not persist across crawl requests
-    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
+    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
     'crawling.custom_cookies.CustomCookiesMiddleware': 700,
 }
 

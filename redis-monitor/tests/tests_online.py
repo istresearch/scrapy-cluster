@@ -12,7 +12,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from redis_monitor import RedisMonitor
 from plugins.kafka_base_monitor import KafkaBaseMonitor
-from kafka import KafkaClient, SimpleConsumer
+from kafka import KafkaConsumer
 
 import settings
 import redis
@@ -63,20 +63,14 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._load_plugins()
         self.redis_monitor.stats_dict = {}
 
-        self.kafka_conn = KafkaClient(self.redis_monitor.settings[
-                                      'KAFKA_HOSTS'])
-        self.kafka_conn.ensure_topic_exists("demo_test.outbound_firehose")
-
-        self.consumer = SimpleConsumer(
-            self.kafka_conn,
-            "demo-id",
-            "demo_test.outbound_firehose"
+        self.consumer = KafkaConsumer(
+            "demo_test.outbound_firehose",
+            bootstrap_servers=self.redis_monitor.settings['KAFKA_HOSTS'],
+            group_id="demo-id",
+            consumer_timeout_ms=5000,
         )
 
     def test_process_item(self):
-        # we only want to go to the end now, not after this test is ran
-        self.consumer.seek(0, 2)
-
         # set the info flag
         key = "info-test:blah"
         value = "ABC123"
@@ -97,15 +91,19 @@ class TestRedisMonitor(TestCase):
 
         # ensure it was sent out to kafka
         message_count = 0
-        for message in self.consumer.get_messages():
+        for message in self.consumer:
             if message is None:
                 break
             else:
-                the_dict = json.loads(message.message.value)
+                the_dict = json.loads(message.value)
                 self.assertEquals(success, the_dict)
                 message_count += 1
 
         self.assertEquals(message_count, 1)
+
+    def tearDown(self):
+        self.redis_monitor.close()
+        self.consumer.close()
 
 if __name__ == '__main__':
     unittest.main()

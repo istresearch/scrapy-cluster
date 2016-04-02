@@ -16,6 +16,8 @@ from plugins.action_handler import ActionHandler
 import settings
 import redis
 import json
+import time
+from scutils.method_timer import MethodTimer
 
 
 # setup custom class to handle our requests
@@ -31,6 +33,7 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor = KafkaMonitor("localsettings.py")
         new_settings = self.kafka_monitor.wrapper.load("localsettings.py")
         new_settings['KAFKA_INCOMING_TOPIC'] = "demo.incoming_test"
+        new_settings['KAFKA_CONSUMER_TIMEOUT'] = 5000
         new_settings['STATS_TOTAL'] = False
         new_settings['STATS_PLUGINS'] = False
         new_settings['PLUGINS'] = {
@@ -41,10 +44,17 @@ class TestKafkaMonitor(TestCase):
 
         self.kafka_monitor.wrapper.load = MagicMock(return_value=new_settings)
         self.kafka_monitor.setup()
-        self.kafka_monitor._setup_kafka()
+
+        @MethodTimer.timeout(10, False)
+        def timer():
+            self.kafka_monitor._setup_kafka()
+            return True
+
+        retval = timer()
+        if not retval:
+            self.fail("Unable to connect to Kafka")
         self.kafka_monitor._load_plugins()
         self.kafka_monitor._setup_stats()
-        self.kafka_monitor.logger = MagicMock()
 
         self.redis_conn = redis.Redis(
             host=self.kafka_monitor.settings['REDIS_HOST'],
@@ -66,6 +76,7 @@ class TestKafkaMonitor(TestCase):
 
     def tearDown(self):
         self.redis_conn.delete("cluster:test")
+        self.kafka_monitor.close()
 
 if __name__ == '__main__':
     unittest.main()
