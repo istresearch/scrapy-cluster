@@ -1,0 +1,7 @@
+---
+- name: install pip package
+  pip:
+    name: virtualenv
+  become: yes
+  become_user: root
+  tags: virtualenv

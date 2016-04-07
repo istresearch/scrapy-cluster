@@ -1,0 +1,15 @@
+---
+- name: Install apt-get packages
+  apt:
+    pkg: "{{ item }}"
+    update_cache: yes
+    state: latest
+    cache_valid_time: 600
+  with_items:
+    - python-lxml
+    - build-essential
+    - libssl-dev
+    - libffi-dev
+    - python-dev
+    - libxml2-dev
+    - libxslt1-dev
