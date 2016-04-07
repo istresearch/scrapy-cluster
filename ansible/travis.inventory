@@ -3,16 +3,16 @@
 default ansible_ssh_host=192.168.33.99
 
 [kafka]
-scdev
+travis-trusty
 
 [zookeeper]
-scdev
+travis-trusty
 
 [redis]
-scdev
+travis-trusty
 
 [virtualenv]
-scdev
+travis-trusty
 
 [scrapy-cluster:children]
 kafka

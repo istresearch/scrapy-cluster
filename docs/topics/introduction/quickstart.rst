@@ -45,31 +45,31 @@ Lets assume our project is now in ``~/scrapy-cluster``
 
 .. note:: If you receive the message ``unix:///var/run/supervisor.sock no such file``, issue the following command to start Supervisord: ``sudo service supervisord start``, then check the status like above.
 
-6) The Scrapy Cluster folder is mounted in the ``/vagrant/`` directory
+6) Create a `Virtual Environment <https://virtualenv.pypa.io/en/latest/>`_ for Scrapy Cluster, and activate it. This is where the python packages will be installed to.
 
 ::
 
-    vagrant@scdev:~$ cd /vagrant/
-
-7) Create a conda virtual environment to have scrapy pre-installed, and activate it.
-
-::
-
-    vagrant@scdev:/vagrant$ conda create -n sc scrapy --yes
+    vagrant@scdev:~$ virtualenv sc
     ...
-    vagrant@scdev:/vagrant$ source activate sc
+    vagrant@scdev:~$ source sc/bin/activate
+
+7) The Scrapy Cluster folder is mounted in the ``/vagrant/`` directory
+
+::
+
+    (sc) vagrant@scdev:~$ cd /vagrant/
 
 8) Install the Scrapy Cluster packages
 
 ::
 
-    (sc)vagrant@scdev:/vagrant$ pip install -r requirements.txt
+    (sc) vagrant@scdev:/vagrant$ pip install -r requirements.txt
 
 9) Ensure the offline tests pass
 
 ::
 
-    (sc)vagrant@scdev:/vagrant$ ./run_offline_tests.sh
+    (sc) vagrant@scdev:/vagrant$ ./run_offline_tests.sh
     # There should be 4 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
@@ -82,7 +82,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 
 ::
 
-    vagrant@scdev:~$ ./run_online_tests.sh
+    (sc) vagrant@scdev:/vagrant$ ./run_online_tests.sh
     # There should be 4 major blocks here, ensuring your cluster is setup correctly.
     ...
     ----------------------------------------------------------------------
