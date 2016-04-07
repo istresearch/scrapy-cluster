@@ -12,8 +12,8 @@ install:
   - pip install ansible
 script:
   # auto deployment
-  - ansible-playbook -i ansible/testing.inventory scrapy-cluster.yml --syntax-check
-  - ansible-playbook -i ansible/testing.inventory scrapy-cluster.yml --connection=local --become
+  - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
+  - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local --become
   # create virtual env
   - virtualenv ~/sc; source ~/sc/bin/activate;
   # run offline tests
