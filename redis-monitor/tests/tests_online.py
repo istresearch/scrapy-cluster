@@ -41,6 +41,7 @@ class TestRedisMonitor(TestCase):
 
     maxDiff = None
     queue_key = "link:istresearch.com:queue"
+    consumer = None
 
     def setUp(self):
         self.redis_monitor = RedisMonitor("localsettings.py")
@@ -63,12 +64,13 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._load_plugins()
         self.redis_monitor.stats_dict = {}
 
-        self.consumer = KafkaConsumer(
-            "demo_test.outbound_firehose",
-            bootstrap_servers=self.redis_monitor.settings['KAFKA_HOSTS'],
-            group_id="demo-id",
-            consumer_timeout_ms=5000,
-        )
+        if self.consumer is None:
+            self.consumer = KafkaConsumer(
+                "demo_test.outbound_firehose",
+                bootstrap_servers=self.redis_monitor.settings['KAFKA_HOSTS'],
+                group_id="demo-id",
+                consumer_timeout_ms=10000,
+            )
 
     def test_process_item(self):
         # set the info flag

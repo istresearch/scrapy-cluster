@@ -64,7 +64,7 @@ class TestLinkSpider(TestCase):
             "demo_test.crawled_firehose",
             bootstrap_servers=self.settings['KAFKA_HOSTS'],
             group_id="demo-id",
-            consumer_timeout_ms=5000,
+            consumer_timeout_ms=10000,
         )
 
     def test_crawler_process(self):
