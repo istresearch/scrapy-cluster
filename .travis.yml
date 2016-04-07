@@ -20,3 +20,10 @@ script:
   - ./run_offline_tests.sh;
   # run online tests
   - ./run_online_tests.sh
+notifications:
+  slack:
+    rooms:
+      - secure: FCOSGS93r8Zkbn/lIEleYE74xcGRXGPPujiAmheCdNlBO/QRzt64vL824rT0x3yauTgZfDOLt8sWvW7+h2MTp7LLlSY+ANArimsBnw4Bo2otwgrSxGa0fBIfsyXAEjFPwaPa81kQqzlN5hVHSSI3H9w5y75SKqqvPuIO72zSGqAvnp+NLpBJeRjmIcDOQIpm6FNCgCEWfI092NPkY1usYvBVaDNKP22tAVVESFb+q3gs/Mx3DOFFWtmodAzIs1ScB1oa6XnO0anfVlXJN1+NpQljfXj+Bz1xOe0xZUc/KVRjRpaE4EaStoayFEkhNA/4pv5JVROklJRXbCXS6cn69V3Vt2n1eI6yj/oOyk22PshLplvPEvYRqqaBsFWiLMSQsWVBKy4EejBRBgjquHDKJjbS6FwjELpj3pO0iexVEzm+PSlMeEKKS+rn257rpLuQTrS62gX5KRM5m9Zl89sqbQ+GMDFmd5e6ifoQBYkYCTSmN+146kou7HU17sARwtgecP9x8NYWFK52rLZBMt2WblYoQCQhZCaV0aB2xfkiQtlvTdbF8nbAFevHEk/Ow4Oal1l+Dg9dWxtMEk1W/OF9oznADEYj0T7SyRGHfw2h6GRCy2oK/DOxso9spNMy+lZO2bAT0WgYwg//+buURc+S1oM+QLJaTaUOgoQw/hR6U5o=
+    on_success: always
+    on_failure: always
+    on_start: always
