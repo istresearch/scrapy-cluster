@@ -2,26 +2,24 @@ sudo: required
 dist: trusty
 addons:
   hosts:
-    - travis-trusty
+  - travis-trusty
 language: python
 python: '2.7'
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq python-apt
+- sudo apt-get update -qq
+- sudo apt-get install -qq python-apt
 install:
-  - pip install ansible
+- pip install ansible
 script:
-  # auto deployment
-  - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
-  - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local --become
-  # create virtual env and install packages
-  - virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
-  # run tests
-  - source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
+- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
+- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
+  --become
+- virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
+- source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
 notifications:
   slack:
     rooms:
-      - secure: FCOSGS93r8Zkbn/lIEleYE74xcGRXGPPujiAmheCdNlBO/QRzt64vL824rT0x3yauTgZfDOLt8sWvW7+h2MTp7LLlSY+ANArimsBnw4Bo2otwgrSxGa0fBIfsyXAEjFPwaPa81kQqzlN5hVHSSI3H9w5y75SKqqvPuIO72zSGqAvnp+NLpBJeRjmIcDOQIpm6FNCgCEWfI092NPkY1usYvBVaDNKP22tAVVESFb+q3gs/Mx3DOFFWtmodAzIs1ScB1oa6XnO0anfVlXJN1+NpQljfXj+Bz1xOe0xZUc/KVRjRpaE4EaStoayFEkhNA/4pv5JVROklJRXbCXS6cn69V3Vt2n1eI6yj/oOyk22PshLplvPEvYRqqaBsFWiLMSQsWVBKy4EejBRBgjquHDKJjbS6FwjELpj3pO0iexVEzm+PSlMeEKKS+rn257rpLuQTrS62gX5KRM5m9Zl89sqbQ+GMDFmd5e6ifoQBYkYCTSmN+146kou7HU17sARwtgecP9x8NYWFK52rLZBMt2WblYoQCQhZCaV0aB2xfkiQtlvTdbF8nbAFevHEk/Ow4Oal1l+Dg9dWxtMEk1W/OF9oznADEYj0T7SyRGHfw2h6GRCy2oK/DOxso9spNMy+lZO2bAT0WgYwg//+buURc+S1oM+QLJaTaUOgoQw/hR6U5o=
+      secure: nPY+SvgkOrpvU76i55bDtXPbclq7WzY2DCwOCbYNzpMMTNnlqV9uhwUc31gHdl+xO8aXf52JwuOqTZnJTi9PGuomp7qf4N4z/dz3tKdjj3ppgeDx8hcmAikiM/qoOUadA9zNvP+wHfJSK7l6LnbAZgdOAXZb77Fk5rIuRr695vg=
     on_success: always
     on_failure: always
     on_start: always
