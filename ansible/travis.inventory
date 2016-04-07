@@ -1,16 +1,16 @@
 # Scrapy Cluster inventory
 
 [kafka]
-scdev
+travis-trusty
 
 [zookeeper]
-scdev
+travis-trusty
 
 [redis]
-scdev
+travis-trusty
 
 [virtualenv]
-scdev
+travis-trusty
 
 [scrapy-cluster:children]
 kafka

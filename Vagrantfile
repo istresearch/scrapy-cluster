@@ -21,7 +21,8 @@ Vagrant.configure(2) do |config|
         "kafka" => ["scdev"],
         "zookeeper" => ["scdev"],
         "redis" => ["scdev"],
-        "all_groups:children" => ["kafka", "zookeeper", "redis"]
+        "virtualenv" => ["scdev"],
+        "all_groups:children" => ["kafka", "zookeeper", "redis", "virtualenv"]
       }
       ansible.playbook = "ansible/scrapy-cluster.yml"
     node.vm.provision "shell", inline: "service supervisord restart", run: "always"

@@ -1,14 +1,12 @@
 ---
-# Update apt-cache and install the latest Miniconda
+# Update apt-cache and install the latest packages
 - hosts: all
   sudo: yes
-  tasks:
-    - name: Update apt cache
-      apt: update-cache=yes
   roles:
-    - miniconda
+    - common
 
-# Install kafka, zookeeper, redis
+# Install kafka, zookeeper, redis, virtualenv
 - include: zookeeper.yml
 - include: kafka.yml
 - include: redis.yml
+- include: virtualenv.yml
