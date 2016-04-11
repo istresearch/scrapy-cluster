@@ -17,6 +17,7 @@ from kafka import KafkaConsumer
 import settings
 import redis
 import json
+from time import sleep
 
 
 class CustomMonitor(KafkaBaseMonitor):
@@ -64,13 +65,15 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._load_plugins()
         self.redis_monitor.stats_dict = {}
 
-        if self.consumer is None:
-            self.consumer = KafkaConsumer(
-                "demo_test.outbound_firehose",
-                bootstrap_servers=self.redis_monitor.settings['KAFKA_HOSTS'],
-                group_id="demo-id",
-                consumer_timeout_ms=10000,
-            )
+        self.consumer = KafkaConsumer(
+            "demo_test.outbound_firehose",
+            bootstrap_servers=self.redis_monitor.settings['KAFKA_HOSTS'],
+            group_id="demo-id",
+            auto_commit_interval_ms=10,
+            consumer_timeout_ms=5000,
+            auto_offset_reset='earliest'
+        )
+        sleep(1)
 
     def test_process_item(self):
         # set the info flag
@@ -84,27 +87,25 @@ class TestRedisMonitor(TestCase):
 
         # ensure the key is gone
         self.assertEquals(self.redis_monitor.redis_conn.get(key), None)
-
-    def test_sent_to_kafka(self):
+        self.redis_monitor.close()
+        sleep(10)
+        # now test the message was sent to kafka
         success = {
             u'info-test': "ABC123",
             u"appid": u"someapp"
         }
 
-        # ensure it was sent out to kafka
         message_count = 0
-        for message in self.consumer:
-            if message is None:
-                break
-            else:
-                the_dict = json.loads(message.value)
-                self.assertEquals(success, the_dict)
-                message_count += 1
+        m = next(self.consumer)
+
+        if m is None:
+            pass
+        else:
+            the_dict = json.loads(m.value)
+            self.assertEquals(success, the_dict)
+            message_count += 1
 
         self.assertEquals(message_count, 1)
-
-    def tearDown(self):
-        self.redis_monitor.close()
         self.consumer.close()
 
 if __name__ == '__main__':

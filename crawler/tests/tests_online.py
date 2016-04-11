@@ -64,8 +64,11 @@ class TestLinkSpider(TestCase):
             "demo_test.crawled_firehose",
             bootstrap_servers=self.settings['KAFKA_HOSTS'],
             group_id="demo-id",
-            consumer_timeout_ms=10000,
+            auto_commit_interval_ms=10,
+            consumer_timeout_ms=5000,
+            auto_offset_reset='earliest'
         )
+        time.sleep(1)
 
     def test_crawler_process(self):
         runner = CrawlerRunner(self.settings)
@@ -85,16 +88,16 @@ class TestLinkSpider(TestCase):
         thread.start()
         reactor.run()
 
-        # ensure it was sent out to kafka
         message_count = 0
-        for message in self.consumer:
-            if message is None:
-                break
-            else:
-                the_dict = json.loads(message.value)
-                if the_dict is not None and the_dict['appid'] == 'testapp' \
-                        and the_dict['crawlid'] == '01234567890abcdefghijklmn':
-                    message_count += 1
+        m = next(self.consumer)
+
+        if m is None:
+            pass
+        else:
+            the_dict = json.loads(m.value)
+            if the_dict is not None and the_dict['appid'] == 'testapp' \
+                    and the_dict['crawlid'] == '01234567890abcdefghijklmn':
+                message_count += 1
 
         self.assertEquals(message_count, 1)
 
