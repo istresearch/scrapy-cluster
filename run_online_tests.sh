@@ -25,7 +25,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 cd ../kafka-monitor
-python tests/tests_online.py -v
+python tests/online.py -v
 if [ $? -eq 1 ]; then
     echo "kafka-monitor tests failed"
     exit 1

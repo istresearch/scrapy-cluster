@@ -6,7 +6,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 cd ../kafka-monitor
-python tests/tests_offline.py -v
+nosetests -v --with-coverage --cover-package=../kafka-monitor/
 if [ $? -eq 1 ]; then
     echo "kafka-monitor tests failed"
     exit 1
