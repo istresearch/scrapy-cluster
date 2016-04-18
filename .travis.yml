@@ -15,6 +15,7 @@ script:
 - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
   --become
 - virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
+- find . -name "*.pyc" -type f -delete
 - source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
 notifications:
   slack:
