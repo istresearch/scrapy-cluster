@@ -37,7 +37,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 cd ../crawler
-python tests/tests_online.py -v
+python tests/online.py -v
 if [ $? -eq 1 ]; then
     echo "crawler tests failed"
     exit 1

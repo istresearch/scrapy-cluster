@@ -18,7 +18,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 cd ../crawler
-python tests/tests_offline.py -v
+nosetests -v --with-coverage --cover-erase --cover-package=crawling/
 if [ $? -eq 1 ]; then
     echo "crawler tests failed"
     exit 1
