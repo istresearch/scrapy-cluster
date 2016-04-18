@@ -1,0 +1,5 @@
+[report]
+omit=
+  setup.py
+  tests/*.py
+  scutils/version.py
