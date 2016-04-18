@@ -1,6 +1,7 @@
 cffi==1.2.1
 characteristic==14.3.0
 ConcurrentLogHandler>=0.9.1
+coverage==4.0.3
 cryptography==0.9.1
 cssselect==0.9.1
 enum34==1.0.4
