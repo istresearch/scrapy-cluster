@@ -31,7 +31,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 cd ../redis-monitor
-python tests/tests_online.py -v
+python tests/online.py -v
 if [ $? -eq 1 ]; then
     echo "redis-monitor tests failed"
     exit 1
