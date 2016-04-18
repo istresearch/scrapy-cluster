@@ -1,6 +1,6 @@
 #!/bin/bash
 cd utils
-python tests/tests_offline.py -v
+nosetests -v --with-coverage --cover-erase --cover-package=scutils/
 if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1

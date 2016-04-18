@@ -19,7 +19,7 @@ else
 fi
 
 cd utils
-python tests/tests_online.py -r $HOST -p $PORT
+python tests/online.py -r $HOST -p $PORT
 if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1
