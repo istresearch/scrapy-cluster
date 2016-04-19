@@ -1,4 +1,4 @@
-[report]
+[run]
 omit=
   *redis*
   *argparse*

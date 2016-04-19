@@ -1,6 +1,6 @@
 #!/bin/bash
 cd utils
-nosetests -v --with-coverage --cover-erase --cover-inclusive
+nosetests -v --with-coverage --cover-erase --cover-inclusive --cover-package=../utils
 if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1
@@ -23,3 +23,5 @@ if [ $? -eq 1 ]; then
     echo "crawler tests failed"
     exit 1
 fi
+coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage
+
