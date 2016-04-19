@@ -11,6 +11,7 @@ before_install:
 install:
 - pip install ansible coveralls
 script:
+- coveralls -h
 - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
 - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
   --become
@@ -18,7 +19,6 @@ script:
 - find . -name "*.pyc" -type f -delete
 - source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
 - coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage
-- deactivate
 notifications:
   slack:
     rooms:
@@ -26,4 +26,5 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
-after_success: coveralls
+after_success:
+- pip install coveralls; coveralls -h
