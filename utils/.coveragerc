@@ -14,6 +14,8 @@ omit=
   *kafka*
   *funcsigs*
   *mock*
+  *six*
+  *getopt*
   *portalocker*
   setup.py
   tests/*.py
