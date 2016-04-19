@@ -50,10 +50,10 @@ class TestKafkaMonitor(TestCase):
 
         # Throw error if schema could not be found
         self.kafka_monitor.settings['PLUGINS'] \
-            ['tests.tests_offline.ExampleHandler'] = 300,
+            ['tests.test_kafka_monitor.ExampleHandler'] = 300,
         self.assertRaises(IOError, self.kafka_monitor._load_plugins)
         del self.kafka_monitor.settings['PLUGINS'] \
-            ['tests.tests_offline.ExampleHandler']
+            ['tests.test_kafka_monitor.ExampleHandler']
 
     def test_load_stats_total(self):
         # test no rolling stats, only total
