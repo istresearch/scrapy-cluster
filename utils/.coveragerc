@@ -21,6 +21,7 @@ omit=
   *testfixtures*
   *_vendor*
   *kazoo*
+  *pkg_resources*
   setup.py
   tests/*.py
   *version.py
