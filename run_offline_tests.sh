@@ -1,6 +1,6 @@
 #!/bin/bash
 cd utils
-nosetests -v --with-coverage --cover-erase --cover-package=scutils/
+nosetests -v --with-coverage --cover-erase --cover-inclusive
 if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1

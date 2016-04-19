@@ -1,5 +1,20 @@
 [report]
 omit=
+  *redis*
+  *argparse*
+  *calendar*
+  *contextlib*
+  *ctypes*
+  *distutils*
+  *logging*
+  *uuid*
+  *cloghandler*
+  *pythonjsonlogger*
+  *pbr*
+  *kafka*
+  *funcsigs*
+  *mock*
+  *portalocker*
   setup.py
   tests/*.py
   scutils/version.py
