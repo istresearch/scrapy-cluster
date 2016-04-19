@@ -39,7 +39,7 @@ class TestKafkaMonitor(TestCase):
         new_settings['PLUGINS'] = {
             'plugins.scraper_handler.ScraperHandler': None,
             'plugins.action_handler.ActionHandler': None,
-            'tests.tests_online.CustomHandler': 100,
+            'tests.online.CustomHandler': 100,
         }
 
         self.kafka_monitor.wrapper.load = MagicMock(return_value=new_settings)
