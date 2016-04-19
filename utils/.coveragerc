@@ -1,7 +1,7 @@
 [run]
 omit=
-  *redis*
-  *argparse*
+  *redis/*
+  *argparse.py
   *calendar*
   *contextlib*
   *ctypes*
@@ -17,6 +17,10 @@ omit=
   *six*
   *getopt*
   *portalocker*
+  *nose*
+  *testfixtures*
+  *_vendor*
+  *kazoo*
   setup.py
   tests/*.py
-  scutils/version.py
+  *version.py
