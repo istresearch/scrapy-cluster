@@ -10,6 +10,21 @@ Scrapy Cluster 1.2
 
 Date: ??/??/????
 
+- Added `Coveralls <https://coveralls.io/github/istresearch/scrapy-cluster>`_ code coverage integration
+
+- Added full stack offline unit tests and online integration testing in `Travis CI <https://travis-ci.org/istresearch/scrapy-cluster>`_
+
+- Upgraded all components to newest Kafka Python package
+
+- Switched example Virtual Machine from Miniconda to Virtualenv
+
+- Add setting to specify Redis db across all components
+
+Redis Monitor Changes
+^^^^^^^^^^^^^^^^^^^^^
+
+- Add ``close()`` method to plugin base class for clean shutdown
+
 Scrapy Cluster 1.1
 ------------------
 

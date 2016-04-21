@@ -23,5 +23,6 @@ if [ $? -eq 1 ]; then
     echo "crawler tests failed"
     exit 1
 fi
+cd ../
 coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage
 

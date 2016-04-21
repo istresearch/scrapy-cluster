@@ -34,11 +34,21 @@ All of the different components in Scrapy Cluster have offline tests, to ensure 
 
 If you are making modifications to core components, or wish to add new functionality to Scrapy Cluster, please ensure that all the tests pass for your component. Upgrades and changes happen, but these tests should always pass in the end.
 
-If you are modifying a single component, you can run its individual offline test by issuing the following command.
+If you are modifying a single component, you can run its individual offline test by using `nose <http://nose.readthedocs.org/en/latest/>`_. The following commands should be run from within the component you are interested in, and will run both the nosetests and provide code coverage information to you:
 
 ::
 
-    $ python tests/tests_offline.py -v
+    # utilities
+    nosetests -v --with-coverage --cover-erase
+
+    # kafka monitor
+    nosetests -v --with-coverage --cover-erase --cover-package=../kafka-monitor/
+
+    # redis monitor
+    nosetests -v --with-coverage --cover-erase --cover-package=../redis-monitor/
+
+    # crawler
+    nosetests -v --with-coverage --cover-erase --cover-package=crawling/
 
 This runs the individual component's offline tests. You can do this in the Kafka Monitor, Crawler, Redis Monitor, and the Utilities folders.
 
@@ -58,7 +68,7 @@ Where ``<your_host>`` is the machine where Redis, Kafka, or Zookeeper would resi
 
 ::
 
-    $ python tests/tests_online.py -v
+    $ python tests/online.py -v
 
 If your system is properly configured you will see the test pass, otherwise, the debug and error log output should indicate what is failing.
 
@@ -68,7 +78,7 @@ If you would like to debug the Utilities package, the online test is slightly di
 
 ::
 
-    python tests/tests_online.py -r <your_host>
+    python tests/online.py -r <your_host>
 
 If all your online tests pass, that means that the Scrapy Cluster component was successfully able to talk with its dependencies and deems itself operational.
 

@@ -17,7 +17,6 @@ script:
 - virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
 - find . -name "*.pyc" -type f -delete
 - source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
-- coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage
 notifications:
   slack:
     rooms:
