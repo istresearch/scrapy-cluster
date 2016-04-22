@@ -1,6 +1,6 @@
 # Scrapy Cluster
 
-[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=dev)](https://travis-ci.org/istresearch/scrapy-cluster) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=dev)](https://travis-ci.org/istresearch/scrapy-cluster) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)[![Coverage Status](https://coveralls.io/repos/github/istresearch/scrapy-cluster/badge.svg?branch=dev)](https://coveralls.io/github/istresearch/scrapy-cluster?branch=dev)
 
 This Scrapy project uses Redis and Kafka to create a distributed on demand scraping cluster.
 

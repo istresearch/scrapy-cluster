@@ -55,7 +55,7 @@ class TestRedisMonitor(TestCase):
             'plugins.info_monitor.InfoMonitor': None,
             'plugins.stop_monitor.StopMonitor': None,
             'plugins.expire_monitor.ExpireMonitor': None,
-            'tests.tests_online.CustomMonitor': 100,
+            'tests.online.CustomMonitor': 100,
         }
         self.redis_monitor.redis_conn = redis.Redis(
             host=self.redis_monitor.settings['REDIS_HOST'],

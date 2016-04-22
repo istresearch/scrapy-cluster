@@ -151,7 +151,7 @@ It is recommended you use this 'local' override instead of altering the default 
 
 ::
 
-    $ python tests/tests_online.py -v
+    $ python tests/online.py -v
     test_feed (__main__.TestKafkaMonitor) ... ok
     test_run (__main__.TestKafkaMonitor) ... ok
 
@@ -183,7 +183,7 @@ Add the following to your new custom local settings.
 
 ::
 
-  $ python tests/tests_online.py -v
+  $ python tests/online.py -v
   test_process_item (__main__.TestRedisMonitor) ... ok
   test_sent_to_kafka (__main__.TestRedisMonitor) ... ok
 
@@ -217,7 +217,7 @@ Add the following fields to override the defaults
 ::
 
   $ cd ../
-  $ python tests/tests_online.py -v
+  $ python tests/online.py -v
   ...
   ----------------------------------------------------------------------
   Ran 1 test in 23.191s

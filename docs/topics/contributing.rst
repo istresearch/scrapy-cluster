@@ -83,7 +83,7 @@ If you're looking to raise a PR for something which doesn't have an open issue, 
 
 To make sure your PR is accepted as quickly as possible, please ensure you hit the following points:
 
-    * You can run ``./run_tests_offline.sh`` **and** ``./run_tests_online`` in your Vagrant test environment to ensure nothing is broken.
+    * You can run ``./run_tests_offline.sh`` **and** ``./run_tests_online.sh`` in your Vagrant test environment to ensure nothing is broken.
 
     * Did you add new code? That means it is probably unit-testable and should have a new unit test associated with it.
 

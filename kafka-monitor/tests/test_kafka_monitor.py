@@ -2,24 +2,14 @@
 Offline tests
 '''
 
-import unittest
 from unittest import TestCase
 from mock import MagicMock
 
-import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
 from kafka_monitor import KafkaMonitor
-from plugins.scraper_handler import ScraperHandler
 from plugins.base_handler import BaseHandler
-from plugins.action_handler import ActionHandler
-from plugins.stats_handler import StatsHandler
-import copy
 
 from kafka.common import OffsetOutOfRangeError
 from jsonschema import Draft4Validator
-import tldextract
 
 
 class ExampleHandler(BaseHandler):
@@ -60,10 +50,10 @@ class TestKafkaMonitor(TestCase):
 
         # Throw error if schema could not be found
         self.kafka_monitor.settings['PLUGINS'] \
-            ['tests.tests_offline.ExampleHandler'] = 300,
+            ['tests.test_kafka_monitor.ExampleHandler'] = 300,
         self.assertRaises(IOError, self.kafka_monitor._load_plugins)
         del self.kafka_monitor.settings['PLUGINS'] \
-            ['tests.tests_offline.ExampleHandler']
+            ['tests.test_kafka_monitor.ExampleHandler']
 
     def test_load_stats_total(self):
         # test no rolling stats, only total
@@ -243,112 +233,3 @@ class TestKafkaMonitor(TestCase):
         except AssertionError as e:
             self.assertEquals("action", e.message)
 
-
-class TestPlugins(TestCase):
-
-    def test_default_handler(self):
-        handler = BaseHandler()
-        try:
-            handler.setup("s")
-            self.fail("base setup should be abstract")
-        except NotImplementedError:
-            pass
-
-        try:
-            handler.handle({})
-            self.fail("base handler should be abstract")
-        except NotImplementedError:
-            pass
-
-    def test_scrape_handler(self):
-        valid = {
-            "url": "www.stuff.com",
-            "crawlid": "abc124",
-            "appid": "testapp",
-            "spiderid": "link",
-            "priority": 5,
-        }
-        handler = ScraperHandler()
-        handler.extract = tldextract.TLDExtract()
-        handler.redis_conn = MagicMock()
-
-        # check it is added to redis
-        handler.redis_conn.zadd = MagicMock(side_effect=AssertionError("added"))
-        try:
-            handler.handle(valid)
-            self.fail("Action not called")
-        except AssertionError as e:
-            self.assertEquals("added", e.message)
-
-        # check timeout is added
-        handler.redis_conn.zadd = MagicMock()
-        handler.redis_conn.set = MagicMock(side_effect=AssertionError("expires"))
-        valid['expires'] = 124242
-        try:
-            handler.handle(valid)
-            self.fail("Expires not called")
-        except AssertionError as e:
-            self.assertEquals("expires", e.message)
-
-    def test_action_handler(self):
-        handler = ActionHandler()
-        handler.redis_conn = MagicMock()
-        handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
-
-        valid = {
-            "uuid": "abaksdjb",
-            "crawlid": "abc124",
-            "appid": "testapp",
-            "spiderid": "link",
-            "action": "info",
-        }
-
-        try:
-            handler.handle(valid)
-            self.fail("Added not called")
-        except AssertionError as e:
-            self.assertEquals("added", e.message)
-
-    def test_stats_handler(self):
-        handler = StatsHandler()
-        handler.redis_conn = MagicMock()
-        handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
-
-        valid = {
-            "uuid":"abaksdjb",
-            "appid":"testapp",
-            "stats":"all",
-        }
-
-        try:
-            handler.handle(valid)
-            self.fail("Added not called")
-        except AssertionError as e:
-            self.assertEquals("added", e.message)
-
-    def test_bad_plugins(self):
-        class ForgotSchema(BaseHandler):
-            def handle(self, d):
-                pass
-
-        class ForgotHandle(BaseHandler):
-            schema = "mySchema"
-
-        handler = ForgotSchema()
-        try:
-            handler.setup("s")
-            self.fail("did not raise error")
-        except NotImplementedError as e:
-            pass
-        handler.handle({})
-
-        handler = ForgotHandle()
-        handler.setup("s")
-        try:
-            handler.handle({})
-            self.fail("did not raise error")
-        except NotImplementedError:
-            pass
-
-if __name__ == '__main__':
-    unittest.main()

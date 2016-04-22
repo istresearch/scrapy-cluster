@@ -1,0 +1,7 @@
+[report]
+omit=
+  config/*
+  crawling/*settings.py
+  tests/*.py
+  scrapy.cfg
+
