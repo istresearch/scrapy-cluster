@@ -133,13 +133,11 @@ class TestInfoPlugin(TestCase, RegexFixer):
         dict['spiderid'] = elements[1]
         dict['appid'] = elements[2]
 
-        self.plugin.redis_conn.exists = MagicMock(return_value=True)
-        self.plugin.redis_conn.get = MagicMock(return_value=10)
         self.plugin.redis_conn.scan_iter = MagicMock(return_value=[
                                                      'theKey:bingo.com'])
         self.plugin._get_bin = MagicMock(return_value={-200: [{
                                          'appid': "testapp", "priority": 20,
-                                         'crawlid': 'cool'}]})
+                                         'crawlid': 'cool', 'expires': 10}]})
 
         result = self.plugin._build_appid_info(master, dict)
 

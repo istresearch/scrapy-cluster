@@ -117,7 +117,7 @@ class InfoMonitor(KafkaBaseMonitor):
                                 'distinct_domains': 0
                             }
 
-                            if item['expires'] != 0:
+                            if 'expires' in item and item['expires'] != 0:
                                 master['crawlids'][crawlid]['expires'] = item['expires']
 
                             master['total_crawlids'] += 1
