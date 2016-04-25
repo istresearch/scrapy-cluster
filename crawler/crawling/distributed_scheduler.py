@@ -12,6 +12,7 @@ import sys
 import uuid
 import socket
 import re
+import ujson
 
 from redis_dupefilter import RFPDupeFilter
 from kazoo.handlers.threading import KazooTimeoutError
@@ -20,11 +21,6 @@ from scutils.zookeeper_watcher import ZookeeperWatcher
 from scutils.redis_queue import RedisPriorityQueue
 from scutils.redis_throttled_queue import RedisThrottledQueue
 from scutils.log_factory import LogFactory
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 
 class DistributedScheduler(object):
@@ -215,7 +211,7 @@ class DistributedScheduler(object):
             if key not in self.queue_dict or newConf:
                 self.logger.debug("Added new Throttled Queue {q}"
                                   .format(q=key))
-                q = RedisPriorityQueue(self.redis_conn, key)
+                q = RedisPriorityQueue(self.redis_conn, key, encoding=ujson)
 
                 # use default window and hits
                 if the_domain not in self.domain_config:
@@ -386,7 +382,7 @@ class DistributedScheduler(object):
                     # shoving into a new redis queue, negative b/c of sorted sets
                     # this will populate ourself and other schedulers when
                     # they call create_queues
-                    self.redis_conn.zadd(key, pickle.dumps(req_dict, protocol=-1),
+                    self.redis_conn.zadd(key, ujson.dumps(req_dict),
                                         -req_dict['meta']['priority'])
                 self.logger.debug("Crawlid: '{id}' Appid: '{appid}' added to queue"
                     .format(appid=req_dict['meta']['appid'],

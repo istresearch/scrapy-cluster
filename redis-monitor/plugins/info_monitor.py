@@ -1,4 +1,4 @@
-import pickle
+import ujson
 from kafka_base_monitor import KafkaBaseMonitor
 
 
@@ -66,7 +66,7 @@ class InfoMonitor(KafkaBaseMonitor):
         sortedDict = {}
         # this doesnt return them in order, need to bin first
         for item in self.redis_conn.zscan_iter(key):
-            my_item = pickle.loads(item[0])
+            my_item = ujson.loads(item[0])
             # score is negated in redis
             my_score = -item[1]
 

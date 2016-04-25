@@ -71,14 +71,14 @@ class TestRedisMonitor(TestCase):
             group_id="demo-id",
             auto_commit_interval_ms=10,
             consumer_timeout_ms=5000,
-            auto_offset_reset='earliest'
+            auto_offset_reset='latest'
         )
         sleep(1)
 
     def test_process_item(self):
         # set the info flag
         key = "info-test:blah"
-        value = "ABC123"
+        value = "ABC1234"
         self.redis_monitor.redis_conn.set(key, value)
 
         # process the request
@@ -91,7 +91,7 @@ class TestRedisMonitor(TestCase):
         sleep(10)
         # now test the message was sent to kafka
         success = {
-            u'info-test': "ABC123",
+            u'info-test': "ABC1234",
             u"appid": u"someapp"
         }
 
@@ -106,6 +106,12 @@ class TestRedisMonitor(TestCase):
             message_count += 1
 
         self.assertEquals(message_count, 1)
+
+    def tearDown(self):
+        # if for some reason the tests fail, we end up falling behind on
+        # the consumer
+        for m in self.consumer:
+            pass
         self.consumer.close()
 
 if __name__ == '__main__':

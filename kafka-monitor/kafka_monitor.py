@@ -25,11 +25,6 @@ from scutils.method_timer import MethodTimer
 from scutils.stats_collector import StatsCollector
 from scutils.argparse_helper import ArgparseHelper
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
 
 class KafkaMonitor:
 

@@ -11,7 +11,7 @@ from plugins.info_monitor import InfoMonitor
 from plugins.stop_monitor import StopMonitor
 from plugins.stats_monitor import StatsMonitor
 
-import pickle
+import ujson
 import re
 
 
@@ -76,7 +76,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
 
     def test_info_get_bin(self):
         v1 = "stuff"
-        v1 = pickle.dumps(v1)
+        v1 = ujson.dumps(v1)
         v2 = 200
         self.plugin.redis_conn.zscan_iter = MagicMock(return_value=[(v1, v2)])
         ret_val = self.plugin._get_bin('key')
@@ -184,8 +184,8 @@ class TestStopPlugin(TestCase, RegexFixer):
     def test_stop_monitor_mini_purge(self):
         self.plugin.redis_conn.scan_iter = MagicMock(return_value=['link:istresearch.com:queue'])
         self.plugin.redis_conn.zscan_iter = MagicMock(return_value=[
-            ["(dp0\nS'crawlid'\np1\nS'crawl'\np2\nsS'appid'\np3\nS'app'\np4\ns."],
-            ["(dp0\nS'crawlid'\np1\nS'crawl'\np2\nsS'appid'\np3\nS'foo'\np4\ns."],
+            ['{"crawlid":"crawl", "appid":"app"}'],
+            ['{"crawlid":"crawl", "appid":"foo"}'],
         ])
 
         self.assertEquals(self.plugin._mini_purge("link", "app", "crawl"), 1)

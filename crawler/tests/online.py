@@ -30,15 +30,11 @@ class CustomSpider(LinkSpider):
 
 class TestLinkSpider(TestCase):
 
-    example_feed = "\x80\x02}q\x00(X\x0f\x00\x00\x00allowed_domainsq\x01NX"\
-        "\x0b\x00\x00\x00allow_regexq\x02NX\a\x00\x00\x00crawlidq\x03X\x19"\
-        "\x00\x00\x0001234567890abcdefghijklmnq\x04X\x03\x00\x00\x00urlq\x05X"\
-        "\x13\x00\x00\x00www.istresearch.comq\x06X\a\x00\x00\x00expiresq\aK"\
-        "\x00X\b\x00\x00\x00priorityq\bK\x01X\n\x00\x00\x00deny_regexq\tNX\b"\
-        "\x00\x00\x00spideridq\nX\x0b\x00\x00\x00test-spiderq\x0bX\x05\x00"\
-        "\x00\x00attrsq\x0cNX\x05\x00\x00\x00appidq\rX\a\x00\x00\x00testappq"\
-        "\x0eX\x06\x00\x00\x00cookieq\x0fNX\t\x00\x00\x00useragentq\x10NX\x0f"\
-        "\x00\x00\x00deny_extensionsq\x11NX\b\x00\x00\x00maxdepthq\x12K\x00u."
+    example_feed = "{\"allowed_domains\":null,\"allow_regex\":null,\""\
+        "crawlid\":\"abc12345\",\"url\":\"istresearch.com\",\"expires\":0,\""\
+        "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
+        "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
+        "link\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":0}"
 
     def setUp(self):
         self.settings = get_project_settings()
@@ -66,7 +62,7 @@ class TestLinkSpider(TestCase):
             group_id="demo-id",
             auto_commit_interval_ms=10,
             consumer_timeout_ms=5000,
-            auto_offset_reset='earliest'
+            auto_offset_reset='latest'
         )
         time.sleep(1)
 
@@ -95,8 +91,8 @@ class TestLinkSpider(TestCase):
             pass
         else:
             the_dict = json.loads(m.value)
-            if the_dict is not None and the_dict['appid'] == 'testapp' \
-                    and the_dict['crawlid'] == '01234567890abcdefghijklmn':
+            if the_dict is not None and the_dict['appid'] == 'test' \
+                    and the_dict['crawlid'] == 'abc12345':
                 message_count += 1
 
         self.assertEquals(message_count, 1)
@@ -106,6 +102,11 @@ class TestLinkSpider(TestCase):
         keys = keys + self.redis_conn.keys('test-spider:*')
         for key in keys:
             self.redis_conn.delete(key)
+
+        # if for some reason the tests fail, we end up falling behind on
+        # the consumer
+        for m in self.consumer:
+            pass
         self.consumer.close()
 
 if __name__ == '__main__':

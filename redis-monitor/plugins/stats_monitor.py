@@ -1,6 +1,5 @@
-import re
-import pickle
 from kafka_base_monitor import KafkaBaseMonitor
+
 
 class StatsMonitor(KafkaBaseMonitor):
 
