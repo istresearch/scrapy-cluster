@@ -25,3 +25,5 @@ omit=
   setup.py
   tests/*.py
   *version.py
+  *decimal.py
+  *numbers.py
