@@ -18,7 +18,8 @@ script:
 - virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
 - find . -name "*.pyc" -type f -delete
 - cd utils; python setup.py install; cd ../
-- ./run_offline_tests.sh; ./run_online_tests.sh
+- ./run_offline_tests.sh
+- ./run_online_tests.sh
 - deactivate
 notifications:
   slack:
