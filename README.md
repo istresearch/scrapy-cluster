@@ -48,6 +48,10 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 8.  `./run_offline_tests.sh` to run offline tests.
 9.  `./run_online_tests.sh` to run online tests (relies on kafka, zookeeper, redis).
 
+### Dev Branch Note
+
+You will need to install the development release of `scutils 1.2` via `cd utils; python setup.py install` in order to run Scrapy Cluster 1.2
+
 ## Documentation
 
 Please check out the work in progress [Scrapy Cluster 1.2 documentation](http://scrapy-cluster.readthedocs.org/en/dev/) for more information on how everything works!
