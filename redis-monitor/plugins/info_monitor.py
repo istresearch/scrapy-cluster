@@ -111,28 +111,26 @@ class InfoMonitor(KafkaBaseMonitor):
 
                         # add new crawlid to master dict
                         if crawlid not in master['crawlids']:
-                            master['crawlids'][crawlid] = {}
-                            master['crawlids'][crawlid]['total'] = 0
-                            master['crawlids'][crawlid]['domains'] = {}
-                            master['crawlids'][crawlid]['distinct_domains'] = 0
+                            master['crawlids'][crawlid] = {
+                                'total': 0,
+                                'domains': {},
+                                'distinct_domains': 0
+                            }
 
-                            timeout_key = 'timeout:{sid}:{aid}:{cid}'.format(
-                                        sid=dict['spiderid'],
-                                        aid=dict['appid'],
-                                        cid=crawlid)
-                            if self.redis_conn.exists(timeout_key):
-                                master['crawlids'][crawlid]['expires'] = self.redis_conn.get(timeout_key)
+                            if item['expires'] != 0:
+                                master['crawlids'][crawlid]['expires'] = item['expires']
 
-                            master['total_crawlids'] = master['total_crawlids'] + 1
+                            master['total_crawlids'] += 1
 
                         master['crawlids'][crawlid]['total'] = master['crawlids'][crawlid]['total'] + 1
 
                         if domain not in master['crawlids'][crawlid]['domains']:
-                            master['crawlids'][crawlid]['domains'][domain] = {}
-                            master['crawlids'][crawlid]['domains'][domain]['total'] = 0
-                            master['crawlids'][crawlid]['domains'][domain]['high_priority'] = -9999
-                            master['crawlids'][crawlid]['domains'][domain]['low_priority'] = 9999
-                            master['crawlids'][crawlid]['distinct_domains'] = master['crawlids'][crawlid]['distinct_domains'] + 1
+                            master['crawlids'][crawlid]['domains'][domain] = {
+                                'total': 0,
+                                'high_priority': -9999,
+                                'low_priority': 9999,
+                            }
+                            master['crawlids'][crawlid]['distinct_domains'] += 1
                             domain_dict[domain] = True
 
 
@@ -144,7 +142,7 @@ class InfoMonitor(KafkaBaseMonitor):
                         if item['priority'] < master['crawlids'][crawlid]['domains'][domain]['low_priority']:
                             master['crawlids'][crawlid]['domains'][domain]['low_priority'] = item['priority']
 
-                        master['total_pending'] = master['total_pending'] + 1
+                        master['total_pending'] += 1
 
         master['total_domains'] = len(domain_dict)
 

@@ -71,7 +71,7 @@ class TestRedisMonitor(TestCase):
             group_id="demo-id",
             auto_commit_interval_ms=10,
             consumer_timeout_ms=5000,
-            auto_offset_reset='latest'
+            auto_offset_reset='earliest'
         )
         sleep(1)
 
