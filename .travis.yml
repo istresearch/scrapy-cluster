@@ -10,7 +10,6 @@ before_install:
 - sudo apt-get install -qq python-apt
 install:
 - pip install ansible
-- pip install coveralls
 script:
 - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
 - ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
@@ -20,7 +19,6 @@ script:
 - cd utils; python setup.py install; cd ../
 - ./run_offline_tests.sh
 - ./run_online_tests.sh
-- deactivate
 notifications:
   slack:
     rooms:
@@ -29,4 +27,4 @@ notifications:
     on_failure: always
     on_start: always
 after_success:
-- coveralls
+- pip install coveralls; coveralls
