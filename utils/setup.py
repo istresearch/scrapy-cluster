@@ -20,7 +20,8 @@ install_requires = [
     'redis>=2.10.3',
     'kazoo>=2.2.1',
     'mock>=1.3.0',
-    'testfixtures>=4.3.3'
+    'testfixtures>=4.3.3',
+    'ujson==1.35'
 ]
 
 lint_requires = [

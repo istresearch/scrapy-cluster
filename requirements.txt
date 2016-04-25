@@ -33,6 +33,7 @@ six==1.10.0
 testfixtures>=4.3.3
 tldextract==1.7.1
 Twisted==15.4.0
+ujson==1.35
 w3lib==1.12.0
 wheel==0.26.0
 zope.interface==4.1.3
