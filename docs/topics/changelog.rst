@@ -20,10 +20,17 @@ Date: ??/??/????
 
 - Add setting to specify Redis db across all components
 
+Kafka Monitor Changes
+^^^^^^^^^^^^^^^^^^^^^
+
+- Updated stats schema to accept ``queue`` statistics request.
+
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
-- Add ``close()`` method to plugin base class for clean shutdown
+- Added ``close()`` method to plugin base class for clean shutdown
+
+- Added queue statistics response object
 
 Scrapy Cluster 1.1
 ------------------

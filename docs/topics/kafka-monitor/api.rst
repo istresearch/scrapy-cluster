@@ -312,9 +312,10 @@ The Stats API allows you to gather metrics, health, and general crawl statistics
     * **all** - Gathers **kafka-monitor**, **redis-monitor**, and **crawler** stats.
     * **kafka-monitor** - Gathers information about the Kafka Monitor
     * **redis-monitor** - Gathers information about the Redis Monitor
-    * **crawler** - Gathers information about the crawlers in the cluster. Includes both the **spider** and **machine** information below
+    * **crawler** - Gathers information about the crawlers in the cluster. Includes both the **spider**, **machine**, and **queue** information below
     * **spider** - Gathers information about the existing spiders in your cluster
     * **machine** - Gathers information about the different spider machines in your cluster
+    * **queue** - Gathers information about the various spider queues within your Redis instance
 
 
 Stats request results typically have numeric values for dictionary keys, like ``900``, ``3600``, ``86400``, or in the special case ``lifetime``. These numbers indicate **rolling time windows** in seconds for processing throughput. So if you see a value like ``"3600":14`` you can interpret this as `in the last 3600 seconds, the kafka-monitor saw 14 requests"`. In the case of lifetime, it is the total count over the cluster's operation.
@@ -388,7 +389,7 @@ Here we can see the various totals broken down by total, fail, and each loaded p
 
 **Crawler**
 
-A Crawler stats request can consist of rolling time windows of spider stats, machine stats, or both of them combined. The following examples serve to illustrate this.
+A Crawler stats request can consist of rolling time windows of spider stats, machine stats, queue stats, or all of them combined. The following examples serve to illustrate this.
 
 * **Spider**
 
@@ -470,9 +471,45 @@ A Crawler stats request can consist of rolling time windows of spider stats, mac
 
     You can see we only have a local machine running those 2 crawlers, but if we had more machines their aggregated stats would be displayed in the same manner.
 
+* **Queue**
+
+    Queue stats give you information about the current queue backlog for each spider, broken down by spider type and domain.
+
+    Kafka Request:
+
+        ::
+
+            $ python kafka_monitor.py feed '{"stats":"queue", "appid":"test", "uuid":"1234567890"}'
+
+    Kafka Response:
+
+        ::
+
+            {
+                "stats": "queue",
+                "queues": {
+                    "queue_link": {
+                        "domains": [
+                            {
+                                "domain": "istresearch.com",
+                                "backlog": 229
+                            }
+                        ],
+                        "spider_backlog": 229,
+                        "num_domains": 1
+                    },
+                    "total_backlog": 229
+                },
+                "server_time": 1461700519,
+                "uuid": "1234567890",
+                "appid": "test"
+            }
+
+    Here, we have only one active spider queue with one domain. If there were more domains or more spiders that data would be displayed in the same format.
+
 * **Crawler**
 
-    The crawler stat is an aggregation of the **machine** and **spider** requests.
+    The crawler stat is a combination of the **machine**, **spider**, and **queue** requests.
 
     Kafka Request:
 
@@ -520,6 +557,19 @@ A Crawler stats request can consist of rolling time windows of spider stats, mac
                             "lifetime": 4
                         }
                     }
+                },
+                "queues": {
+                    "queue_link": {
+                        "domains": [
+                            {
+                                "domain": "istresearch.com",
+                                "backlog": 229
+                            }
+                        ],
+                        "spider_backlog": 229,
+                        "num_domains": 1
+                    },
+                    "total_backlog": 229
                 }
             }
 
@@ -726,6 +776,19 @@ Kafka Response:
                             "lifetime": 4
                         }
                     }
+                },
+                "queues": {
+                    "queue_link": {
+                        "domains": [
+                            {
+                                "domain": "istresearch.com",
+                                "backlog": 229
+                            }
+                        ],
+                        "spider_backlog": 229,
+                        "num_domains": 1
+                    },
+                    "total_backlog": 229
                 }
             }
         }

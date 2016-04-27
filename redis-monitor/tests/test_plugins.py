@@ -249,13 +249,14 @@ class TestStatsPlugin(TestCase, RegexFixer):
         self.plugin.get_crawler_stats = MagicMock(side_effect=Exception("crawler"))
         self.plugin.get_spider_stats = MagicMock(side_effect=Exception("spider"))
         self.plugin.get_machine_stats = MagicMock(side_effect=Exception("machine"))
+        self.plugin.get_queue_stats = MagicMock(side_effect=Exception("queue"))
 
         self._assert_thrown("statsrequest:all:appid", "all")
         self._assert_thrown("statsrequest:kafka-monitor:appid", "kafka")
         self._assert_thrown("statsrequest:redis-monitor:appid", "redis")
         self._assert_thrown("statsrequest:crawler:appid", "crawler")
         self._assert_thrown("statsrequest:spider:appid", "spider")
-        self._assert_thrown("statsrequest:machine:appid", "machine")
+        self._assert_thrown("statsrequest:queue:appid", "queue")
 
     def test_stats_get_spider(self):
         stat_keys = [
@@ -309,6 +310,49 @@ class TestStatsPlugin(TestCase, RegexFixer):
                 'host3': {'200': {'86400': 5}}
             }
         }
+        self.assertEquals(result, good)
+
+    def test_stats_get_queue(self):
+        # tests stats on three different machines, with different spiders
+        # contributing to the same or different stats
+        self.plugin.redis_conn.keys = MagicMock(return_value=[
+                                                'link:istresearch.com:queue',
+                                                'link:yellowpages.com:queue',
+                                                'link:cnn.com:queue',
+                                                'wandering:dmoz.org:queue',
+                                                'wandering:craigslist.org:queue',
+                                                ])
+        results = [5, 10, 11, 1, 3]
+
+        def ret_val(*args):
+            return results.pop(0)
+
+        self.plugin.redis_conn.zcard = MagicMock(side_effect=ret_val)
+
+        result = self.plugin.get_queue_stats()
+        good = {
+            'queues': {
+                'total_backlog': 30,
+                'queue_link': {
+                    'spider_backlog': 26,
+                    'num_domains': 3,
+                    'domains': [
+                        {'domain': 'istresearch.com', 'backlog': 5},
+                        {'domain': 'yellowpages.com', 'backlog': 10},
+                        {'domain': 'cnn.com', 'backlog': 11}
+                    ]
+                },
+                'queue_wandering': {
+                    'spider_backlog': 4,
+                    'num_domains': 2,
+                    'domains': [
+                        {'domain': 'dmoz.org', 'backlog': 1},
+                        {'domain': 'craigslist.org', 'backlog': 3},
+                    ]
+                }
+            }
+        }
+        print result
         self.assertEquals(result, good)
 
     def test_stats_get_plugin(self):

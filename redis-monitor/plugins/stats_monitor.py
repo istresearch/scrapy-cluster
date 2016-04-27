@@ -43,6 +43,8 @@ class StatsMonitor(KafkaBaseMonitor):
             extras = self.get_spider_stats()
         elif stats == 'machine':
             extras = self.get_machine_stats()
+        elif stats == 'queue':
+            extras = self.get_queue_stats()
         else:
             self.logger.warn('Received invalid stats request: {s}'\
                 .format(s=stats),
@@ -231,5 +233,44 @@ class StatsMonitor(KafkaBaseMonitor):
 
         the_dict['spiders'] = self.get_spider_stats()['spiders']
         the_dict['machines'] = self.get_machine_stats()['machines']
+        the_dict['queue'] = self.get_queue_stats()['queues']
 
         return the_dict
+
+    def get_queue_stats(self):
+        '''
+        Gather queue stats
+
+        @return: A dict of stats
+        '''
+        self.logger.debug("Gathering queue based stats")
+
+        the_dict = {}
+        keys = self.redis_conn.keys('*:*:queue')
+        total_backlog = 0
+        for key in keys:
+            elements = key.split(":")
+            spider = elements[0]
+            domain = elements[1]
+            spider = 'queue_' + spider
+
+            if spider not in the_dict:
+                the_dict[spider] = {
+                    'spider_backlog': 0,
+                    'num_domains': 0,
+                    'domains': []
+                }
+
+            count = self.redis_conn.zcard(key)
+            total_backlog += count
+            the_dict[spider]['spider_backlog'] += count
+            the_dict[spider]['num_domains'] += 1
+            the_dict[spider]['domains'].append({'domain': domain,
+                                                'backlog': count})
+
+        the_dict['total_backlog'] = total_backlog
+        ret_dict = {
+            'queues': the_dict
+        }
+
+        return ret_dict
