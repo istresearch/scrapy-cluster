@@ -1,6 +1,8 @@
 import importlib
 import imp
 import sys
+import logging
+log = logging.getLogger(__name__)
 
 
 class SettingsWrapper(object):
@@ -46,12 +48,12 @@ class SettingsWrapper(object):
             mod = imp.new_module(module_name)
             exec settings_string in mod.__dict__
         except TypeError:
-            print "Could not import settings"
+            log.warning("Could not import settings")
         self.my_settings = {}
         try:
             self.my_settings = self._convert_to_dict(mod)
         except ImportError:
-            print "Settings unable to be loaded"
+            log.warning("Settings unable to be loaded")
 
         return self.settings()
 
@@ -73,7 +75,7 @@ class SettingsWrapper(object):
             settings = importlib.import_module(default)
             self.my_settings = self._convert_to_dict(settings)
         except ImportError:
-            print "No default settings found"
+            log.warning("No default settings found")
 
     def _load_custom(self, settings_name='localsettings.py'):
         '''
@@ -88,7 +90,7 @@ class SettingsWrapper(object):
             settings = importlib.import_module(settings_name)
             new_settings = self._convert_to_dict(settings)
         except ImportError:
-            print "No override settings found"
+            log.info("No override settings found")
 
         for key in new_settings:
             if key in self.my_settings:

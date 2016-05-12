@@ -4,6 +4,8 @@ from threading import Thread
 import argparse
 import sys
 from time import sleep
+import logging
+log = logging.getLogger(__name__)
 
 
 class ZookeeperWatcher():
@@ -103,7 +105,7 @@ class ZookeeperWatcher():
                         self.zoo_client = KazooClient(hosts=self.hosts)
                         self.zoo_client.start()
                 except Exception, e:
-                    print "ZKWatcher Exception:", e
+                    log.error("ZKWatcher Exception: " + e.message)
                     sleep(1)
                     continue
 
