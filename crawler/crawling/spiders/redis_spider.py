@@ -135,7 +135,7 @@ class RedisSpider(Spider):
 
         Raises: None
         Reason: Originally, there was a bug where the json.dumps() did not
-        properly serialize the headers. This is method is way to circumvent
+        properly serialize the headers. This method is a way to circumvent
         the known issue
         """
 

@@ -352,7 +352,6 @@ class TestStatsPlugin(TestCase, RegexFixer):
                 }
             }
         }
-        print result
         self.assertEquals(result, good)
 
     def test_stats_get_plugin(self):
