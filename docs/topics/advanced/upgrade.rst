@@ -40,7 +40,7 @@ For all upgrades you should use the ``migrate.py`` script at the root level of t
       -ev {1.1}, --end-version {1.1}
                             The desired cluster version
 
-This script **does not** upgrade any of the applications Scrapy Cluster uses, only core files, keys, and folders used by a deployed cluster.
+This script **does not** upgrade any of the actual code or applications Scrapy Cluster uses! Only behind the scenes keys and datastores used by a deployed cluster. You are still responsible for deploying the new Crawlers, Kafka Monitor, and Redis Monitor.
 
 .. warning:: It is **highly** recommended you shut down all three components of your Scrapy Cluster when upgrading. This is due to the volatile and distributed nature of Scrapy Cluster, as there can be race conditions that develop when the cluster is undergoing an upgrade while scrapers are still inserting new Requests, or the Kafka Monitor is still adding Requests to the Redis Queues.
 
