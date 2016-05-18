@@ -19,6 +19,9 @@ class TestLogFactory(TestCase):
                                               dir='./', level='DEBUG',
                                               propagate=True)
 
+    def test_name_as_property(self):
+        self.assertEqual('test', self.logger.name)
+
     def test_debug_log(self):
         self.logger.log_level = 'DEBUG'
         with LogCapture() as l:

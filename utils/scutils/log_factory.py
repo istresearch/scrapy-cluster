@@ -219,6 +219,7 @@ class LogObject(object):
         '''
         self.logger.info(message, extra=extra)
 
+    @property
     def name(self):
         '''
         Returns the logger name
@@ -235,7 +236,7 @@ class LogObject(object):
         if 'timestamp' not in my_copy:
             my_copy['timestamp'] = self._get_time()
         if 'logger' not in my_copy:
-            my_copy['logger'] = self.name()
+            my_copy['logger'] = self.name
         return my_copy
 
     def _get_time(self):

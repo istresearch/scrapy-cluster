@@ -23,7 +23,6 @@ class LoggingBeforePipeline(object):
         self.logger = logger
         self.logger.debug("Setup before pipeline")
 
-
     @classmethod
     def from_settings(cls, settings):
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
@@ -59,13 +58,13 @@ class LoggingBeforePipeline(object):
             del item_copy['links']
             del item_copy['response_headers']
             del item_copy['request_headers']
-            item_copy['logger'] = self.logger.name()
+            item_copy['logger'] = self.logger.name
             item_copy['action'] = 'emit'
             item_copy['spiderid'] = spider.name
             self.logger.info('Scraped page', extra=item_copy)
             return item
         elif isinstance(item):
-            item['logger'] = self.logger.name()
+            item['logger'] = self.logger.name
             self.logger.error('Scraper Retry', extra=item)
             return None
 
@@ -212,7 +211,7 @@ class LoggingAfterPipeline(object):
             del item_copy['status_code']
             del item_copy['status_msg']
             item_copy['action'] = 'ack'
-            item_copy['logger'] = self.logger.name()
+            item_copy['logger'] = self.logger.name
             item_copy['spiderid'] = spider.name
 
             if item['success']:
