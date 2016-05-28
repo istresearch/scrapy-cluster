@@ -52,12 +52,14 @@ class ZookeeperMonitor(KafkaBaseMonitor):
         self.logger.info('Received zookeeper request', extra=extras)
 
         # get the current zk configuration
-        data = ''
+        data = None
         try:
-            data = self.zoo_client.get(self.path)
+            data = self.zoo_client.get(self.path)[0]
         except ZookeeperError:
             self.logger.error("Unable to load Zookeeper config")
-        the_dict = yaml.safe_load(data[0])
+        the_dict = {}
+        if data is not None and len(data) > 0:
+            the_dict = yaml.safe_load(data)
 
         # update the configuration
         if "domains" not in the_dict:
