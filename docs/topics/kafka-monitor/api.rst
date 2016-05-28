@@ -792,3 +792,135 @@ Kafka Response:
                 }
             }
         }
+
+.. _zookeeper_api:
+
+Zookeeper API
+-------------
+
+The Zookeeper API allows you to update and remove cluster wide blacklists or crawl rates for domains. A **domain** based update will apply a cluster wide throttle against the domain, and a **blacklist** update will apply a cluster wide ban on crawling that domain. Any blacklist domain or crawl setting will automatically be applied to all currently running spiders.
+
+**Required:**
+
+- **uuid:** The unique identifier associated with the request. This is useful for tracking purposes by the application who submitted the request.
+
+- **appid:** The application ID that is requesting the action.
+
+- **action:** The type of action you wish to apply. May be any of the following:
+
+    * **domain-update** - Update or add a domain specific throttle (requires both **hits** and **window** below)
+    * **domain-remove** - Removes a cluster wide domain throttle from Zookeeper
+    * **blacklist-update** - Completely ban a domain from being crawled by the cluster
+    * **blacklist-remove** - Remove a crawl ban within the cluster
+
+
+- **domain:** The domain to apply the **action** to. This must be the same as the domain portion of the queue key generated in Redis, like ``ebay.com``.
+
+**Optional:**
+
+- **hits:** The number of hits allowed for the domain within the time window
+
+- **window:** The number of seconds the hits is applied to
+
+- **scale:** A scalar between 0 and 1 to apply the number of hits to the domain.
+
+.. note:: For more information on controlling the Crawlers, please see :ref:`here <general_domain_settings>`
+
+Examples
+^^^^^^^^
+
+**Domain Update**
+
+Zookeeper Request:
+
+    Updates or adds the domain specific configuration
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-update", "domain":"dmoz.org", "hits":60, "window":60, "scale":0.9}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "domain-update",
+            "domain": "dmoz.org",
+            "server_time": 1464402128,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.
+
+**Domain Remove**
+
+Zookeeper Request:
+
+    Removes the domain specific configuration
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-remove", "domain":"dmoz.org"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "domain-remove",
+            "domain": "dmoz.org",
+            "server_time": 1464402146,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.
+
+**Blacklist Update**
+
+Zookeeper Request:
+
+    Updates or adds to the cluster blacklist
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"blacklist-update", "domain":"ebay.com"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "blacklist-update",
+            "domain": "ebay.com",
+            "server_time": 1464402173,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.
+
+**Blacklist Remove**
+
+Zookeeper Request:
+
+    Removes the blacklist from the cluster, allowing it to revert back to normal operation on that domain
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"blacklist-remove", "domain":"ebay.com"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "blacklist-remove",
+            "domain": "ebay.com",
+            "server_time": 1464402160,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.

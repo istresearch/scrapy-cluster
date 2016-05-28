@@ -78,6 +78,7 @@ Default:
         'plugins.scraper_handler.ScraperHandler': 100,
         'plugins.action_handler.ActionHandler': 200,
         'plugins.stats_handler.StatsHandler': 300,
+        'plugins.zookeeper_handler.ZookeeperHandler': 400,
     }
 
 The default plugins loaded for the Kafka Monitor. The syntax for this dictionary of settings is ``'<folder>.<file>.<class_name>': <rank>``. Where lower ranked plugin API's are validated first.

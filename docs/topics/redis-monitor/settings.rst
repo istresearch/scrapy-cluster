@@ -53,6 +53,27 @@ Default: ``False``
 
 Flag to send data to both the firehose and Application ID specific Kafka topics. If set to ``True``, results will be sent to both the ``demo.outbound_firehose`` **and** ``demo.outbound_<appid>`` Kafka topics, where ``<appid>`` is the Application ID used to submit the request. This is useful if you have many applications utilizing your cluster but only would like to listen to results for your specific application.
 
+Zookeeper
+---------
+
+**ZOOKEEPER_ASSIGN_PATH**
+
+Default: ``/scrapy-cluster/crawler/``
+
+The location to store Scrapy Cluster domain specific configuration within Zookeeper. Should be the same as the crawler :ref:`settings <zk_crawler_settings>`.
+
+**ZOOKEEPER_ID**
+
+Default: ``all``
+
+The file identifier to read crawler specific configuration from. This file is located within the ``ZOOKEEPER_ASSIGN_PATH`` folder above. Should be the same as the crawler :ref:`settings <zk_crawler_settings>`.
+
+**ZOOKEEPER_HOSTS**
+
+Default: ``localhost:2181``
+
+The zookeeper host to connect to. Should be the same as the crawler :ref:`settings <zk_crawler_settings>`.
+
 Plugins
 -------
 
@@ -75,6 +96,7 @@ Default:
         'plugins.stop_monitor.StopMonitor': 200,
         'plugins.expire_monitor.ExpireMonitor': 300,
         'plugins.stats_monitor.StatsMonitor': 400,
+        'plugins.zookeeper_monitor.ZookeeperMonitor': 500,
     }
 
 The default plugins loaded for the Redis Monitor. The syntax for this dictionary of settings is ``'<folder>.<file>.<class_name>': <rank>``. Where lower ranked plugin API's are validated first.

@@ -21,8 +21,7 @@
                 "domain-remove",
                 "blacklist-update",
                 "blacklist-remove"
-            ],
-            "default": "update"
+            ]
         },
         "hits": {
             "type": "integer",
