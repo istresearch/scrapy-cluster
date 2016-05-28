@@ -13,12 +13,18 @@ KAFKA_APPID_TOPICS = False
 KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
 KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
 
+# Zookeeper Settings
+ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
+ZOOKEEPER_ID = 'all'
+ZOOKEEPER_HOSTS = 'localhost:2181'
+
 PLUGIN_DIR = "plugins/"
 PLUGINS = {
     'plugins.info_monitor.InfoMonitor': 100,
     'plugins.stop_monitor.StopMonitor': 200,
     'plugins.expire_monitor.ExpireMonitor': 300,
     'plugins.stats_monitor.StatsMonitor': 400,
+    'plugins.zookeeper_monitor.ZookeeperMonitor': 500,
 }
 
 # logging setup
