@@ -25,6 +25,7 @@ PLUGINS = {
     'plugins.scraper_handler.ScraperHandler': 100,
     'plugins.action_handler.ActionHandler': 200,
     'plugins.stats_handler.StatsHandler': 300,
+    'plugins.zookeeper_handler.ZookeeperHandler': 400,
 }
 
 # logging setup

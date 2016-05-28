@@ -15,6 +15,7 @@ from plugins.scraper_handler import ScraperHandler
 from plugins.base_handler import BaseHandler
 from plugins.action_handler import ActionHandler
 from plugins.stats_handler import StatsHandler
+from plugins.zookeeper_handler import ZookeeperHandler
 import copy
 
 from kafka.common import OffsetOutOfRangeError
@@ -95,6 +96,27 @@ class TestPlugins(TestCase):
             "uuid":"abaksdjb",
             "appid":"testapp",
             "stats":"all",
+        }
+
+        try:
+            handler.handle(valid)
+            self.fail("Added not called")
+        except AssertionError as e:
+            self.assertEquals("added", e.message)
+
+    def test_zookeeper_handler(self):
+        handler = ZookeeperHandler()
+        handler.redis_conn = MagicMock()
+        handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
+
+        valid = {
+            "uuid": "abaksdjb",
+            "appid": "testapp",
+            "domain": "ebay.com",
+            "action": "domain-update",
+            "window": 15,
+            "hits":  10,
+            "scale": 1.0
         }
 
         try:
