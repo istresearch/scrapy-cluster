@@ -1,0 +1,49 @@
+{
+    "type": "object",
+    "properties": {
+        "uuid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+        },
+        "appid": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+        },
+        "domain": {
+            "type": "string"
+        },
+        "action": {
+            "type": "string",
+            "enum": [
+                "domain-update",
+                "domain-remove",
+                "blacklist-update",
+                "blacklist-remove"
+            ],
+            "default": "update"
+        },
+        "hits": {
+            "type": "integer",
+            "default": 0
+        },
+        "window": {
+            "type": "integer",
+            "default": 0
+        },
+        "scale": {
+            "type": "float",
+            "min": 0.0,
+            "max": 1.0,
+            "default": 1.0
+        }
+    },
+    "required": [
+        "uuid",
+        "appid",
+        "domain",
+        "action"
+    ],
+    "additionalProperties": false
+}
