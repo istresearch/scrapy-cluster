@@ -28,12 +28,12 @@ class TestKafkaMonitor(TestCase):
 
     def test_load_plugins(self):
         # test loading default plugins
-        assert_keys = [100, 200, 300]
+        assert_keys = [100, 200, 300, 400]
         self.kafka_monitor._load_plugins()
         self.assertEqual(self.kafka_monitor.plugins_dict.keys(), assert_keys)
 
         # test removing a plugin from settings
-        assert_keys = [200,300]
+        assert_keys = [200, 300, 400]
         self.kafka_monitor.settings['PLUGINS'] \
             ['plugins.scraper_handler.ScraperHandler'] = None
         self.kafka_monitor._load_plugins()
@@ -123,7 +123,8 @@ class TestKafkaMonitor(TestCase):
         defaults = [
             'ScraperHandler',
             'ActionHandler',
-            'StatsHandler'
+            'StatsHandler',
+            'ZookeeperHandler'
         ]
 
         self.assertEquals(

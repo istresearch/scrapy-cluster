@@ -15,12 +15,12 @@ class TestRedisMonitor(TestCase):
 
     def test_load_plugins(self):
         # test loading default plugins
-        assert_keys = [100, 200, 300, 400]
+        assert_keys = [100, 200, 300, 400, 500]
         self.redis_monitor._load_plugins()
         self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
 
         # test removing a plugin from settings
-        assert_keys = [100, 300, 400]
+        assert_keys = [100, 300, 400, 500]
         self.redis_monitor.settings['PLUGINS'] \
             ['plugins.stop_monitor.StopMonitor'] = None
         self.redis_monitor._load_plugins()
@@ -97,7 +97,8 @@ class TestRedisMonitor(TestCase):
             'ExpireMonitor',
             'StopMonitor',
             'InfoMonitor',
-            'StatsMonitor'
+            'StatsMonitor',
+            'ZookeeperMonitor'
         ]
 
         self.assertEquals(

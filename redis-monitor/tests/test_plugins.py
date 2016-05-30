@@ -10,6 +10,7 @@ from plugins.expire_monitor import ExpireMonitor
 from plugins.info_monitor import InfoMonitor
 from plugins.stop_monitor import StopMonitor
 from plugins.stats_monitor import StatsMonitor
+from plugins.zookeeper_monitor import ZookeeperMonitor
 
 import ujson
 import re
@@ -372,3 +373,56 @@ class TestStatsPlugin(TestCase, RegexFixer):
             "fail": {"68000": 5, "3600": 5}
         }
         self.assertEquals(result, good)
+
+class TestZookeeperPlugin(TestCase, RegexFixer):
+    def setUp(self):
+        self.plugin = ZookeeperMonitor()
+        self.plugin.redis_conn = MagicMock()
+        self.plugin.logger = MagicMock()
+        self.plugin._send_to_kafka = MagicMock()
+        self.plugin.zoo_client = MagicMock()
+        self.plugin.zoo_client.get = MagicMock()
+        self.plugin.zoo_client.set = MagicMock()
+        self.plugin.path = "/some/path"
+
+    def test_zk_regex(self):
+        regex = self.fix_re(self.plugin.regex)
+        self.assertEquals(re.findall(regex, 'zk:blah1:blah2:bla3'),
+                          ['zk:blah1:blah2:bla3'])
+        self.assertEquals(re.findall(regex, 'zk:blah1:blah2'), [])
+
+    def test_zk_handle_du(self):
+        # domain update
+        s = 'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        val = '{"uuid":"blah123","hits":15,"scale":0.9,"window":60}'
+        expected = 'blacklist: []\ndomains:\n  cnn.com: {hits: 15, scale: 0.9, window: 60}\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        self.plugin.zoo_client.get = MagicMock(return_value=(s,))
+        self.plugin.handle(key="zk:domain-update:cnn.com:testapp", value=val)
+        self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
+
+    def test_zk_handle_dr(self):
+        # domain remove
+        s = 'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        val = '{"uuid":"blah123"}'
+        expected = 'blacklist: []\ndomains: {}\n'
+        self.plugin.zoo_client.get = MagicMock(return_value=(s,))
+        self.plugin.handle(key="zk:domain-remove:dmoz.org:testapp", value=val)
+        self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
+
+    def test_zk_handle_bu(self):
+        # blacklist update
+        s = 'blacklist: []\ndomains: {}\n'
+        val = '{"uuid":"blah123"}'
+        expected = 'blacklist: [bingo.com]\ndomains: {}\n'
+        self.plugin.zoo_client.get = MagicMock(return_value=(s,))
+        self.plugin.handle(key="zk:blacklist-update:bingo.com:testapp", value=val)
+        self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
+
+    def test_zk_handle_br(self):
+        # blacklist remove
+        s = 'blacklist: [bingo.com]\ndomains: {}\n'
+        val = '{"uuid":"blah123"}'
+        expected = 'blacklist: []\ndomains: {}\n'
+        self.plugin.zoo_client.get = MagicMock(return_value=(s,))
+        self.plugin.handle(key="zk:blacklist-remove:bingo.com:testapp", value=val)
+        self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
