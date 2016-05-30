@@ -395,7 +395,7 @@ class TestZookeeperPlugin(TestCase, RegexFixer):
         # domain update
         s = 'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123","hits":15,"scale":0.9,"window":60}'
-        expected = 'blacklist: []\ndomains:\n  cnn.com: {hits: 15, scale: 0.9, window: 60}\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        expected = 'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoz.org:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:domain-update:cnn.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
@@ -413,7 +413,7 @@ class TestZookeeperPlugin(TestCase, RegexFixer):
         # blacklist update
         s = 'blacklist: []\ndomains: {}\n'
         val = '{"uuid":"blah123"}'
-        expected = 'blacklist: [bingo.com]\ndomains: {}\n'
+        expected = 'blacklist:\n- bingo.com\ndomains: {}\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:blacklist-update:bingo.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)

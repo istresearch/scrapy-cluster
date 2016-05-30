@@ -86,7 +86,7 @@ class ZookeeperMonitor(KafkaBaseMonitor):
             self.logger.warn("Unknown command given to Zookeeper Monitor")
 
         # write the configuration back to zookeeper
-        the_string = yaml.dump(the_dict)
+        the_string = yaml.dump(the_dict, default_flow_style=False)
         self.zoo_client.set(self.path, the_string)
 
         # ack the data back to kafka
