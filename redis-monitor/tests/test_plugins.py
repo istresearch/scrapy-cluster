@@ -14,6 +14,7 @@ from plugins.zookeeper_monitor import ZookeeperMonitor
 
 import ujson
 import re
+from kazoo.exceptions import ZookeeperError
 
 
 class TestBasePlugins(TestCase):
@@ -426,3 +427,30 @@ class TestZookeeperPlugin(TestCase, RegexFixer):
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:blacklist-remove:bingo.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
+
+    def test_zk_errors(self):
+        self.plugin._get_current_time = MagicMock(return_value=5)
+        # test error on get
+        self.plugin.zoo_client.get = MagicMock(side_effect=ZookeeperError)
+        val = '{"uuid":"blah123"}'
+        self.plugin.handle(key="zk:blacklist-update:bingo.com:testapp", value=val)
+        expected = {'domain': 'bingo.com',
+                    'server_time': 5,
+                    'uuid': u'blah123',
+                    'appid': 'testapp',
+                    'error': 'Unable to load Zookeeper config',
+                    'action': 'blacklist-update'}
+        self.plugin._send_to_kafka.assert_called_once_with(expected)
+        self.plugin._send_to_kafka.reset_mock()
+
+        # set error on set
+        self.plugin.zoo_client.get.reset_mock()
+        self.plugin.zoo_client.set = MagicMock(side_effect=ZookeeperError)
+        self.plugin.handle(key="zk:blacklist-update:bingo.com:testapp", value=val)
+        expected = {'domain': 'bingo.com',
+                    'server_time': 5,
+                    'uuid': u'blah123',
+                    'appid': 'testapp',
+                    'error': "Unable to store Zookeeper config",
+                    'action': 'blacklist-update'}
+        self.plugin._send_to_kafka.assert_called_once_with(expected)

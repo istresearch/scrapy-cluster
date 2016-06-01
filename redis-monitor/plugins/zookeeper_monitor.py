@@ -56,7 +56,9 @@ class ZookeeperMonitor(KafkaBaseMonitor):
         try:
             data = self.zoo_client.get(self.path)[0]
         except ZookeeperError:
-            self.logger.error("Unable to load Zookeeper config")
+            e = "Unable to load Zookeeper config"
+            self.logger.error(e)
+            master['error'] = e
         the_dict = {}
         if data is not None and len(data) > 0:
             the_dict = yaml.safe_load(data)
@@ -87,7 +89,12 @@ class ZookeeperMonitor(KafkaBaseMonitor):
 
         # write the configuration back to zookeeper
         the_string = yaml.dump(the_dict, default_flow_style=False)
-        self.zoo_client.set(self.path, the_string)
+        try:
+            self.zoo_client.set(self.path, the_string)
+        except ZookeeperError:
+            e = "Unable to store Zookeeper config"
+            self.logger.error(e)
+            master['error'] = e
 
         # ack the data back to kafka
         if self._send_to_kafka(master):
