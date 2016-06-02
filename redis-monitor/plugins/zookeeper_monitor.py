@@ -81,6 +81,7 @@ class ZookeeperMonitor(KafkaBaseMonitor):
                 del the_dict['domains'][dict['domain']]
         elif dict['action'] == 'blacklist-update':
             the_dict['blacklist'].append(dict['domain'])
+            the_dict['blacklist'] = list(set(the_dict['blacklist']))
         elif dict['action'] == 'blacklist-remove':
             if dict['domain'] in the_dict['blacklist']:
                 the_dict['blacklist'].remove(dict['domain'])

@@ -55,6 +55,7 @@ class DistributedScheduler(object):
     assign_path = None  # The base assigned configuration path to read
     zoo_client = None  # The KazooClient to manage the config
     my_assignment = None  # Zookeeper path to read actual yml config
+    black_domains = [] # the domains to ignore thanks to zookeeper config
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
                  hits, window, mod, ip_refresh, add_type, add_ip, ip_regex):
@@ -123,14 +124,17 @@ class DistributedScheduler(object):
         '''
         self.domain_config = {}
         # vetting process to ensure correct configs
-        if loaded_config and 'domains' in loaded_config:
-            for domain in loaded_config['domains']:
-                item = loaded_config['domains'][domain]
-                # check valid
-                if 'window' in item and 'hits' in item:
-                    self.logger.debug("Added domain {dom} to loaded config"
-                                      .format(dom=domain))
-                    self.domain_config[domain] = item
+        if loaded_config:
+            if 'domains' in loaded_config:
+                for domain in loaded_config['domains']:
+                    item = loaded_config['domains'][domain]
+                    # check valid
+                    if 'window' in item and 'hits' in item:
+                        self.logger.debug("Added domain {dom} to loaded config"
+                                          .format(dom=domain))
+                        self.domain_config[domain] = item
+            if 'blacklist' in loaded_config:
+                self.black_domains = loaded_config['blacklist']
 
         self.config_flag = True
 
@@ -427,6 +431,9 @@ class DistributedScheduler(object):
 
         while count <= self.item_retries:
             for key in self.queue_keys:
+                # skip if the whole domain has been blacklisted in zookeeper
+                if key.split(':')[1] in self.black_domains:
+                    continue
                 # the throttled queue only returns an item if it is allowed
                 item = self.queue_dict[key].pop()
 

@@ -98,14 +98,19 @@ class TestDistributedSchedulerFindItem(ThrottleMixin, TestCase):
 
     def test_find_item(self):
         # test finding an item
-        self.scheduler.queue_keys = ["ex.com"]
-        self.scheduler.queue_dict = {"ex.com": MagicMock()}
-        self.scheduler.queue_dict["ex.com"].pop = MagicMock(return_value='item')
+        self.scheduler.queue_keys = ["link:ex.com:queue"]
+        self.scheduler.queue_dict = {"link:ex.com:queue": MagicMock()}
+        self.scheduler.queue_dict["link:ex.com:queue"].pop = MagicMock(return_value='item')
         self.assertEqual(self.scheduler.find_item(), 'item')
 
         # test failed to find an item
-        self.scheduler.queue_dict["ex.com"].pop = MagicMock(return_value=None)
+        self.scheduler.queue_dict["link:ex.com:queue"].pop = MagicMock(return_value=None)
         self.assertEqual(self.scheduler.find_item(), None)
+
+        # test skip due to blacklist
+        self.scheduler.black_domains = ['ex.com']
+        self.scheduler.queue_dict["link:ex.com:queue"].pop = MagicMock(side_effect=Exception("bad"))
+        self.assertEqual(self.scheduler.find_item(), None) # should also not raise exception
 
 
 class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
@@ -202,6 +207,7 @@ class TestDistributedSchedulerLoadDomainConfig(ThrottleMixin, TestCase):
 
     def test_load_domain_config(self):
         good_yaml_dict = {
+            "blacklist": ["blah.com"],
             "domains": {
                 "ex1.com": {
                     "window": 60,
@@ -234,6 +240,7 @@ class TestDistributedSchedulerLoadDomainConfig(ThrottleMixin, TestCase):
         # correctly loaded
         self.scheduler.load_domain_config(good_yaml_dict)
         self.assertEqual(self.scheduler.domain_config, result_yaml)
+        self.assertEqual(self.scheduler.black_domains, ["blah.com"])
 
         # both are not correct yaml setups
         self.scheduler.load_domain_config(bad_yaml_dict1)
