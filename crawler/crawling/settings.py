@@ -44,6 +44,9 @@ DUPEFILTER_TIMEOUT = 600
 # how often to refresh the ip address of the scheduler
 SCHEDULER_IP_REFRESH = 60
 
+# whether to add depth >= 1 blacklisted domain requests back to the queue
+SCHEDULER_BACKLOG_BLACKLIST = True
+
 '''
 ----------------------------------------
 The below parameters configure how spiders throttle themselves across the cluster

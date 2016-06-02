@@ -18,7 +18,7 @@ class ThrottleMixin(object):
     def setUp(self, u, z):
         self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
                                               MagicMock(), 10, 60, False, 60,
-                                              False, False, '.*')
+                                              False, False, '.*', True)
         self.scheduler.open(MagicMock())
         self.scheduler.my_ip = 'ip'
         self.scheduler.spider.name = 'link'
@@ -84,6 +84,31 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
             self.assertFalse(True)
         except KeyError as error:
             self.assertEqual(error.message, "2")
+
+        # test whole domain blacklisted, but we allow it
+        self.scheduler.black_domains = ['ex.com']
+        try:
+            self.scheduler.enqueue_request(self.req)
+            # this should not be reached
+            self.assertFalse(True)
+        except KeyError as error:
+            self.assertEqual(error.message, "2")
+
+        # test dont allow blacklist domains back into the queue
+        self.scheduler.backlog_blacklist = False
+        self.scheduler.enqueue_request(self.req)
+
+        # test allow domain back into queue since not blacklisted
+        self.scheduler.black_domains = ['ex2.com']
+        self.scheduler.backlog_blacklist = False
+        try:
+            self.scheduler.enqueue_request(self.req)
+            self.assertFalse(True)
+        except KeyError as error:
+            self.assertEqual(error.message, "2")
+        # reset
+        self.scheduler.black_domains = []
+        self.scheduler.backlog_blacklist = True
 
         # test request expired
         self.req.meta['expires'] = 1

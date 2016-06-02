@@ -58,7 +58,8 @@ class DistributedScheduler(object):
     black_domains = [] # the domains to ignore thanks to zookeeper config
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
-                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex):
+                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex,
+                 backlog_blacklist):
         '''
         Initialize the scheduler
         '''
@@ -76,6 +77,7 @@ class DistributedScheduler(object):
         self.item_retires = retries
         self.logger = logger
         self.ip_regex = re.compile(ip_regex)
+        self.backlog_blacklist = backlog_blacklist
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
@@ -299,6 +301,7 @@ class DistributedScheduler(object):
         add_ip = settings.get('SCHEDULER_IP_ENABLED', False)
         retries = settings.get('SCHEUDLER_ITEM_RETRIES', 3)
         ip_regex = settings.get('IP_ADDR_REGEX', '.*')
+        backlog_blacklist = settings.get('SCHEDULER_BACKLOG_BLACKLIST', True)
 
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
@@ -319,7 +322,8 @@ class DistributedScheduler(object):
                                          backups=my_backups)
 
         return cls(server, persist, up_int, timeout, retries, logger, hits,
-                   window, mod, ip_refresh, add_type, add_ip, ip_regex)
+                   window, mod, ip_refresh, add_type, add_ip, ip_regex,
+                   backlog_blacklist)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -375,9 +379,16 @@ class DistributedScheduler(object):
 
             curr_time = time.time()
 
+            domain = "{d}.{s}".format(d=ex_res.domain, s=ex_res.suffix)
+
+            # allow only if we want all requests or we want
+            # everything but blacklisted domains
             # insert if crawl never expires (0) or time < expires
-            if req_dict['meta']['expires'] == 0 or \
-                    curr_time < req_dict['meta']['expires']:
+            if (self.backlog_blacklist or
+                    (not self.backlog_blacklist and
+                    domain not in self.black_domains)) and \
+                    (req_dict['meta']['expires'] == 0 or
+                    curr_time < req_dict['meta']['expires']):
                 # we may already have the queue in memory
                 if key in self.queue_keys:
                     self.queue_dict[key].push(req_dict,

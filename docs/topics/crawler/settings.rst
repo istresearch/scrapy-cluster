@@ -95,6 +95,12 @@ How many seconds to wait before checking for new domain queues. This is also dic
 
 .. _c_throttle:
 
+**SCHEDULER_BACKLOG_BLACKLIST**
+
+Default: ``True``
+
+Allows blacklisted domains to be added back to Redis for future crawling. If set to ``False``, domains matching the Zookeeper based domain blacklist will not be added back in to Redis.
+
 Throttle
 --------
 
