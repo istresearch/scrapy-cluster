@@ -320,7 +320,6 @@ class KafkaMonitor:
                     plugin_instance,
                     message_dict)
                 if plugin_return_val is None:
-                    print 'plugin_return_val was None'
                     return
 
             raise ValueError('Did not find schema to validate request')
