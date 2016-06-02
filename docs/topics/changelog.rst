@@ -5,6 +5,11 @@ Change Log
 
 This page serves to document any changes made between releases.
 
+Scrapy Cluster 1.2
+------------------
+
+Date: ??/??/????
+
 Scrapy Cluster 1.1
 ------------------
 

@@ -8,6 +8,8 @@ Scrapy Cluster |version| Documentation
 
 This documentation provides everything you need to know about the `Scrapy <http://scrapy.org/>`_ based distributed crawling project, `Scrapy Cluster <https://github.com/istresearch/scrapy-cluster>`_.
 
+.. warning:: This document may not be up to date with Scrapy Cluster 1.2 capabilities.
+
 .. toctree::
     :hidden:
     :maxdepth: 2

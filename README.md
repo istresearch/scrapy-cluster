@@ -50,7 +50,7 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 
 ## Documentation
 
-Please check out our official [Scrapy Cluster documentation](http://scrapy-cluster.readthedocs.org/) for more details on how everything works!
+Please check out the work in progress [Scrapy Cluster 1.2 documentation](http://scrapy-cluster.readthedocs.org/en/dev/) for more information on how everything works!
 
 ## Branches
 
