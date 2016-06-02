@@ -63,9 +63,8 @@ class LoggingBeforePipeline(object):
             item_copy['spiderid'] = spider.name
             self.logger.info('Scraped page', extra=item_copy)
             return item
-        elif isinstance(item):
-            item['logger'] = self.logger.name
-            self.logger.error('Scraper Retry', extra=item)
+        else:
+            self.logger.warn('Received unknown item')
             return None
 
 
@@ -74,12 +73,11 @@ class KafkaPipeline(object):
     Pushes a serialized item to appropriate Kafka topics.
     '''
 
-    def __init__(self, producer, topic_prefix, aKafka, logger, appids,
+    def __init__(self, producer, topic_prefix, logger, appids,
                  use_base64):
         self.producer = producer
         self.topic_prefix = topic_prefix
         self.topic_list = []
-        self.kafka = aKafka
         self.appid_topics = appids
         self.logger = logger
         self.logger.debug("Setup kafka pipeline")
@@ -121,18 +119,24 @@ class KafkaPipeline(object):
         topic_prefix = settings['KAFKA_TOPIC_PREFIX']
         use_base64 = settings['KAFKA_BASE_64_ENCODE']
 
-        return cls(producer, topic_prefix, producer, logger, appids=my_appids,
+        return cls(producer, topic_prefix, logger, appids=my_appids,
                    use_base64=use_base64)
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls.from_settings(crawler.settings)
 
+    def _get_time():
+        '''
+        Returns an ISO formatted string of the current time
+        '''
+        return dt.datetime.utcnow().isoformat()
+
     def process_item(self, item, spider):
         try:
             self.logger.debug("Processing item in KafkaPipeline")
             datum = dict(item)
-            datum["timestamp"] = dt.datetime.utcnow().isoformat()
+            datum["timestamp"] = self._get_time()
             prefix = self.topic_prefix
 
             try:
