@@ -323,6 +323,8 @@ class KafkaMonitor:
                     print 'plugin_return_val was None'
                     return
 
+            raise ValueError('Did not find schema to validate request')
+
         except ValueError:
             extras = {}
             extras['parsed'] = True
