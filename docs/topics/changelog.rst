@@ -25,12 +25,21 @@ Kafka Monitor Changes
 
 - Updated stats schema to accept ``queue`` statistics request.
 
+- Added plugin API for managing Zookeeper domain configuration
+
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
 - Added ``close()`` method to plugin base class for clean shutdown
 
 - Added queue statistics response object
+
+- Added plugin for executing Zookeeper configuration updates
+
+Crawler Changes
+^^^^^^^^^^^^^^^
+
+- Added ability to control cluster wide blacklists via Zookeeper
 
 Scrapy Cluster 1.1
 ------------------

@@ -42,14 +42,18 @@ Domain Specific Configuration
 
 For crawls where you know a specific target site, you can override the general settings above and fine tune how fast your cluster hits a specific site.
 
-To do this, please look in the **Crawler** folder under ``config/``. You will find two files which allow you to control your cluster's domain specific crawl speed.
+To do this, please use the :ref:`Zookeeper API <zookeeper_api>` to add, remove, and update domain specific blacklists or domain specific throttle configuration. Adding a domain blacklist means that **all spiders** will ignore crawl requests for a domain, whereas a domain specific throttle will force **all spiders** to crawl the domain at that rate (a blacklist will override this).
+
+Through using the Zookeeper API you will build up a configuration file containing your blacklist and domain throttles.
 
 **example.yml**
 
-This is a yaml configuration file for overriding the general settings on a site by site basis. Scrapy Cluster requires the configuration to be like the following:
+This is an example yaml configuration file for overriding the general settings on a site by site basis. Scrapy Cluster requires the configuration to be like the following:
 
 ::
 
+    blacklist:
+        - <domain3.com>
     domains:
         <domain1.com>:
             window: <QUEUE_WINDOW>
@@ -59,9 +63,13 @@ This is a yaml configuration file for overriding the general settings on a site 
             hits: <QUEUE_HITS>
             scale: 0.5
 
-The yaml syntax dictates a series of domains, and within each domain there is required at minimum to be both a ``window`` and ``hits`` value. These correspond to the ``QUEUE_HITS`` and ``QUEUE_WINDOW`` above. There is also an optional value called ``scale``, where you can apply a scale value between 0 and 1 to the domain of choice. The combination of the window, hits, and scale values allows you to fine tune your cluster for targeted domains, but to apply the :ref:`general settings <general_domain_settings>` to any other domain.
+The yaml syntax dictates both a blacklist and a series of domains. The blacklist is a list of domains that all spiders should ignore. Within each domain, there is required at minimum to be both a ``window`` and ``hits`` value. These correspond to the ``QUEUE_HITS`` and ``QUEUE_WINDOW`` above. There is also an optional value called ``scale``, where you can apply a scale value between 0 and 1 to the domain of choice. The combination of the window, hits, and scale values allows you to fine tune your cluster for targeted domains, but to apply the :ref:`general settings <general_domain_settings>` to any other domain.
+
+.. note:: Your crawler cluster does **not** need to be restarted to read their new cluster configuration! The crawlers use the :ref:`Zookeeper Watcher <zookeeper_watcher>` utility class to dynamically receive and update their configuration.
 
 **file_pusher.py**
+
+.. warning:: The ``file_pusher.py`` manual script is deprecated in favor of the :ref:`Zookeeper API <zookeeper_api>`, and the documentation here may be removed in the future
 
 Once you have a desired yaml configuration, the next step is to push it into Zookeeper using the ``file_pusher.py`` script. This is a small script that allows you to deploy crawler configuration to the cluster.
 
@@ -71,8 +79,6 @@ Once you have a desired yaml configuration, the next step is to push it into Zoo
     updating conf file
 
 Here we pushed our example configuration file to the Zookeeper host located at ``scdev``. That is all you need to do in order to update your crawler configuration! You can also use an external application to update your Zookeeper configuration file, as long as it conforms to the required yaml syntax.
-
-.. note:: Your crawler cluster does **not** need to be restarted to read their new cluster configuration! The crawlers use the :ref:`Zookeeper Watcher <zookeeper_watcher>` utility class to dynamically receive and update their configuration.
 
 .. _throttle_mechanism:
 
