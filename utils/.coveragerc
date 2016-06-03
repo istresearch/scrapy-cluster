@@ -27,3 +27,6 @@ omit=
   *version.py
   *decimal.py
   *numbers.py
+  *futur*
+  *lib2to3*
+  *past*

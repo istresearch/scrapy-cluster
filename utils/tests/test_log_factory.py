@@ -6,6 +6,7 @@ from unittest import TestCase
 import os
 import json
 import copy
+import six
 
 from mock import MagicMock
 from testfixtures import LogCapture
@@ -89,7 +90,7 @@ class TestLogJSONFile(TestCase):
         with open(self.test_file + '.log', 'r') as f:
             read_data = f.read()
             the_dict = json.loads(read_data)
-            self.assertItemsEqual(the_dict, {
+            six.assertCountEqual(self, the_dict, {
                 "message": "Test log",
                 "level": "INFO",
                 "logger":"test",

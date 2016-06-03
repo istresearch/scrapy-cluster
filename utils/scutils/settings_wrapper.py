@@ -18,6 +18,9 @@ class SettingsWrapper(object):
         '__package__',
         '__doc__',
         '__name__',
+        '__spec__',
+        '__loader__',
+        '__cached__',
     ]
 
     def _init__(self):
@@ -113,6 +116,7 @@ class SettingsWrapper(object):
         '''
         the_dict = {}
         set = dir(setting)
+        print(set)
         for key in set:
             if key in self.ignore:
                 continue
