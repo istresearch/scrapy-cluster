@@ -126,7 +126,7 @@ class KafkaPipeline(object):
     def from_crawler(cls, crawler):
         return cls.from_settings(crawler.settings)
 
-    def _get_time():
+    def _get_time(self):
         '''
         Returns an ISO formatted string of the current time
         '''
