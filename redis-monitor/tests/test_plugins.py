@@ -1,6 +1,7 @@
 '''
 Offline tests
 '''
+from builtins import object
 
 from unittest import TestCase
 from mock import MagicMock

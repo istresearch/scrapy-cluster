@@ -1,4 +1,5 @@
-class BaseHandler():
+from builtins import object
+class BaseHandler(object):
     '''
     Base validator for handling incoming requests from kafka
     '''

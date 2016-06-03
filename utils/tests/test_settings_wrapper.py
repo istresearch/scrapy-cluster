@@ -1,6 +1,7 @@
 '''
 Offline utility tests
 '''
+from __future__ import print_function
 from unittest import TestCase
 from scutils.settings_wrapper import SettingsWrapper
 
@@ -20,7 +21,7 @@ class TestSettingsWrapper(TestCase):
         self.assertEqual(sets, {})
 
     def test_load_default(self):
-        print "-------------------------"
+        print("-------------------------")
         self.wrapper._load_defaults("default_settings.py")
         sets = self.wrapper.settings()
         self.assertEqual(sets, self.defaults)

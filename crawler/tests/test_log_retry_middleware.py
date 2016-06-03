@@ -26,7 +26,7 @@ class TestLogRetryMiddlewareStats(TestCase):
 
         # test nothing
         self.lrm._setup_stats_status_codes()
-        self.assertEquals(self.lrm.stats_dict.keys(), ['lifetime'])
+        self.assertEquals(list(self.lrm.stats_dict.keys()), ['lifetime'])
 
         # test good/bad rolling stats
         self.lrm.stats_dict = {}

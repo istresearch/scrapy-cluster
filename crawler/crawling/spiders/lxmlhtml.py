@@ -30,7 +30,7 @@ class CustomParser(LxmlParserLinkExtractor):
                 url = self.process_attr(attr_val)
                 if url is None:
                     continue
-            if isinstance(url, unicode):
+            if isinstance(url, str):
                 # add 'ignore' to encoding errors
                 url = url.encode(response_encoding, 'ignore')
             # to fix relative links after process_value

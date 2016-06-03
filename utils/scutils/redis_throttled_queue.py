@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import object
+from past.utils import old_div
 import time
 
 from redis.exceptions import WatchError
@@ -45,7 +49,7 @@ class RedisThrottledQueue(object):
 
         # moderation is useless when only grabbing 1 item in x secs
         if moderate and throttleLimit != 1:
-            self.moderation = self.window / self.limit
+            self.moderation = old_div(self.window, self.limit)
             # used for communicating throttle moderation across queue instances
             if modName is None:
                 self.moderate_key = self.queue.key + self.time_append

@@ -1,6 +1,10 @@
 '''
 Online link spider test
 '''
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import next
 import unittest
 from unittest import TestCase
 import time
@@ -46,7 +50,7 @@ class TestLinkSpider(TestCase):
         try:
             self.redis_conn.info()
         except ConnectionError:
-            print "Could not connect to Redis"
+            print("Could not connect to Redis")
             # plugin is essential to functionality
             sys.exit(1)
 

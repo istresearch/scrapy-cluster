@@ -1,4 +1,5 @@
-from base_handler import BaseHandler
+from __future__ import absolute_import
+from .base_handler import BaseHandler
 import tldextract
 import redis
 import sys

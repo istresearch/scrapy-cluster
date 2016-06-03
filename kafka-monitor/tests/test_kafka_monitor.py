@@ -1,6 +1,7 @@
 '''
 Offline tests
 '''
+from builtins import object
 
 from unittest import TestCase
 from mock import MagicMock
@@ -30,14 +31,14 @@ class TestKafkaMonitor(TestCase):
         # test loading default plugins
         assert_keys = [100, 200, 300, 400]
         self.kafka_monitor._load_plugins()
-        self.assertEqual(self.kafka_monitor.plugins_dict.keys(), assert_keys)
+        self.assertEqual(list(self.kafka_monitor.plugins_dict.keys()), assert_keys)
 
         # test removing a plugin from settings
         assert_keys = [200, 300, 400]
         self.kafka_monitor.settings['PLUGINS'] \
             ['plugins.scraper_handler.ScraperHandler'] = None
         self.kafka_monitor._load_plugins()
-        self.assertEqual(self.kafka_monitor.plugins_dict.keys(), assert_keys)
+        self.assertEqual(list(self.kafka_monitor.plugins_dict.keys()), assert_keys)
         self.kafka_monitor.settings['PLUGINS'] \
             ['plugins.scraper_handler.ScraperHandler'] = 100
 
@@ -61,8 +62,8 @@ class TestKafkaMonitor(TestCase):
         self.kafka_monitor.settings['STATS_TIMES'] = []
         self.kafka_monitor._setup_stats_total(MagicMock())
 
-        self.assertEquals(self.kafka_monitor.stats_dict['total'].keys(), ['lifetime'])
-        self.assertEquals(self.kafka_monitor.stats_dict['fail'].keys(), ['lifetime'])
+        self.assertEquals(list(self.kafka_monitor.stats_dict['total'].keys()), ['lifetime'])
+        self.assertEquals(list(self.kafka_monitor.stats_dict['fail'].keys()), ['lifetime'])
 
         # test good/bad rolling stats
         self.kafka_monitor.stats_dict = {}
@@ -134,7 +135,7 @@ class TestKafkaMonitor(TestCase):
         for key in self.kafka_monitor.plugins_dict:
             plugin_name = self.kafka_monitor.plugins_dict[key]['instance'].__class__.__name__
             self.assertEquals(
-                self.kafka_monitor.stats_dict['plugins'][plugin_name].keys(),
+                list(self.kafka_monitor.stats_dict['plugins'][plugin_name].keys()),
                 ['lifetime'])
 
         # test good/bad rolling stats
@@ -192,7 +193,7 @@ class TestKafkaMonitor(TestCase):
         message_string = "{\"sdasdf   sd}"
 
         # fake class so we can use dot notation
-        class a:
+        class a(object):
             pass
 
         m = a()
@@ -209,8 +210,8 @@ class TestKafkaMonitor(TestCase):
         # set up to process messages
         self.kafka_monitor._load_plugins()
         self.kafka_monitor.validator = self.kafka_monitor.extend_with_default(Draft4Validator)
-        self.kafka_monitor.plugins_dict.items()[0][1]['instance'].handle = MagicMock(side_effect=AssertionError("scrape"))
-        self.kafka_monitor.plugins_dict.items()[1][1]['instance'].handle = MagicMock(side_effect=AssertionError("action"))
+        list(self.kafka_monitor.plugins_dict.items())[0][1]['instance'].handle = MagicMock(side_effect=AssertionError("scrape"))
+        list(self.kafka_monitor.plugins_dict.items())[1][1]['instance'].handle = MagicMock(side_effect=AssertionError("action"))
 
         #  test that handler function is called for the scraper
         message_string = "{\"url\":\"www.stuff.com\",\"crawlid\":\"1234\"," \

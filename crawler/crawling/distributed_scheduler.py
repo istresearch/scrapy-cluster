@@ -1,3 +1,9 @@
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
 
@@ -5,7 +11,7 @@ import redis
 import random
 import time
 import tldextract
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 import yaml
 import sys
@@ -14,7 +20,7 @@ import socket
 import re
 import ujson
 
-from redis_dupefilter import RFPDupeFilter
+from .redis_dupefilter import RFPDupeFilter
 from kazoo.handlers.threading import KazooTimeoutError
 
 from scutils.zookeeper_watcher import ZookeeperWatcher
@@ -256,7 +262,7 @@ class DistributedScheduler(object):
         self.old_ip = self.my_ip
         self.my_ip = '127.0.0.1'
         try:
-            obj = urllib2.urlopen(settings.get('PUBLIC_IP_URL',
+            obj = urllib.request.urlopen(settings.get('PUBLIC_IP_URL',
                                   'http://ip.42.pl/raw'))
             results = self.ip_regex.findall(obj.read())
             if len(results) > 0:
@@ -428,8 +434,8 @@ class DistributedScheduler(object):
             'priority': request.priority,
             'dont_filter': request.dont_filter,
              #  callback/errback are assumed to be a bound instance of the spider
-            'callback': None if request.callback is None else request.callback.func_name,
-            'errback': None if request.errback is None else request.errback.func_name,
+            'callback': None if request.callback is None else request.callback.__name__,
+            'errback': None if request.errback is None else request.errback.__name__,
         }
         return req_dict
 
@@ -494,7 +500,7 @@ class DistributedScheduler(object):
             if "retry_times" not in item:
                 item['retry_times'] = 0
 
-            for key in item.keys():
+            for key in list(item.keys()):
                 req.meta[key] = item[key]
 
             # extra check to add items to request

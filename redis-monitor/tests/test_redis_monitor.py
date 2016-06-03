@@ -17,14 +17,14 @@ class TestRedisMonitor(TestCase):
         # test loading default plugins
         assert_keys = [100, 200, 300, 400, 500]
         self.redis_monitor._load_plugins()
-        self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
+        self.assertEqual(list(self.redis_monitor.plugins_dict.keys()), assert_keys)
 
         # test removing a plugin from settings
         assert_keys = [100, 300, 400, 500]
         self.redis_monitor.settings['PLUGINS'] \
             ['plugins.stop_monitor.StopMonitor'] = None
         self.redis_monitor._load_plugins()
-        self.assertEqual(self.redis_monitor.plugins_dict.keys(), assert_keys)
+        self.assertEqual(list(self.redis_monitor.plugins_dict.keys()), assert_keys)
         self.redis_monitor.settings['PLUGINS'] \
             ['plugins.stop_monitor.StopMonitor'] = 200
 
@@ -44,9 +44,9 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor.stats_dict = {}
 
         # BaseExceptions are never raised normally
-        self.redis_monitor.plugins_dict.items()[0][1]['instance'].handle = MagicMock(side_effect=BaseException("info"))
-        self.redis_monitor.plugins_dict.items()[1][1]['instance'].handle = MagicMock(side_effect=BaseException("stop"))
-        self.redis_monitor.plugins_dict.items()[2][1]['instance'].handle = MagicMock(side_effect=BaseException("expire"))
+        list(self.redis_monitor.plugins_dict.items())[0][1]['instance'].handle = MagicMock(side_effect=BaseException("info"))
+        list(self.redis_monitor.plugins_dict.items())[1][1]['instance'].handle = MagicMock(side_effect=BaseException("stop"))
+        list(self.redis_monitor.plugins_dict.items())[2][1]['instance'].handle = MagicMock(side_effect=BaseException("expire"))
         self.redis_monitor.redis_conn = MagicMock()
         self.redis_monitor.redis_conn.scan_iter = MagicMock()
         # lets just assume the regex worked
@@ -54,7 +54,7 @@ class TestRedisMonitor(TestCase):
 
         # info
         try:
-            plugin = self.redis_monitor.plugins_dict.items()[0][1]
+            plugin = list(self.redis_monitor.plugins_dict.items())[0][1]
             self.redis_monitor._process_plugin(plugin)
             self.fail("Info not called")
         except BaseException as e:
@@ -62,7 +62,7 @@ class TestRedisMonitor(TestCase):
 
         # action
         try:
-            plugin = self.redis_monitor.plugins_dict.items()[1][1]
+            plugin = list(self.redis_monitor.plugins_dict.items())[1][1]
             self.redis_monitor._process_plugin(plugin)
             self.fail("Stop not called")
         except BaseException as e:
@@ -70,7 +70,7 @@ class TestRedisMonitor(TestCase):
 
         # expire
         try:
-            plugin = self.redis_monitor.plugins_dict.items()[2][1]
+            plugin = list(self.redis_monitor.plugins_dict.items())[2][1]
             self.redis_monitor._process_plugin(plugin)
             self.fail("Expire not called")
         except BaseException as e:
@@ -78,8 +78,8 @@ class TestRedisMonitor(TestCase):
 
         # test that an exception within a handle method is caught
         try:
-            self.redis_monitor.plugins_dict.items()[0][1]['instance'].handle = MagicMock(side_effect=Exception("normal"))
-            plugin = self.redis_monitor.plugins_dict.items()[0][1]
+            list(self.redis_monitor.plugins_dict.items())[0][1]['instance'].handle = MagicMock(side_effect=Exception("normal"))
+            plugin = list(self.redis_monitor.plugins_dict.items())[0][1]
             self.redis_monitor._process_plugin(plugin)
         except Exception as e:
             self.fail("Normal Exception not handled")
@@ -108,7 +108,7 @@ class TestRedisMonitor(TestCase):
         for key in self.redis_monitor.plugins_dict:
             plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
             self.assertEquals(
-                self.redis_monitor.stats_dict['plugins'][plugin_name].keys(),
+                list(self.redis_monitor.stats_dict['plugins'][plugin_name].keys()),
                 ['lifetime'])
 
         # test good/bad rolling stats

@@ -1,3 +1,4 @@
+from builtins import object
 from unittest import TestCase
 import mock
 from mock import MagicMock
@@ -8,7 +9,7 @@ from copy import deepcopy
 from scrapy import Item
 
 
-class ItemMixin():
+class ItemMixin(object):
 
     def _get_item(self):
         item = RawResponseItem()

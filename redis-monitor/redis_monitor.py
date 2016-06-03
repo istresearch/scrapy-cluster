@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import object
+from past.utils import old_div
 import redis
 import sys
 import time
@@ -13,7 +17,7 @@ from scutils.stats_collector import StatsCollector
 from redis.exceptions import ConnectionError
 
 
-class RedisMonitor:
+class RedisMonitor(object):
 
     def __init__(self, settings_name, unit_test=False):
         '''
@@ -105,7 +109,7 @@ class RedisMonitor:
 
             self.plugins_dict[plugins[key]] = mini
 
-        self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
+        self.plugins_dict = OrderedDict(sorted(list(self.plugins_dict.items()),
                                                key=lambda t: t[0]))
 
     def run(self):
@@ -126,7 +130,7 @@ class RedisMonitor:
                 self._process_plugin(obj)
 
             if self.settings['STATS_DUMP'] != 0:
-                new_time = int(time.time() / self.settings['STATS_DUMP'])
+                new_time = int(old_div(time.time(), self.settings['STATS_DUMP']))
                 # only log every X seconds
                 if new_time != old_time:
                     self._dump_stats()

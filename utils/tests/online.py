@@ -1,6 +1,10 @@
 '''
 Online utils test
 '''
+from __future__ import division
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import unittest
 from unittest import TestCase
 from mock import MagicMock
@@ -282,7 +286,7 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
     tolerance = 2   # percent
 
     def get_percent_diff(self, value, actual):
-        return abs(actual - value) / ((value + actual) / 2.0) * 100.0
+        return abs(actual - value) / (old_div((value + actual), 2.0)) * 100.0
 
     def test_hll_counter(self):
         counter = HyperLogLogCounter(key='test_key')

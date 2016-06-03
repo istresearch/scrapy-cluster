@@ -1,4 +1,5 @@
-from stop_monitor import StopMonitor
+from __future__ import absolute_import
+from .stop_monitor import StopMonitor
 
 
 class ExpireMonitor(StopMonitor):

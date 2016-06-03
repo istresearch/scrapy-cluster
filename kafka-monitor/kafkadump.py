@@ -1,4 +1,6 @@
 from __future__ import print_function
+from __future__ import division
+from past.utils import old_div
 from kafka import KafkaClient,KafkaConsumer
 from kafka.common import NoBrokersAvailable
 
@@ -82,7 +84,7 @@ def main():
             sys.exit(1)
         logger.debug('Running list command')
         print("Topics:")
-        for topic in kafka.topic_partitions.keys():
+        for topic in list(kafka.topic_partitions.keys()):
             print("-", topic)
         kafka.close()
         return 0
@@ -144,7 +146,7 @@ def main():
                 logger.error(traceback.print_exc())
                 break
 
-        total_mbs = float(total_bytes) / (1024*1024)
+        total_mbs = old_div(float(total_bytes), (1024*1024))
         if item is not None:
             print("Last item:")
             print(json.dumps(item, indent=4))
