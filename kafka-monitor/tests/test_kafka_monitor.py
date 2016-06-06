@@ -74,16 +74,16 @@ class TestKafkaMonitor(TestCase):
         ]
         good = [
             'lifetime',  # for totals, not DUMB
-            900,
-            3600,
+            '900',
+            '3600',
         ]
 
         self.kafka_monitor._setup_stats_total(MagicMock())
         self.assertEquals(
-            sorted(self.kafka_monitor.stats_dict['total'].keys()),
+            sorted([str(x) for x in self.kafka_monitor.stats_dict['total'].keys()]),
             sorted(good))
         self.assertEquals(
-            sorted(self.kafka_monitor.stats_dict['fail'].keys()),
+            sorted([str(x) for x in self.kafka_monitor.stats_dict['fail'].keys()]),
             sorted(good))
 
         k1 = 'stats:kafka-monitor:total'
@@ -129,7 +129,7 @@ class TestKafkaMonitor(TestCase):
         ]
 
         self.assertEquals(
-            sorted(self.kafka_monitor.stats_dict['plugins'].keys()),
+            sorted(list(self.kafka_monitor.stats_dict['plugins'].keys())),
             sorted(defaults))
 
         for key in self.kafka_monitor.plugins_dict:
@@ -147,8 +147,8 @@ class TestKafkaMonitor(TestCase):
         ]
         good = [
             'lifetime',  # for totals, not DUMB
-            900,
-            3600,
+            '900',
+            '3600',
         ]
 
         self.kafka_monitor._setup_stats_plugins(MagicMock())
@@ -160,7 +160,7 @@ class TestKafkaMonitor(TestCase):
         for key in self.kafka_monitor.plugins_dict:
             plugin_name = self.kafka_monitor.plugins_dict[key]['instance'].__class__.__name__
             self.assertEquals(
-                sorted(self.kafka_monitor.stats_dict['plugins'][plugin_name].keys()),
+                sorted([str(x) for x in self.kafka_monitor.stats_dict['plugins'][plugin_name].keys()]),
                 sorted(good))
 
         for plugin_key in self.kafka_monitor.stats_dict['plugins']:
@@ -218,20 +218,23 @@ class TestKafkaMonitor(TestCase):
             "\"appid\":\"testapp\"}"
         m.value = message_string
         messages = [m]
+        self.kafka_monitor.consumer.__iter__.return_value = messages
         try:
             self.kafka_monitor._process_messages()
             self.fail("Scrape not called")
         except AssertionError as e:
-            self.assertEquals("scrape", e.message)
+            self.assertEquals("scrape", str(e))
 
         # test that handler function is called for the actions
         message_string = "{\"uuid\":\"blah\",\"crawlid\":\"1234\"," \
             "\"appid\":\"testapp\",\"action\":\"info\",\"spiderid\":\"link\"}"
+
         m.value = message_string
         messages = [m]
+        self.kafka_monitor.consumer.__iter__.return_value = messages
         try:
             self.kafka_monitor._process_messages()
             self.fail("Action not called")
         except AssertionError as e:
-            self.assertEquals("action", e.message)
+            self.assertEquals("action", str(e))
 

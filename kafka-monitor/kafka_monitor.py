@@ -17,6 +17,7 @@ import json
 import sys
 import argparse
 import redis
+import copy
 
 from redis.exceptions import ConnectionError
 
@@ -80,7 +81,7 @@ class KafkaMonitor(object):
             mini = {}
             mini['instance'] = instance
             mini['schema'] = the_schema
-
+            self.logger.debug("Successfully loaded plugin {cls}".format(cls=key))
             self.plugins_dict[plugins[key]] = mini
 
         self.plugins_dict = OrderedDict(sorted(list(self.plugins_dict.items()),
@@ -265,9 +266,11 @@ class KafkaMonitor(object):
                     break
                 try:
                     self._increment_total_stat(message.value)
-                    the_dict = json.loads(message.value)
+                    loaded_dict = json.loads(message.value)
                     found_plugin = False
                     for key in self.plugins_dict:
+                        # to prevent reference modification
+                        the_dict = copy.deepcopy(loaded_dict)
                         obj = self.plugins_dict[key]
                         instance = obj['instance']
                         schema = obj['schema']

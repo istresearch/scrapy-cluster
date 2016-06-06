@@ -116,7 +116,6 @@ class SettingsWrapper(object):
         '''
         the_dict = {}
         set = dir(setting)
-        print(set)
         for key in set:
             if key in self.ignore:
                 continue
