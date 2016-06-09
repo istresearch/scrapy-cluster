@@ -58,7 +58,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_plugin(plugin)
             self.fail("Info not called")
         except BaseException as e:
-            self.assertEquals("info", e.message)
+            self.assertEquals("info", str(e))
 
         # action
         try:
@@ -66,7 +66,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_plugin(plugin)
             self.fail("Stop not called")
         except BaseException as e:
-            self.assertEquals("stop", e.message)
+            self.assertEquals("stop", str(e))
 
         # expire
         try:
@@ -74,7 +74,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_plugin(plugin)
             self.fail("Expire not called")
         except BaseException as e:
-            self.assertEquals("expire", e.message)
+            self.assertEquals("expire", str(e))
 
         # test that an exception within a handle method is caught
         try:
@@ -120,8 +120,8 @@ class TestRedisMonitor(TestCase):
         ]
         good = [
             'lifetime', # for totals, not DUMB
-            900,
-            3600,
+            '900',
+            '3600',
         ]
 
         self.redis_monitor._setup_stats_plugins()
@@ -133,7 +133,7 @@ class TestRedisMonitor(TestCase):
         for key in self.redis_monitor.plugins_dict:
             plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
             self.assertEquals(
-                sorted(self.redis_monitor.stats_dict['plugins'][plugin_name].keys()),
+                sorted([str(x) for x in self.redis_monitor.stats_dict['plugins'][plugin_name].keys()]),
                 sorted(good))
 
         for plugin_key in self.redis_monitor.stats_dict['plugins']:
@@ -159,7 +159,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._main_loop()
             self.fail("_process_plugin not called")
         except BaseException as e:
-            self.assertEquals("normal", e.message)
+            self.assertEquals("normal", str(e))
 
     def test_precondition(self):
         self.redis_monitor.stats_dict = {}
@@ -178,4 +178,4 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_key_val(instance, key, value)
             self.fail('handler not called')
         except BaseException as e:
-            self.assertEquals('handler', e.message)
+            self.assertEquals('handler', str(e))
