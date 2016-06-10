@@ -6,6 +6,7 @@ from past.builtins import basestring
 from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
+from scrapy.utils.python import to_unicode
 
 import redis
 import random
@@ -424,7 +425,7 @@ class DistributedScheduler(object):
         '''
         req_dict = {
             # urls should be safe (safe_string_url)
-            'url': request.url.decode('ascii'),
+            'url': to_unicode(request.url),
             'method': request.method,
             'headers': dict(request.headers),
             'body': request.body,

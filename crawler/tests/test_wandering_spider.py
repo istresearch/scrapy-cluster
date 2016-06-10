@@ -39,7 +39,8 @@ class TestWanderingSpider(TestCase):
                 text, expected_raw, expected_requests):
         request = Request(url='http://www.drudgereport.com',
                           meta=meta_object)
-        response = HtmlResponse('drudge.url', body=text, request=request)
+        response = HtmlResponse('drudge.url', body=text, request=request,
+                                encoding='utf8')
 
         raw_item_count = 0
         request_count = 0

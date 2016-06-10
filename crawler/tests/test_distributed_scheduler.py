@@ -68,23 +68,23 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=False)
         self.scheduler.queue_dict['link:ex.com:queue'] = MagicMock()
         self.scheduler.queue_dict['link:ex.com:queue'].push = MagicMock(
-                                                    side_effect=KeyError("1"))
+                                                    side_effect=Exception("1"))
         try:
             self.scheduler.enqueue_request(self.req)
             # this should not be reached
             self.assertFalse(True)
-        except KeyError as error:
-            self.assertEqual(error.message, "1")
+        except Exception as e:
+            self.assertEqual(str(e), "1")
 
         # test request not expiring and queue not seen
-        self.scheduler.redis_conn.zadd = MagicMock(side_effect=KeyError("2"))
+        self.scheduler.redis_conn.zadd = MagicMock(side_effect=Exception("2"))
         self.scheduler.queue_keys = []
         try:
             self.scheduler.enqueue_request(self.req)
             # this should not be reached
             self.assertFalse(True)
-        except KeyError as error:
-            self.assertEqual(error.message, "2")
+        except Exception as e:
+            self.assertEqual(str(e), "2")
 
         # test whole domain blacklisted, but we allow it
         self.scheduler.black_domains = ['ex.com']
@@ -92,8 +92,8 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
             self.scheduler.enqueue_request(self.req)
             # this should not be reached
             self.assertFalse(True)
-        except KeyError as error:
-            self.assertEqual(error.message, "2")
+        except Exception as e:
+            self.assertEqual(str(e), "2")
 
         # test dont allow blacklist domains back into the queue
         self.scheduler.backlog_blacklist = False
@@ -105,8 +105,8 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         try:
             self.scheduler.enqueue_request(self.req)
             self.assertFalse(True)
-        except KeyError as error:
-            self.assertEqual(error.message, "2")
+        except Exception as e:
+            self.assertEqual(str(e), "2")
         # reset
         self.scheduler.black_domains = []
         self.scheduler.backlog_blacklist = True
@@ -148,25 +148,26 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         # test update queues
         self.scheduler.update_time = 1
         self.scheduler.update_interval = 2
-        self.scheduler.create_queues = MagicMock(side_effect=KeyError("q"))
+        self.scheduler.create_queues = MagicMock(side_effect=Exception("q"))
         try:
             self.scheduler.next_request()
             # this should not be reached
             self.assertFalse(True)
-        except KeyError as error:
-            self.assertEqual(error.message, "q")
+        except Exception as e:
+            print("str", e, e == "q", e == "'q'", e == 'q')
+            self.assertEqual(str(e), "q")
 
         # test update ip address
         self.scheduler.update_time = 4
-        self.scheduler.update_ipaddress = MagicMock(side_effect=KeyError("ip"))
+        self.scheduler.update_ipaddress = MagicMock(side_effect=Exception("ip"))
         self.scheduler.update_ip_time = 1
         self.scheduler.ip_update_interval = 2
         try:
             self.scheduler.next_request()
             # this should not be reached
             self.assertFalse(True)
-        except KeyError as error:
-            self.assertEqual(error.message, "ip")
+        except Exception as e:
+            self.assertEqual(str(e), "ip")
 
         # test got item
         self.scheduler.find_item = MagicMock(
@@ -207,26 +208,26 @@ class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
         try:
             self.scheduler.change_config(good_string)
             self.assertFalse(True)
-        except Exception as error:
-            self.assertEqual(error.message, "1")
+        except Exception as e:
+            self.assertEqual(str(e), "1")
 
         try:
             self.scheduler.change_config(bad_string1)
             self.assertFalse(True)
-        except Exception as error:
-            self.assertEqual(error.message, "1")
+        except Exception as e:
+            self.assertEqual(str(e), "1")
 
         try:
             self.scheduler.change_config(bad_string2)
             self.assertFalse(True)
-        except Exception as error:
-            self.assertEqual(error.message, "2")
+        except Exception as e:
+            self.assertEqual(str(e), "2")
 
         try:
             self.scheduler.change_config(bad_string3)
             self.assertFalse(True)
-        except Exception as error:
-            self.assertEqual(error.message, "2")
+        except Exception as e:
+            self.assertEqual(str(e), "2")
 
 
 class TestDistributedSchedulerLoadDomainConfig(ThrottleMixin, TestCase):
