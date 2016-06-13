@@ -21,7 +21,8 @@ install_requires = [
     'kazoo>=2.2.1',
     'mock==2.0.0',
     'testfixtures==4.10.0',
-    'ujson==1.35'
+    'ujson==1.35',
+    'future==0.15.2'
 ]
 
 lint_requires = [
