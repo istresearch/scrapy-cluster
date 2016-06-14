@@ -9,6 +9,7 @@ import unittest
 from unittest import TestCase
 from mock import MagicMock
 import time
+import sys
 
 import redis
 import argparse
@@ -410,4 +411,9 @@ if __name__ == '__main__':
     suite.addTest(TestStatsBitMapCounter('test_roll_bitmap_counter',
                   redis_conn))
 
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+
+    if len(result.errors) > 0 or len(result.failures) > 0:
+        sys.exit(1)
+    else:
+        sys.exit(0)

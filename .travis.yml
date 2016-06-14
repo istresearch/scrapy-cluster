@@ -8,16 +8,15 @@ python: '2.7'
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -qq python-apt
-install:
-- pip install ansible
 script:
-- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
-- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
-  --become
-- virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
+- virtualenv ~/sc -p ~/virtualenv/python2.7/bin/python; source ~/sc/bin/activate; pip install -r requirements.txt
 - find . -name "*.pyc" -type f -delete
 - cd utils; python setup.py install; cd ../
 - ./run_offline_tests.sh
+- pip install ansible
+- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
+- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
+  --become
 - ./run_online_tests.sh
 notifications:
   slack:
