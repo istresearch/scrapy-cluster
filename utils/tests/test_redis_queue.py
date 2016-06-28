@@ -1,9 +1,10 @@
+from builtins import object
 from unittest import TestCase
 import json
 import copy
 import pickle
 import ujson
-import json
+import sys
 
 from mock import MagicMock
 from scutils.redis_queue import Base, RedisQueue, RedisPriorityQueue, RedisStack
@@ -27,14 +28,18 @@ class TestBase(TestCase):
 
     def test_encode(self):
         q = Base(MagicMock(), 'key', pickle)
-        self.assertEquals(q._encode_item('cool'), "\x80\x02U\x04coolq\x00.")
+        # python pickling is different between versions
+        if sys.version_info[0] < 3:
+            self.assertEquals(q._encode_item('cool'), b"\x80\x02U\x04coolq\x00.")
+        else:
+            self.assertEquals(q._encode_item('cool'), b'\x80\x04\x95\x08\x00\x00\x00\x00\x00\x00\x00\x8c\x04cool\x94.')
 
         q2 = Base(MagicMock(), 'key', ujson)
         self.assertEquals(q2._encode_item('cool2'), '"cool2"')
 
     def test_decode(self):
         q = Base(MagicMock(), 'key', pickle)
-        self.assertEquals(q._decode_item("\x80\x02U\x04coolq\x00."), 'cool')
+        self.assertEquals(q._decode_item(b"\x80\x02U\x04coolq\x00."), 'cool')
 
         q2 = Base(MagicMock(), 'key', ujson)
         self.assertEquals(q2._decode_item('"cool2"'), 'cool2')

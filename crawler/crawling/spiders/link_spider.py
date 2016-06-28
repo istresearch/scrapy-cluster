@@ -1,11 +1,12 @@
+from __future__ import absolute_import
 import scrapy
 
 from scrapy.http import Request
-from lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
+from .lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
-from redis_spider import RedisSpider
+from .redis_spider import RedisSpider
 
 
 class LinkSpider(RedisSpider):
@@ -63,7 +64,7 @@ class LinkSpider(RedisSpider):
                 req = Request(link.url, callback=self.parse)
 
                 # pass along all known meta fields
-                for key in response.meta.keys():
+                for key in list(response.meta.keys()):
                     req.meta[key] = response.meta[key]
 
                 req.meta['priority'] = response.meta['priority'] - 10

@@ -1,3 +1,4 @@
+from builtins import str
 from scrapy import signals
 from scrapy.exceptions import DontCloseSpider
 from scrapy.spiders import Spider
@@ -141,7 +142,7 @@ class RedisSpider(Spider):
 
         header_dict = {}
         # begin reconstructing headers from scratch...
-        for key in response.headers.keys():
+        for key in list(response.headers.keys()):
             key_item_list = []
             key_list = response.headers.getlist(key)
             for item in key_list:

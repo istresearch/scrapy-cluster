@@ -1,8 +1,10 @@
 '''
 Offline utility tests
 '''
+from __future__ import print_function
 from unittest import TestCase
 from scutils.settings_wrapper import SettingsWrapper
+import six
 
 
 class TestSettingsWrapper(TestCase):
@@ -20,7 +22,6 @@ class TestSettingsWrapper(TestCase):
         self.assertEqual(sets, {})
 
     def test_load_default(self):
-        print "-------------------------"
         self.wrapper._load_defaults("default_settings.py")
         sets = self.wrapper.settings()
         self.assertEqual(sets, self.defaults)
@@ -65,4 +66,4 @@ class TestSettingsWrapper(TestCase):
         }
 
         sets = self.wrapper.load_from_string(s)
-        self.assertItemsEqual(real, sets)
+        six.assertCountEqual(self, real, sets)

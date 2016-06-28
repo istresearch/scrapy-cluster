@@ -1,3 +1,4 @@
+from builtins import object
 from unittest import TestCase
 import mock
 from mock import MagicMock
@@ -8,7 +9,7 @@ from copy import deepcopy
 from scrapy import Item
 
 
-class ItemMixin():
+class ItemMixin(object):
 
     def _get_item(self):
         item = RawResponseItem()
@@ -44,7 +45,7 @@ class TestLoggingBeforePipeline(TestCase, ItemMixin):
             self.pipe.process_item(item, spider)
             self.assertFalse(True)
         except Exception as e:
-            self.assertEqual(e.message, "info")
+            self.assertEqual(str(e), "info")
 
         # test unknown item
         class WeirdItem(Item):
@@ -56,7 +57,7 @@ class TestLoggingBeforePipeline(TestCase, ItemMixin):
             self.pipe.process_item(item2, spider)
             self.assertFalse(True)
         except Exception as e:
-            self.assertEqual(e.message, "warn")
+            self.assertEqual(str(e), "warn")
 
 
 class TestLoggingAfterPipeline(TestCase, ItemMixin):
@@ -78,7 +79,7 @@ class TestLoggingAfterPipeline(TestCase, ItemMixin):
             self.pipe.process_item(item, spider)
             self.assertFalse(True)
         except Exception as e:
-            self.assertEqual(e.message, "info")
+            self.assertEqual(str(e), "info")
 
         # test invalid send to kafka
         item['success'] = False
@@ -87,7 +88,7 @@ class TestLoggingAfterPipeline(TestCase, ItemMixin):
             self.pipe.process_item(item, spider)
             self.assertFalse(True)
         except Exception as e:
-            self.assertEqual(e.message, "error")
+            self.assertEqual(str(e), "error")
 
 class TestKafkaPipeline(TestCase, ItemMixin):
 
@@ -104,11 +105,7 @@ class TestKafkaPipeline(TestCase, ItemMixin):
 
         # test normal send, no appid topics
         self.pipe.process_item(item, spider)
-        expected = '{"body": "text", "crawlid": "crawlid", '\
-        '"response_headers": {}, "response_url": "http://dumb.com",'\
-        ' "url": "http://dumb.com", "status_code": 200, "status_msg":'\
-        ' "OK", "links": [], "request_headers": {}, "timestamp": '\
-        '"the time", "attrs": {}, "appid": "app"}'
+        expected = '{"appid":"app","attrs":{},"body":"text","crawlid":"crawlid","links":[],"request_headers":{},"response_headers":{},"response_url":"http:\\/\\/dumb.com","status_code":200,"status_msg":"OK","timestamp":"the time","url":"http:\\/\\/dumb.com"}'
         self.pipe.producer.send.assert_called_once_with('prefix.crawled_firehose',
                                                         expected)
         self.pipe.producer.send.reset_mock()
@@ -126,11 +123,7 @@ class TestKafkaPipeline(TestCase, ItemMixin):
         self.pipe.appid_topics = False
         self.pipe.use_base64 = True
         self.pipe.process_item(item, spider)
-        expected = '{"body": "dGV4dA==", "crawlid": "crawlid", '\
-        '"response_headers": {}, "response_url": "http://dumb.com",'\
-        ' "url": "http://dumb.com", "status_code": 200, "status_msg":'\
-        ' "OK", "links": [], "request_headers": {}, "timestamp": '\
-        '"the time", "attrs": {}, "appid": "app"}'
+        expected = '{"appid":"app","attrs":{},"body":"dGV4dA==","crawlid":"crawlid","links":[],"request_headers":{},"response_headers":{},"response_url":"http:\\/\\/dumb.com","status_code":200,"status_msg":"OK","timestamp":"the time","url":"http:\\/\\/dumb.com"}'
         self.pipe.producer.send.assert_called_once_with('prefix.crawled_firehose',
                                                         expected)
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # This file houses all default settings for the Crawler
 # to override please use a custom localsettings.py file
 
@@ -167,6 +168,6 @@ DNSCACHE_ENABLED = True
 # ~~~~~~~~~~~~~~~
 
 try:
-    from localsettings import *
+    from .localsettings import *
 except ImportError:
     pass

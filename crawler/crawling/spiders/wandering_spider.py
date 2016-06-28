@@ -1,12 +1,13 @@
+from __future__ import absolute_import
 # Example Wandering Spider
 import scrapy
 
 from scrapy.http import Request
-from lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
+from .lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
-from redis_spider import RedisSpider
+from .redis_spider import RedisSpider
 
 import random
 
@@ -72,7 +73,7 @@ class WanderingSpider(RedisSpider):
             req = Request(link.url, callback=self.parse)
 
             # pass along all known meta fields
-            for key in response.meta.keys():
+            for key in list(response.meta.keys()):
                 req.meta[key] = response.meta[key]
 
             # increment our step counter for this crawl job

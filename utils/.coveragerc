@@ -1,29 +1,3 @@
 [run]
-omit=
-  *redis/*
-  *argparse.py
-  *calendar*
-  *contextlib*
-  *ctypes*
-  *distutils*
-  *logging*
-  *uuid*
-  *cloghandler*
-  *pythonjsonlogger*
-  *pbr*
-  *kafka*
-  *funcsigs*
-  *mock*
-  *six*
-  *getopt*
-  *portalocker*
-  *nose*
-  *testfixtures*
-  *_vendor*
-  *kazoo*
-  *pkg_resources*
-  setup.py
-  tests/*.py
-  *version.py
-  *decimal.py
-  *numbers.py
+include=
+  *scutils*

@@ -1,3 +1,4 @@
+from builtins import object
 import logging
 import sys
 import datetime
@@ -99,7 +100,7 @@ class LogObject(object):
 
         @param level: the asked for level
         '''
-        if level not in self.level_dict.keys():
+        if level not in list(self.level_dict.keys()):
             self.log_level = 'DEBUG'
             self.logger.warn("Unknown log level '{lev}', defaulting to DEBUG"
                              .format(lev=level))

@@ -1,3 +1,4 @@
+from builtins import object
 import importlib
 import imp
 import sys
@@ -17,6 +18,9 @@ class SettingsWrapper(object):
         '__package__',
         '__doc__',
         '__name__',
+        '__spec__',
+        '__loader__',
+        '__cached__',
     ]
 
     def _init__(self):
@@ -46,7 +50,7 @@ class SettingsWrapper(object):
         '''
         try:
             mod = imp.new_module(module_name)
-            exec settings_string in mod.__dict__
+            exec(settings_string, mod.__dict__)
         except TypeError:
             log.warning("Could not import settings")
         self.my_settings = {}

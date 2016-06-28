@@ -26,7 +26,7 @@ class TestLogRetryMiddlewareStats(TestCase):
 
         # test nothing
         self.lrm._setup_stats_status_codes()
-        self.assertEquals(self.lrm.stats_dict.keys(), ['lifetime'])
+        self.assertEquals([str(x) for x in self.lrm.stats_dict.keys()], ['lifetime'])
 
         # test good/bad rolling stats
         self.lrm.stats_dict = {}
@@ -37,14 +37,14 @@ class TestLogRetryMiddlewareStats(TestCase):
         ]
         good = [
             'lifetime',  # for totals, not DUMB
-            900,
-            3600,
+            '900',
+            '3600',
         ]
 
         # check that both keys are set up
         self.lrm._setup_stats_status_codes()
         self.assertEquals(
-            sorted(self.lrm.stats_dict.keys()),
+            sorted([str(x) for x in self.lrm.stats_dict.keys()]),
             sorted(good))
 
         k1 = 'stats:crawler:host1:OverrideSpider:504'

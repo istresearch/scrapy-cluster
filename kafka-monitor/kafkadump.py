@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import division
+from past.utils import old_div
 from kafka import KafkaClient,KafkaConsumer
 from kafka.common import NoBrokersAvailable
 
@@ -80,9 +83,9 @@ def main():
             logger.error(message)
             sys.exit(1)
         logger.debug('Running list command')
-        print "Topics:"
-        for topic in kafka.topic_partitions.keys():
-            print "-", topic
+        print("Topics:")
+        for topic in list(kafka.topic_partitions.keys()):
+            print("-", topic)
         kafka.close()
         return 0
     elif args['command'] == 'dump':
@@ -131,9 +134,9 @@ def main():
                     body_bytes = len(item)
 
                     if args['pretty']:
-                        print json.dumps(item, indent=4)
+                        print(json.dumps(item, indent=4))
                     else:
-                        print item
+                        print(item)
                     num_records = num_records + 1
                     total_bytes = total_bytes + body_bytes
             except KeyboardInterrupt:
@@ -143,10 +146,10 @@ def main():
                 logger.error(traceback.print_exc())
                 break
 
-        total_mbs = float(total_bytes) / (1024*1024)
+        total_mbs = old_div(float(total_bytes), (1024*1024))
         if item is not None:
-            print "Last item:"
-            print json.dumps(item, indent=4)
+            print("Last item:")
+            print(json.dumps(item, indent=4))
         if num_records > 0:
             logger.info("Num Records: {n}, Total MBs: {m}, kb per message: {kb}"
                     .format(n=num_records, m=total_mbs,

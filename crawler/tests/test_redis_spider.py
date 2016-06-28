@@ -28,7 +28,7 @@ class TestRedisSpider(TestCase):
 
         # test nothing
         self.spider._setup_stats_status_codes()
-        self.assertEquals(self.spider.stats_dict['status_codes'].keys(), [])
+        self.assertEquals(list(self.spider.stats_dict['status_codes'].keys()), [])
 
         # test status codes only
         self.spider.settings['STATS_RESPONSE_CODES'] = [200, 403]
@@ -36,9 +36,9 @@ class TestRedisSpider(TestCase):
         self.assertEquals(
             sorted(self.spider.stats_dict['status_codes'].keys()),
             sorted([200, 403]))
-        self.assertEqual(self.spider.stats_dict['status_codes'][200].keys(),
+        self.assertEqual(list(self.spider.stats_dict['status_codes'][200].keys()),
                          ['lifetime'])
-        self.assertEqual(self.spider.stats_dict['status_codes'][403].keys(),
+        self.assertEqual(list(self.spider.stats_dict['status_codes'][403].keys()),
                          ['lifetime'])
 
         # test good/bad rolling stats
@@ -50,17 +50,17 @@ class TestRedisSpider(TestCase):
         ]
         good = [
             'lifetime',  # for totals, not DUMB
-            900,
-            3600,
+            '900',
+            '3600',
         ]
 
         # check that both keys are set up
         self.spider._setup_stats_status_codes()
         self.assertEquals(
-            sorted(self.spider.stats_dict['status_codes'][200].keys()),
+            sorted([str(x) for x in self.spider.stats_dict['status_codes'][200].keys()]),
             sorted(good))
         self.assertEquals(
-            sorted(self.spider.stats_dict['status_codes'][403].keys()),
+            sorted([str(x) for x in self.spider.stats_dict['status_codes'][403].keys()]),
             sorted(good))
 
         k1 = 'stats:crawler:host1:OverrideSpider:200'

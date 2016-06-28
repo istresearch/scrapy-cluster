@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+from __future__ import division
+from builtins import str
+from builtins import object
+from past.utils import old_div
 from kafka import KafkaConsumer,KafkaProducer
 from kafka.common import KafkaError
 from kafka.common import OffsetOutOfRangeError
@@ -13,6 +17,7 @@ import json
 import sys
 import argparse
 import redis
+import copy
 
 from redis.exceptions import ConnectionError
 
@@ -26,7 +31,7 @@ from scutils.stats_collector import StatsCollector
 from scutils.argparse_helper import ArgparseHelper
 
 
-class KafkaMonitor:
+class KafkaMonitor(object):
 
     consumer = None
 
@@ -76,10 +81,10 @@ class KafkaMonitor:
             mini = {}
             mini['instance'] = instance
             mini['schema'] = the_schema
-
+            self.logger.debug("Successfully loaded plugin {cls}".format(cls=key))
             self.plugins_dict[plugins[key]] = mini
 
-        self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
+        self.plugins_dict = OrderedDict(sorted(list(self.plugins_dict.items()),
                                                key=lambda t: t[0]))
 
     def setup(self, level=None, log_file=None, json=None):
@@ -227,7 +232,7 @@ class KafkaMonitor:
             ):
                 yield error
 
-            for property, subschema in properties.iteritems():
+            for property, subschema in list(properties.items()):
                 if "default" in subschema:
                     instance.setdefault(property, subschema["default"])
 
@@ -245,7 +250,7 @@ class KafkaMonitor:
         while True:
             self._process_messages()
             if self.settings['STATS_DUMP'] != 0:
-                new_time = int(time.time() / self.settings['STATS_DUMP'])
+                new_time = int(old_div(time.time(), self.settings['STATS_DUMP']))
                 # only log every X seconds
                 if new_time != old_time:
                     self._dump_stats()
@@ -261,9 +266,11 @@ class KafkaMonitor:
                     break
                 try:
                     self._increment_total_stat(message.value)
-                    the_dict = json.loads(message.value)
+                    loaded_dict = json.loads(message.value)
                     found_plugin = False
                     for key in self.plugins_dict:
+                        # to prevent reference modification
+                        the_dict = copy.deepcopy(loaded_dict)
                         obj = self.plugins_dict[key]
                         instance = obj['instance']
                         schema = obj['schema']

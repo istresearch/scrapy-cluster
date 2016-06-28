@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 import ujson
-from kafka_base_monitor import KafkaBaseMonitor
+from .kafka_base_monitor import KafkaBaseMonitor
 
 
 class InfoMonitor(KafkaBaseMonitor):

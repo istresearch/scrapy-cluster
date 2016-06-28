@@ -1,6 +1,7 @@
 '''
 Offline tests
 '''
+from builtins import range
 from unittest import TestCase
 from mock import MagicMock
 from crawling.spiders.wandering_spider import WanderingSpider
@@ -38,7 +39,8 @@ class TestWanderingSpider(TestCase):
                 text, expected_raw, expected_requests):
         request = Request(url='http://www.drudgereport.com',
                           meta=meta_object)
-        response = HtmlResponse('drudge.url', body=text, request=request)
+        response = HtmlResponse('drudge.url', body=text, request=request,
+                                encoding='utf8')
 
         raw_item_count = 0
         request_count = 0
@@ -59,7 +61,7 @@ class TestWanderingSpider(TestCase):
             curr_meta = self.get_meta()
 
             # should always yield one request
-            for i in xrange(0, 100):
+            for i in range(0, 100):
                 self.evaluate(curr_meta, text, 1, 1)
 
             # link following tests ran via link spider

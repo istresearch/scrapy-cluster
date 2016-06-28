@@ -1,6 +1,7 @@
 '''
 Online integration tests
 '''
+from builtins import next
 
 import unittest
 from unittest import TestCase
@@ -82,7 +83,7 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor.redis_conn.set(key, value)
 
         # process the request
-        plugin = self.redis_monitor.plugins_dict.items()[0][1]
+        plugin = list(self.redis_monitor.plugins_dict.items())[0][1]
         self.redis_monitor._process_plugin(plugin)
 
         # ensure the key is gone

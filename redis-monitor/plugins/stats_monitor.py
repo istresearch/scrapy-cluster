@@ -1,4 +1,5 @@
-from kafka_base_monitor import KafkaBaseMonitor
+from __future__ import absolute_import
+from .kafka_base_monitor import KafkaBaseMonitor
 
 
 class StatsMonitor(KafkaBaseMonitor):
@@ -215,7 +216,7 @@ class StatsMonitor(KafkaBaseMonitor):
                 the_dict[machine][response][end] = self._get_key_value(key, end == 'lifetime')
 
         # simple count
-        the_dict['count'] = len(the_dict.keys())
+        the_dict['count'] = len(list(the_dict.keys()))
 
         ret_dict = {}
         ret_dict['machines'] = the_dict

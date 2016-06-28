@@ -1,6 +1,7 @@
 '''
 Offline tests
 '''
+from builtins import object
 
 from unittest import TestCase
 from mock import MagicMock
@@ -221,7 +222,7 @@ class TestExpirePlugin(TestCase, RegexFixer):
                 self.plugin.handle("key:stuff:blah:blah", 4)
             self.fail("Expire not called")
         except BaseException as e:
-            self.assertEquals("throw once", e.message)
+            self.assertEquals("throw once", str(e))
 
 class TestStatsPlugin(TestCase, RegexFixer):
     def setUp(self):
@@ -241,7 +242,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
             self.plugin.handle(key, 'blah')
             self.fail(equals + " exception not thrown")
         except Exception as e:
-            self.assertEquals(equals, e.message)
+            self.assertEquals(equals, str(e))
 
     def test_stats_handle(self):
         # trying to make sure that everything is called

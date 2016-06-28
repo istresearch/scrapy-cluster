@@ -1,12 +1,14 @@
+from builtins import object
 # -*- coding: utf-8 -*-
 
 # Define your item pipelines here
 
-import json
+import ujson
 import datetime as dt
 import sys
 import traceback
 import base64
+from builtins import bytes, str
 
 from kafka import KafkaProducer
 from crawling.items import RawResponseItem
@@ -141,8 +143,8 @@ class KafkaPipeline(object):
 
             try:
                 if self.use_base64:
-                    datum['body'] = base64.b64encode(datum['body'])
-                message = json.dumps(datum)
+                    datum['body'] = base64.b64encode(bytes(datum['body'], 'utf-8'))
+                message = ujson.dumps(datum, sort_keys=True)
             except:
                 message = 'json failed to parse'
 
