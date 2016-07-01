@@ -20,7 +20,7 @@ before_install:
   # Pull container
   - sudo docker pull ${distribution}:${version}
   # Customize container
-  - sudo docker build --rm=true --file=docker/Dockerfile.${distribution} --tag=${distribution}:ansible ansible
+  - sudo docker build --rm=true --file=docker/Dockerfile.${distribution} --tag=${distribution}:ansible docker
 addons:
   hosts:
   - travis-trusty
