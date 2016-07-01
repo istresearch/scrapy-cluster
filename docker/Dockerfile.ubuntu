@@ -1,7 +1,7 @@
 # Dockerfile.ubuntu
 FROM ubuntu:14.04
 # Install Ansible
-RUN RUN apt-get install -y --no-install-recommends software-properties-common git
+RUN apt-get install -y --no-install-recommends software-properties-common git
 RUN apt-add-repository -y ppa:ansible/ansible
 RUN apt-get update
 RUN apt-get install -y ansible
