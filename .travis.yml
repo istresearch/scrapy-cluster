@@ -38,16 +38,19 @@ script:
   # Test role.
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook -i /etc/ansible/roles/role_under_test/ansible/travis.inventory /etc/ansible/roles/role_under_test/ansible/scrapy-cluster.yml --connection=local --become'  
 
-  # Test role idempotence.
-  - >
-    sudo docker exec "$(cat ${container_id})" ansible-playbook -i /etc/ansible/roles/role_under_test/ansible/travis.inventory /etc/ansible/roles/role_under_test/ansible/scrapy-cluster.yml
-    | grep -q 'changed=0.*failed=0'
-    && (echo 'Idempotence test: pass' && exit 0)
-    || (echo 'Idempotence test: fail' && exit 1)
+  # Run offline tests  
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm virtualenv ~/sc'  
+
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm source ~/sc/bin/activate'
+  
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /etc/ansible/roles/role_under_test/run_offline_tests.sh'
+
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /etc/ansible/roles/role_under_test/run_online_tests.sh'
+
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
-
+  
 
 
 # before_install:
