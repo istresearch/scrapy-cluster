@@ -38,14 +38,10 @@ script:
   # Test role.
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook -i /etc/ansible/roles/role_under_test/ansible/travis.inventory /etc/ansible/roles/role_under_test/ansible/scrapy-cluster.yml --connection=local --become'  
 
-  # Run offline tests  
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm virtualenv ~/sc'  
-
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm source ~/sc/bin/activate'
+  # Run tests  
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm virtualenv /etc/ansible/roles/role_under_test/scvenv'  
   
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /etc/ansible/roles/role_under_test/run_offline_tests.sh'
-
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /etc/ansible/roles/role_under_test/run_online_tests.sh'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/sh -c "source /etc/ansible/roles/role_under_test/scvenv/bin/activate; pip install -r /etc/ansible/roles/role_under_test/requirements.txt; /etc/ansible/roles/role_under_test/run_offline_tests.sh; /etc/ansible/roles/role_under_test/run_online_tests.sh ;'
 
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
