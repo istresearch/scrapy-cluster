@@ -48,8 +48,11 @@
   tags: supervisord
   when: ansible_os_family == "RedHat"
 
-# - name: ensure supervisord is running
-#   script: /etc/init.d/supervisord --some-arguments start
+- name: ensure supervisord is running
+  service:
+    name: supervisord
+    state: started
+  tags: supervisord
 
 - name: reload supervisor
   shell: "supervisorctl reload"
