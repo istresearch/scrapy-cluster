@@ -5,24 +5,17 @@ env:
     version: 7
     init: /usr/lib/systemd/systemd
     run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-  - distribution: ubuntu
-    version: 14.04
-    init: /sbin/init
-    run_opts: ""
+  # - distribution: ubuntu
+  #   version: 14.04
+  #   init: /sbin/init
+  #   run_opts: ""
 
 services:
   - docker
 
-# before_install:
-#   - sudo apt-get update
-#   # Pull container
-#   - sudo docker pull ${distribution}:${version}
-#   # Customize container
-#   - sudo docker build --rm=true --file=docker/Dockerfile.${distribution} --tag=${distribution}:ansible docker
-
+ 
 before_install:
-  # - sudo apt-get update
-  # Pull container
+   # Pull container
   - 'sudo docker pull ${distribution}:${version}'
   # Customize container
   - 'sudo docker build --rm=true --file=docker/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible docker'
@@ -31,18 +24,20 @@ script:
   - container_id=$(mktemp)
     # Run container in detached state
   - 'sudo docker run --detach --volume="${PWD}":/root/scrapy-cluster:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
- 
-  
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "netstat -anp | grep 9001"'
 
-  # # Ansible syntax check.
-  # - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
+    # trying to kill anything on 9091.
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "kill -9 $(lsof -t -i:9091)"'
 
-  # # Test role.
-  # - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
+  # Ansible syntax check.
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
+
+  # Ansible install playbook.
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
   
-  # - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster/; ./run_offline_tests.sh; ./run_online_tests.sh;"'
-  # # Clean up
+  # Run offline and online tests
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster/; ./run_offline_tests.sh; ./run_online_tests.sh;"'
+  
+  # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
   

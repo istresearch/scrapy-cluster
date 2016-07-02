@@ -51,7 +51,7 @@
 - name: ensure supervisord is running
   service:
     name: supervisord
-    state: restarted
+    state: started
   tags: supervisord
 
 - name: reload supervisor
