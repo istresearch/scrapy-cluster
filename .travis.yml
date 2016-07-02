@@ -31,15 +31,18 @@ script:
   - container_id=$(mktemp)
     # Run container in detached state
   - 'sudo docker run --detach --volume="${PWD}":/root/scrapy-cluster:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
-
-  # Ansible syntax check.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
-
-  # Test role.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
+ 
   
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster/; ./run_offline_tests.sh; ./run_online_tests.sh;"'
-  # Clean up
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "netstat -anp | grep 9001"'
+
+  # # Ansible syntax check.
+  # - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
+
+  # # Test role.
+  # - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
+  
+  # - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster/; ./run_offline_tests.sh; ./run_online_tests.sh;"'
+  # # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
   
