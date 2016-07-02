@@ -37,12 +37,8 @@ script:
 
   # Test role.
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook -i /etc/ansible/roles/role_under_test/ansible/travis.inventory /etc/ansible/roles/role_under_test/ansible/scrapy-cluster.yml --connection=local --become'  
-
-  # Run tests  
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm virtualenv /etc/ansible/roles/role_under_test/scvenv'  
   
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/sh -c "source /etc/ansible/roles/role_under_test/scvenv/bin/activate; pip install -r /etc/ansible/roles/role_under_test/requirements.txt; /etc/ansible/roles/role_under_test/run_offline_tests.sh; /etc/ansible/roles/role_under_test/run_online_tests.sh ;'
-
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/sh -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r /etc/ansible/roles/role_under_test/requirements.txt; cd /etc/ansible/roles/role_under_test/; ./run_offline_tests.sh; ./run_online_tests.sh;"'
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
