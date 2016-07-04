@@ -33,7 +33,7 @@ script:
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
   
   # Run offline, online tests and coverage
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; pip install coveralls; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install; cd ../; ./run_offline_tests.sh; ./run_online_tests.sh;  coveralls;"'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; pip install coveralls;cd ~/scrapy-cluster; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install; cd ../; ./run_offline_tests.sh; ./run_online_tests.sh;  coveralls;"'
   
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
