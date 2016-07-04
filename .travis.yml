@@ -10,6 +10,9 @@ env:
     init: /sbin/init
     run_opts: ""
 
+  - mount_point=/root/scrapy-cluster 
+  - docker_shell='sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c'
+
 services:
   - docker
 
@@ -22,10 +25,6 @@ before_install:
 
 script:
   - container_id=$(mktemp)
-  
-  - mount_point=/root/scrapy-cluster
-
-  - docker_shell="sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c"
 
   # Run container in detached state
   - 'sudo docker run --detach --volume="${PWD}":${mount_point}:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
