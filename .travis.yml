@@ -22,17 +22,25 @@ before_install:
 
 script:
   - container_id=$(mktemp)
-    # Run container in detached state
-  - 'sudo docker run --detach --volume="${PWD}":/root/scrapy-cluster:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
+  
+  - mount_point=/root/scrapy-cluster
 
+  - docker_shell="sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c"
+
+  # Run container in detached state
+  - 'sudo docker run --detach --volume="${PWD}":${mount_point}:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
+    
+  # Run offline tests
+  - '${docker_shell} "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster/; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install; cd ../; ./run_offline_tests.sh;"'
+  
   # Ansible syntax check.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
+  - '${docker_shell} "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
 
   # Ansible install playbook.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
+  - '${docker_shell} "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
   
   # Run offline, online tests and coverage
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; pip install coveralls; cd ~/scrapy-cluster/; ./run_offline_tests.sh; ./run_online_tests.sh; coveralls;"'
+  - '${docker_shell} "source ~/sc/bin/activate; cd ~/scrapy-cluster/; ./run_online_tests.sh; pip install coveralls; coveralls;"'
   
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
