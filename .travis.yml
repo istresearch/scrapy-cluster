@@ -1,5 +1,8 @@
 sudo: required
 
+language: python
+python: '2.7'
+
 env:
   - distribution: centos
     version: 7
@@ -32,9 +35,12 @@ script:
   # Ansible install playbook.
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
   
-  # Run offline, online tests and coverage
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; pip install coveralls;cd ~/scrapy-cluster; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install; cd ../; ./run_offline_tests.sh; ./run_online_tests.sh;  coveralls;"'
+  # Run offline, online tests
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt;cd ~/scrapy-cluster; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install; cd ../; ./run_offline_tests.sh; ./run_online_tests.sh;"'
   
+  # Run coverage
+  - pip install coveralls; coveralls
+
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
