@@ -38,9 +38,6 @@ script:
   # Run offline, online tests
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt;cd ~/scrapy-cluster; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install; cd ../; ./run_offline_tests.sh; ./run_online_tests.sh;"'
   
-  # Run coverage
-  - pip install coveralls; coveralls
-
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
@@ -51,3 +48,6 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
+    
+after_success:
+- pip install coveralls; coveralls
