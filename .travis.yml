@@ -30,7 +30,7 @@ script:
   - sudo docker run --detach --volume="${PWD}":/root/scrapy-cluster:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"
   
   # Ansible syntax check.
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check ||( (echo 'Ansible Syntax Check(s) Failed' && )exit $?)"
+  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check || (echo 'Ansible Syntax Check(s) Failed' && exit $?)"
 
   # Ansible install playbook.
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become || (echo 'Ansible Deployment Failed' && exit $?)"
