@@ -39,10 +39,10 @@ script:
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install;"
   
   # Run offline test
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ~/sc/bin/activate; cd ~/scrapy-cluster; ./run_offline_tests.sh || (exit $?);"
+  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ~/sc/bin/activate; cd ~/scrapy-cluster; ./run_offline_tests.sh"
 
   # Run Online test
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ~/sc/bin/activate; cd ~/scrapy-cluster; ./run_online_tests.sh || (exit $?);"
+  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ~/sc/bin/activate; cd ~/scrapy-cluster; ./run_online_tests.sh"
   
   # Stop Docker Containers
   - sudo docker stop "$(cat ${container_id})"
