@@ -25,11 +25,12 @@ before_install:
 
 script:
   - container_id=$(mktemp)
+  - ls -la /tmp/
 
   # Symlink travis repo download to same place as ran inside the container
   - cp -R ${PWD} /tmp/scrapy-cluster
-  - ls -la /tmp/
-  - pwd
+
+  - ls -la /tmp/scrapy-cluster/
 
   # Run container in detached state
   - sudo docker run --detach --volume=/tmp:/tmp:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"
