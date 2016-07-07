@@ -27,10 +27,12 @@ script:
   - container_id=$(mktemp)
 
   # Symlink travis repo download to same place as ran inside the container
-  - ln -s /tmp/scrapy-cluster ${PWD}
+  - cp -R /tmp/scrapy-cluster ${PWD}
+  - ls -la /tmp/
+  - pwd
 
   # Run container in detached state
-  - sudo docker run --detach --volume="${PWD}":/tmp/scrapy-cluster:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"
+  - sudo docker run --detach --volume=/tmp:/tmp:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"
 
   # Ansible syntax check.
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i /tmp/scrapy-cluster/ansible/travis.inventory /tmp/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"
@@ -46,6 +48,8 @@ script:
 
   # Run Online test
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source /tmp/sc/bin/activate; cd /tmp/scrapy-cluster; ./run_online_tests.sh"
+
+  - ls -la /tmp/
 
   # Run Coveralls Report
   - pip install coveralls; coveralls
