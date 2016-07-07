@@ -305,6 +305,7 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
             self.clean_keys(counter.key)
 
         counter.stop()
+        raise Exception
 
     def test_roll_hll_counter(self):
         # rough sleep to get us back on track

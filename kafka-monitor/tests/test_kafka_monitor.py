@@ -113,8 +113,6 @@ class TestKafkaMonitor(TestCase):
                     '{k}:{t}'.format(k=k2, t=time_key)
                     )
 
-        raise Exception
-
 
     def test_load_stats_plugins(self):
         # lets assume we are loading the default plugins
