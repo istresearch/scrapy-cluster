@@ -48,7 +48,7 @@ script:
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source /tmp/sc/bin/activate; cd /tmp/scrapy-cluster; ./run_online_tests.sh"
 
   # Run Coveralls Report
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source /tmp/sc/bin/activate; cd /tmp/scrapy-cluster; pip install coveralls; coveralls"
+  - pip install coveralls; coveralls
 
   # Stop Docker Containers
   - sudo docker stop "$(cat ${container_id})"
