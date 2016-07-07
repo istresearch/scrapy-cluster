@@ -76,7 +76,6 @@ class TestLogFactory(TestCase):
         l.check(
             ('test', 'CRITICAL', 'critical message'),
         )
-        raise Exception
 
 class TestLogJSONFile(TestCase):
     def setUp(self):
