@@ -28,6 +28,8 @@ script:
   
   # Run container in detached state
   - sudo docker run --detach --volume="${PWD}":"${PWD}":rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"
+
+  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "pwd ; ${PWD};"
   
   # Ansible syntax check.
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ${PWD}/ansible/travis.inventory ${PWD}/ansible/scrapy-cluster.yml --syntax-check"
