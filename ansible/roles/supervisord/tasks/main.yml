@@ -41,6 +41,13 @@
   tags: supervisord
   when: ansible_os_family == "Debian"
 
+- name: ensure supervisord is enabled
+  service:
+    name: supervisord
+    enabled: yes
+  tags: supervisord
+  when: ansible_os_family == "RedHat"
+
 - name: ensure supervisord is running
   service:
     name: supervisord
