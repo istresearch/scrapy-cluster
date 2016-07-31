@@ -1,0 +1,19 @@
+# Scrapy Cluster inventory
+
+[kafka]
+travis-trusty
+
+[zookeeper]
+travis-trusty
+
+[redis]
+travis-trusty
+
+[virtualenv]
+travis-trusty
+
+[scrapy-cluster:children]
+kafka
+zookeeper
+redis
+virtualenv

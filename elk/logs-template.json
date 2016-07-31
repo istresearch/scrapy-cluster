@@ -1,0 +1,44 @@
+{
+  "template" : "logs-*",
+  "order" : 0,
+  "settings" : {
+    "index.refresh_interval" : "5s"
+  },
+  "mappings" : {
+    "_default_" : {
+      "dynamic_templates" : [ {
+        "message_field" : {
+          "mapping" : {
+            "index" : "not_analyzed",
+            "omit_norms" : true,
+            "include_in_parent": true,
+            "type" : "string"
+          },
+          "match_mapping_type" : "string",
+          "match" : "message"
+        }
+      }, {
+        "string_fields" : {
+          "mapping" : {
+            "index" : "not_analyzed",
+            "omit_norms" : true,
+            "include_in_parent": true,
+            "type" : "string"
+          },
+          "match_mapping_type" : "string",
+          "match" : "*"
+        }
+      } ],
+      "properties" : {
+        "@version" : {
+          "index" : "not_analyzed",
+          "type" : "string"
+        }
+      },
+      "_all" : {
+        "enabled" : true
+      }
+    }
+  },
+  "aliases" : { }
+}

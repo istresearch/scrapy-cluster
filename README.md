@@ -1,6 +1,6 @@
 # Scrapy Cluster
 
-[![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=master)](https://travis-ci.org/istresearch/scrapy-cluster) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/istresearch/scrapy-cluster/blob/master/LICENSE)
 
 This Scrapy project uses Redis and Kafka to create a distributed on demand scraping cluster.
 
@@ -26,10 +26,27 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 - The spiders are dynamic and on demand, meaning that they allow the arbitrary collection of any web page that is submitted to the scraping cluster
 - Scale Scrapy instances across a single machine or multiple machines
 - Coordinate and prioritize their scraping effort for desired sites
-- Persist across scraping jobs or have multiple scraping jobs going at the same time
-- Allows for unparalleled access into the information about your scraping job, what is upcoming, and how the sites are ranked
+- Persist data across scraping jobs
+- Execute multiple scraping jobs concurrently
+- Allows for in depth access into the information about your scraping job, what is upcoming, and how the sites are ranked
 - Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
+- Allows for coordinated throttling of crawls from independent spiders on separate machines, but behind the same IP Address
+
+## Scrapy Cluster test environment
+
+To set up a pre-canned Scrapy Cluster test environment, make sure you have the latest **Virtualbox** + **Vagrant >= 1.7.4** installed.  Vagrant will automatically mount the base **scrapy-cluster** directory to the **/vagrant** directory, so any code changes you make will be visible inside the VM.
+
+### Steps to launch the test environment:
+1.  `vagrant up` in base **scrapy-cluster** directory.
+2.  `vagrant ssh` to ssh into the VM.
+3.  `sudo supervisorctl status` to check that everything is running.
+4.  `virtualenv sc` to create a virtual environment
+5.  `source sc/bin/activate` to activate the virtual environment
+6.  `cd /vagrant` to get to the **scrapy-cluster** directory.
+7.  `pip install -r requirements.txt` to install Scrapy Cluster dependencies.
+8.  `./run_offline_tests.sh` to run offline tests.
+9.  `./run_online_tests.sh` to run online tests (relies on kafka, zookeeper, redis).
 
 ## Documentation
 
@@ -37,6 +54,6 @@ Please check out our official [Scrapy Cluster documentation](http://scrapy-clust
 
 ## Branches
 
-The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.0`.
+The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.1`.
 
-The `dev` branch contains bleeding edge code and is currently working towards `Scrapy Cluster 1.1`. Please note that not everything is documented, finished, tested, or finalized but we are happy to help guide those who are interested.
+The `dev` branch contains bleeding edge code and is currently working towards [Scrapy Cluster 1.2](https://github.com/istresearch/scrapy-cluster/issues?utf8=%E2%9C%93&q=milestone%3A%22Scrapy+Cluster+1.2%22+). Please note that not everything may be documented, finished, tested, or finalized but we are happy to help guide those who are interested.

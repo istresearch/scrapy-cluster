@@ -1,0 +1,32 @@
+{
+    "type": "object",
+    "properties": {
+        "uuid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+        },
+        "stats": {
+            "type": "string",
+            "enum": [
+                "kafka-monitor",
+                "redis-monitor",
+                "crawler",
+                "spider",
+                "machine",
+                "all"
+            ],
+            "default": "all"
+        },
+        "appid": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+        }
+    },
+    "required": [
+        "uuid",
+        "appid"
+    ],
+    "additionalProperties": false
+}
