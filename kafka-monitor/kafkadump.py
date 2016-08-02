@@ -2,7 +2,7 @@ from __future__ import print_function
 from __future__ import division
 from past.utils import old_div
 from kafka import KafkaClient,KafkaConsumer
-from kafka.common import NoBrokersAvailable
+from kafka.common import NoBrokersAvailable, KafkaUnavailableError
 
 import json
 import sys
@@ -103,7 +103,9 @@ def main():
                 group_id=consumer_id,
                 bootstrap_servers=kafka_host,
                 consumer_timeout_ms=settings['KAFKA_CONSUMER_TIMEOUT'],
-                auto_offset_reset=offset,
+                auto_offset_reset=settings['KAFKA_CONSUMER_AUTO_OFFSET_RESET'],
+                auto_commit_interval_ms=settings['KAFKA_CONSUMER_COMMIT_INTERVAL_MS'],
+                enable_auto_commit=settings['KAFKA_CONSUMER_AUTO_COMMIT_ENABLE'],
                 max_partition_fetch_bytes=settings['KAFKA_CONSUMER_FETCH_MESSAGE_MAX_BYTES'])
         except NoBrokersAvailable as ex:
                 logger.error('Unable to connect to Kafka')
