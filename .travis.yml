@@ -39,7 +39,7 @@ script:
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; pip install -r ${PWD}/requirements.txt; cd ${PWD}; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install;"
 
   # Run offline test
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; ./run_offline_tests.sh"
+  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; pip freeze; ./run_offline_tests.sh"
 
   # Run Online test
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; ./run_online_tests.sh"
