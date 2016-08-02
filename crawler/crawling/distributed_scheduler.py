@@ -21,7 +21,7 @@ import socket
 import re
 import ujson
 
-from .redis_dupefilter import RFPDupeFilter
+from crawling.redis_dupefilter import RFPDupeFilter
 from kazoo.handlers.threading import KazooTimeoutError
 
 from scutils.zookeeper_watcher import ZookeeperWatcher
