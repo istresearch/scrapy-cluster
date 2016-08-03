@@ -91,7 +91,13 @@ Determines whether to clear all Redis Queues when the Scrapy Scheduler is shut d
 
 Default: ``10``
 
-How many seconds to wait before checking for new domain queues. This is also dictated by internal Scrapy processes, so setting this any lower does not guarantee a quicker refresh time.
+How many seconds to wait before checking for new or expiring domain queues. This is also dictated by internal Scrapy processes, so setting this any lower does not guarantee a quicker refresh time.
+
+**SCHEDULER_QUEUE_TIMEOUT**
+
+Default: ``3600``
+
+The number of seconds older domain queues are allowed to persist before they expire. This acts as a cache to clean out queues from memory that have not been used recently.
 
 .. _c_throttle:
 

@@ -19,7 +19,7 @@ class ThrottleMixin(object):
     def setUp(self, u, z):
         self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
                                               MagicMock(), 10, 60, False, 60,
-                                              False, False, '.*', True)
+                                              False, False, '.*', True, 3600)
         self.scheduler.open(MagicMock())
         self.scheduler.my_ip = 'ip'
         self.scheduler.spider.name = 'link'
@@ -66,8 +66,8 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         self.extract = MagicMock(return_value={"domain": 'ex', "suffix": 'com'})
         self.scheduler.is_blacklisted = MagicMock(return_value=False)
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=False)
-        self.scheduler.queue_dict['link:ex.com:queue'] = MagicMock()
-        self.scheduler.queue_dict['link:ex.com:queue'].push = MagicMock(
+        self.scheduler.queue_dict['link:ex.com:queue'] = [MagicMock(), 0]
+        self.scheduler.queue_dict['link:ex.com:queue'][0].push = MagicMock(
                                                     side_effect=Exception("1"))
         try:
             self.scheduler.enqueue_request(self.req)
@@ -125,17 +125,17 @@ class TestDistributedSchedulerFindItem(ThrottleMixin, TestCase):
     def test_find_item(self):
         # test finding an item
         self.scheduler.queue_keys = ["link:ex.com:queue"]
-        self.scheduler.queue_dict = {"link:ex.com:queue": MagicMock()}
-        self.scheduler.queue_dict["link:ex.com:queue"].pop = MagicMock(return_value='item')
+        self.scheduler.queue_dict = {"link:ex.com:queue": [MagicMock(), 0]}
+        self.scheduler.queue_dict["link:ex.com:queue"][0].pop = MagicMock(return_value='item')
         self.assertEqual(self.scheduler.find_item(), 'item')
 
         # test failed to find an item
-        self.scheduler.queue_dict["link:ex.com:queue"].pop = MagicMock(return_value=None)
+        self.scheduler.queue_dict["link:ex.com:queue"][0].pop = MagicMock(return_value=None)
         self.assertEqual(self.scheduler.find_item(), None)
 
         # test skip due to blacklist
         self.scheduler.black_domains = ['ex.com']
-        self.scheduler.queue_dict["link:ex.com:queue"].pop = MagicMock(side_effect=Exception("bad"))
+        self.scheduler.queue_dict["link:ex.com:queue"][0].pop = MagicMock(side_effect=Exception("bad"))
         self.assertEqual(self.scheduler.find_item(), None) # should also not raise exception
 
 
@@ -289,11 +289,11 @@ class TestDistributedSchedulerUpdateDomainQueues(ThrottleMixin, TestCase):
             }
         }
         q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
-        self.scheduler.queue_dict = {'link:ex1.com:queue': q}
+        self.scheduler.queue_dict = {'link:ex1.com:queue': [q, 0]}
 
         self.scheduler.update_domain_queues()
-        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].window, 50)
-        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].limit, 10)
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'][0].window, 50)
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'][0].limit, 10)
 
         # test with scale factor
         self.scheduler.domain_config = {
@@ -304,12 +304,12 @@ class TestDistributedSchedulerUpdateDomainQueues(ThrottleMixin, TestCase):
             }
         }
         q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
-        self.scheduler.queue_dict = {'link:ex2.com:queue': q}
+        self.scheduler.queue_dict = {'link:ex2.com:queue': [q, 0]}
 
         self.scheduler.update_domain_queues()
-        self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'].window, 50)
+        self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'][0].window, 50)
         # the scale factor effects the limit only
-        self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'].limit, 5)
+        self.assertEqual(self.scheduler.queue_dict['link:ex2.com:queue'][0].limit, 5)
 
 
 class TestDistributedSchedulerErrorConfig(ThrottleMixin, TestCase):
@@ -324,12 +324,12 @@ class TestDistributedSchedulerErrorConfig(ThrottleMixin, TestCase):
         self.scheduler.window = 7
         self.scheduler.hits = 5
         q = RedisThrottledQueue(MagicMock(), MagicMock(), 100, 100)
-        self.scheduler.queue_dict = {'link:ex1.com:queue': q}
+        self.scheduler.queue_dict = {'link:ex1.com:queue': [q, 0]}
 
         self.scheduler.error_config('stuff')
 
-        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].window, 7)
-        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'].limit, 5)
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'][0].window, 7)
+        self.assertEqual(self.scheduler.queue_dict['link:ex1.com:queue'][0].limit, 5)
         self.assertEqual(self.scheduler.domain_config, {})
 
 
@@ -358,7 +358,7 @@ class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
                     'ex2:throttle_window',
                     'ex3:throttle_window']
         for key in self.scheduler.queue_dict:
-            self.assertTrue(self.scheduler.queue_dict[key].window_key
+            self.assertTrue(self.scheduler.queue_dict[key][0].window_key
                             in expected)
 
         # test type
@@ -369,7 +369,7 @@ class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
                     'link:ex3:throttle_window']
         self.scheduler.create_queues()
         for key in self.scheduler.queue_dict:
-            self.assertTrue(self.scheduler.queue_dict[key].window_key
+            self.assertTrue(self.scheduler.queue_dict[key][0].window_key
                             in expected)
 
         # test ip
@@ -381,7 +381,7 @@ class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
                     'ip:ex3:throttle_window']
         self.scheduler.create_queues()
         for key in self.scheduler.queue_dict:
-            self.assertTrue(self.scheduler.queue_dict[key].window_key
+            self.assertTrue(self.scheduler.queue_dict[key][0].window_key
                             in expected)
 
         # test type and ip
@@ -393,8 +393,33 @@ class TestDistributedSchedulerCreateQueues(ThrottleMixin, TestCase):
                     'link:ip:ex3:throttle_window']
         self.scheduler.create_queues()
         for key in self.scheduler.queue_dict:
-            self.assertTrue(self.scheduler.queue_dict[key].window_key
+            self.assertTrue(self.scheduler.queue_dict[key][0].window_key
                             in expected)
+
+
+class TestDistributedSchedulerExpireQueues(ThrottleMixin, TestCase):
+
+    @mock.patch('time.time', return_value=5)
+    def test_expire_queues(self, t):
+        self.scheduler.queue_dict = {'key1':[MagicMock(), 3]}
+        self.scheduler.queue_keys = []
+
+        # assert not expired
+        self.scheduler.queue_timeout = 3
+        self.scheduler.expire_queues()
+        self.assertTrue('key1' in self.scheduler.queue_dict)
+
+        # assert expired
+        self.scheduler.queue_timeout = 1
+        self.scheduler.expire_queues()
+        self.assertTrue('key1' not in self.scheduler.queue_dict.keys())
+
+        # assert remove from queue_keys also
+        self.scheduler.queue_dict = {'key1':[MagicMock(), 3]}
+        self.scheduler.queue_keys = ['key1']
+        self.scheduler.expire_queues()
+        self.assertTrue('key1' not in self.scheduler.queue_dict.keys())
+        self.assertTrue('key1' not in self.scheduler.queue_keys)
 
 
 class TestDistributedSchedulerParseCookie(ThrottleMixin, TestCase):

@@ -81,6 +81,9 @@ SCHEDULER_IP_ENABLED = True
 # how many times to retry getting an item from the queue before the spider is considered idle
 SCHEUDLER_ITEM_RETRIES = 3
 
+# how long to keep around stagnant domain queues
+SCHEDULER_QUEUE_TIMEOUT = 3600
+
 # log setup scrapy cluster crawler
 SC_LOGGER_NAME = 'sc-crawler'
 SC_LOG_DIR = 'logs'
