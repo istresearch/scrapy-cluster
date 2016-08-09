@@ -14,7 +14,7 @@ Date: ??/??/????
 
 - Added full stack offline unit tests and online integration testing in `Travis CI <https://travis-ci.org/istresearch/scrapy-cluster>`_
 
-- Upgraded all components to newest Kafka Python package
+- Upgraded all components to newest Python packages
 
 - Switched example Virtual Machine from Miniconda to Virtualenv
 
@@ -27,6 +27,8 @@ Kafka Monitor Changes
 
 - Added plugin API for managing Zookeeper domain configuration
 
+- Added ability to scale horizontally with multiple processes for redundancy
+
 Redis Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -36,10 +38,14 @@ Redis Monitor Changes
 
 - Added plugin for executing Zookeeper configuration updates
 
+- Added ability to scale horizontally with multiple processes for redundancy
+
 Crawler Changes
 ^^^^^^^^^^^^^^^
 
 - Added ability to control cluster wide blacklists via Zookeeper
+
+- Improved memory management in scheduler for domain based queues
 
 Scrapy Cluster 1.1
 ------------------

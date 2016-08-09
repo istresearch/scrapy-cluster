@@ -53,3 +53,12 @@ STATS_TIMES = [
     'SECONDS_1_DAY',
     'SECONDS_1_WEEK',
 ]
+
+# retry failures on actions
+RETRY_FAILURES = True
+RETRY_FAILURES_MAX = 3
+REDIS_LOCK_EXPIRATION = 6
+# main thread sleep time
+SLEEP_TIME = 0.1
+HEARTBEAT_TIMEOUT = 120
+

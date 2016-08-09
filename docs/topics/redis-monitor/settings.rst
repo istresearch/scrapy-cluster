@@ -3,6 +3,35 @@ Settings
 
 This page covers the various settings contained within the Redis Monitor. The sections are broken down by functional component.
 
+Core
+----
+
+**SLEEP_TIME**
+
+Default: ``0.1``
+
+The number of seconds the main process will sleep between checking for new actions to take care of.
+
+**RETRY_FAILURES**
+
+Default: ``True``
+
+Retry an action if there was an unexpected failure while computing the result.
+
+**RETRY_FAILURES_MAX**
+
+Default: ``3``
+
+The number of times to retry a failed action before giving up. Only applied when ``RETRY_FAILURES`` is enabled.
+
+**HEARTBEAT_TIMEOUT**
+
+Default: ``120``
+
+The amount of time the statistics key the Redis Monitor instance lives to self identify to the rest of the cluster. Used for retrieving stats about the number of Redis Monitor instances currently running.
+
+.. note:: On actions that take longer than the timeout, the key will expire and your stats may not be accurate until the main thread can heart beat again.
+
 Redis
 -----
 
@@ -23,6 +52,12 @@ The port to use when connecting to the ``REDIS_HOST``.
 Default: ``0``
 
 The Redis database to use when connecting to the ``REDIS_HOST``.
+
+**REDIS_LOCK_EXPIRATION**
+
+Default: ``6``
+
+The number of seconds a vacant worker lock will stay within Redis before becoming available to a new worker
 
 Kafka
 -----

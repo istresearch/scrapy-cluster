@@ -9,12 +9,16 @@ import traceback
 import argparse
 import time
 import json
+import redis_lock
+import uuid
+import socket
 
 from collections import OrderedDict
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.stats_collector import StatsCollector
 from redis.exceptions import ConnectionError
+from redis_lock import AlreadyAcquired
 
 
 class RedisMonitor(object):
@@ -29,6 +33,7 @@ class RedisMonitor(object):
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.unit_test = unit_test
+        self.my_uuid = str(uuid.uuid4()).split('-')[4]
 
     def setup(self, level=None, log_file=None, json=None):
         '''
@@ -53,9 +58,10 @@ class RedisMonitor(object):
                                               bytes=self.settings['LOG_MAX_BYTES'],
                                               backups=self.settings['LOG_BACKUPS'])
 
-        self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
+        self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'],
                                       db=self.settings['REDIS_DB'])
+
         try:
             self.redis_conn.info()
             self.logger.debug("Successfully connected to Redis")
@@ -142,8 +148,8 @@ class RedisMonitor(object):
                         self._dump_queue_stats()
 
                     old_time = new_time
-
-            time.sleep(0.1)
+            self._report_self()
+            time.sleep(self.settings['SLEEP_TIME'])
 
     def _process_plugin(self, plugin):
         '''
@@ -154,12 +160,59 @@ class RedisMonitor(object):
         instance = plugin['instance']
         regex = plugin['regex']
         for key in self.redis_conn.scan_iter(match=regex):
-            val = self.redis_conn.get(key)
+            # acquire lock
+            lock = self._create_lock_object(key)
+
             try:
-                self._process_key_val(instance, key, val)
+                if lock.acquire(blocking=False):
+                    val = self.redis_conn.get(key)
+                    self._process_key_val(instance, key, val)
             except Exception:
                 self.logger.error(traceback.format_exc())
                 self._increment_fail_stat('{k}:{v}'.format(k=key, v=val))
+
+                self._process_failures(key)
+
+            # remove lock regardless of if exception or was handled ok
+            if lock._held:
+                self.logger.debug("releasing lock")
+                lock.release()
+
+    def _create_lock_object(self, key):
+        '''
+        Returns a lock object, split for testing
+        '''
+        return redis_lock.Lock(self.redis_conn, key,
+                               expire=self.settings['REDIS_LOCK_EXPIRATION'],
+                               auto_renewal=True)
+
+    def _get_fail_key(self, key):
+        '''
+        Returns the fail key string of a normal key
+        '''
+        return 'lock:{k}:failures'.format(k=key)
+
+    def _process_failures(self, key):
+        '''
+        Handles the retrying of the failed key
+        '''
+        if self.settings['RETRY_FAILURES']:
+            self.logger.debug("going to retry failure")
+            # get the current failure count
+            failkey = self._get_fail_key(key)
+            current = self.redis_conn.get(failkey)
+            if current is None:
+                current = 0
+            else:
+                current = int(current)
+            if current < self.settings['RETRY_FAILURES_MAX']:
+                self.logger.debug("Incr fail key")
+                current += 1
+                self.redis_conn.set(failkey, current)
+            else:
+                self.logger.error("Could not process action within"
+                                  " failure limit")
+                self.redis_conn.delete(failkey)
                 self.redis_conn.delete(key)
 
     def _process_key_val(self, instance, key, val):
@@ -179,6 +232,9 @@ class RedisMonitor(object):
                 combined)
             instance.handle(key, val)
             self.redis_conn.delete(key)
+            failkey = self._get_fail_key(key)
+            if self.redis_conn.exists(failkey):
+                self.redis_conn.delete(failkey)
 
     def _setup_stats(self):
         '''
@@ -424,6 +480,16 @@ class RedisMonitor(object):
                     json.dumps(extras, indent=4, sort_keys=True)))
         else:
             self.logger.info('Queue Stats Dump', extra=extras)
+
+    def _report_self(self):
+        '''
+        Reports the crawler uuid to redis
+        '''
+        key = "stats:redis-monitor:self:{m}:{u}".format(
+            m=socket.gethostname(),
+            u=self.my_uuid)
+        self.redis_conn.set(key, time.time())
+        self.redis_conn.expire(key, self.settings['HEARTBEAT_TIMEOUT'])
 
     def close(self):
         '''
