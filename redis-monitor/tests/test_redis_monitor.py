@@ -278,5 +278,5 @@ class TestRedisMonitor(TestCase):
 
         self.redis_monitor._report_self()
         self.redis_monitor.redis_conn.set.assert_called_once_with('stats:redis-monitor:self:host:1234', 5)
-        self.redis_monitor.redis_conn.expire.assert_called_once_with('stats:redis-monitor:self:host:1234', 20)
+        self.redis_monitor.redis_conn.expire.assert_called_once_with('stats:redis-monitor:self:host:1234', 120)
 
