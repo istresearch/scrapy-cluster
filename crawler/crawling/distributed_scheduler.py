@@ -253,7 +253,7 @@ class DistributedScheduler(object):
         Prevents slow memory build up when crawling lots of different domains
         '''
         curr_time = time.time()
-        for key in self.queue_dict.keys():
+        for key in list(self.queue_dict):
             diff = curr_time - self.queue_dict[key][1]
             if diff > self.queue_timeout:
                 self.logger.debug("Expiring domain queue key " + key)

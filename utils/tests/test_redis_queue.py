@@ -29,11 +29,8 @@ class TestBase(TestCase):
     def test_encode(self):
         q = Base(MagicMock(), 'key', pickle)
         # python pickling is different between versions
-        if sys.version_info[0] < 3:
-            self.assertEquals(q._encode_item('cool'), b"\x80\x02U\x04coolq\x00.")
-        else:
-            self.assertEquals(q._encode_item('cool'), b'\x80\x04\x95\x08\x00\x00\x00\x00\x00\x00\x00\x8c\x04cool\x94.')
-
+        data = pickle.dumps('cool', protocol=-1)
+        self.assertEquals(q._encode_item('cool'), data)
         q2 = Base(MagicMock(), 'key', ujson)
         self.assertEquals(q2._encode_item('cool2'), '"cool2"')
 
