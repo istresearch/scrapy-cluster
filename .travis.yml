@@ -20,7 +20,7 @@ before_install:
   # Pull container
   - 'sudo docker pull ${distribution}:${version}'
   # Customize container
-  - 'sudo docker build --rm=true --file=docker/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible docker'
+  - 'sudo docker build --rm=true --file=docker/travisci/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible docker'
 
 script:
   - container_id=$(mktemp)
