@@ -13,20 +13,14 @@ Vagrant.configure(2) do |config|
 
   config.vm.define 'scdev' do |node|
     node.vm.box = 'ubuntu/trusty64'
-    #node.vm.box = 'centos/7'
+    # node.vm.box = 'centos/7'
     node.vm.hostname = 'scdev'
     node.vm.network "private_network", ip: "192.168.33.99"
-    node.vm.provision "ansible" do |ansible|
-      ansible.verbose = true
-      ansible.groups = {
-        "kafka" => ["scdev"],
-        "zookeeper" => ["scdev"],
-        "redis" => ["scdev"],
-        "virtualenv" => ["scdev"],
-        "all_groups:children" => ["kafka", "zookeeper", "redis", "virtualenv"]
-      }
+    node.vm.provision "ansible_local" do |ansible|
       ansible.playbook = "ansible/scrapy-cluster.yml"
-    node.vm.provision "shell", inline: "service supervisord restart", run: "always"
+      ansible.inventory_path = "ansible/sc.inventory"
+      ansible.raw_arguments = ["-c", "local"]
     end
+    node.vm.provision "shell", inline: "service supervisord restart", run: "always"
   end
 end
