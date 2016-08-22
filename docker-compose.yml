@@ -18,14 +18,15 @@ services:
       - kafka
       - redis
       - zookeeper
-  # crawler:
-  #   image: istresearch/scrapy-cluster:crawler
-  #   build:
-  #     context: .
-  #     dockerfile: docker/crawler/Dockerfile
-  #   depends_on:
-  #     - kafka
-  #     - redis
+  crawler:
+    image: istresearch/scrapy-cluster:crawler
+    build:
+      context: .
+      dockerfile: docker/crawler/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
   redis:
     image: redis
     ports:
