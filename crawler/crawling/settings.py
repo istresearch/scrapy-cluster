@@ -116,8 +116,6 @@ STATS_TIMES = [
 
 # Scrapy Settings
 # ~~~~~~~~~~~~~~~
-DOWNLOADER_CLIENTCONTEXTFACTORY = 'crawling.contextfactory.MyClientContextFactory'
-
 # Scrapy settings for distributed_crawling project
 #
 BOT_NAME = 'crawling'
