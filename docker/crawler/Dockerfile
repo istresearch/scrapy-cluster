@@ -14,12 +14,6 @@ RUN apt-get update && apt-get -y install \
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-# Set up supervisord
-RUN pip install supervisor
-COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
-RUN mkdir -p /var/log/supervisor
-CMD ["/usr/local/bin/supervisord"]
-
 # install requirements
 COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
@@ -34,11 +28,10 @@ WORKDIR /usr/src/app/utils
 RUN python setup.py install
 WORKDIR /usr/src/app
 
-# setup up process to run under supervisord
-COPY docker/crawler/sc-crawler-supervisord.conf /etc/supervisor/conf.d/sc-crawler-supervisord.conf
-
 # override settings via localsettings.py
 COPY docker/crawler/settings.py /usr/src/app/crawling/localsettings.py
 
 # set up environment variables
-ENV NUM_PROCS=1
+
+# run the spider
+CMD ["scrapy", "runspider", "crawling/spiders/link_spider.py"]

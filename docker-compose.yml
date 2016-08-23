@@ -9,6 +9,7 @@ services:
     depends_on:
       - kafka
       - redis
+    restart: always
   redis_monitor:
     image: istresearch/scrapy-cluster:redis-monitor
     build:
@@ -18,6 +19,7 @@ services:
       - kafka
       - redis
       - zookeeper
+    restart: always
   crawler:
     image: istresearch/scrapy-cluster:crawler
     build:
@@ -27,6 +29,7 @@ services:
       - kafka
       - redis
       - zookeeper
+    restart: always
   redis:
     image: redis
     ports:
