@@ -1,27 +1,32 @@
+# THIS FILE SHOULD STAY IN SYNC WITH /crawler/crawling/settings.py
+
 from __future__ import absolute_import
 # This file houses all default settings for the Crawler
 # to override please use a custom localsettings.py file
+import os
+def str2bool(v):
+    return str(v).lower() in ('true', '1') if type(v) == str else bool(v)
 
 # Scrapy Cluster Settings
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
 # Specify the host and port to use when connecting to Redis.
-REDIS_HOST = 'redis'
-REDIS_PORT = '6379'
-REDIS_DB = 0
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+REDIS_DB = int(os.getenv('REDIS_DB', 0))
 
 # Kafka server information
-KAFKA_HOSTS = ['kafka:9092']
-KAFKA_TOPIC_PREFIX = 'demo'
-KAFKA_APPID_TOPICS = False
+KAFKA_HOSTS = [os.getenv('KAFKA_HOST', 'kafka:9092')]
+KAFKA_TOPIC_PREFIX = os.getenv('KAFKA_TOPIC_PREFIX', 'demo')
+KAFKA_APPID_TOPICS = str2bool(os.getenv('KAFKA_APPID_TOPICS', False))
 # base64 encode the html body to avoid json dump errors due to malformed text
-KAFKA_BASE_64_ENCODE = False
+KAFKA_BASE_64_ENCODE = str2bool(os.getenv('KAFKA_BASE_64_ENCODE', False))
 KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
 KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
 
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'
-ZOOKEEPER_HOSTS = 'zookeeper:2181'
+ZOOKEEPER_HOSTS = os.getenv('ZOOKEEPER_HOSTS', 'zookeeper:2181')
 
 PUBLIC_IP_URL = 'http://ip.42.pl/raw'
 IP_ADDR_REGEX = '(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
@@ -33,14 +38,14 @@ SCHEDULER_PERSIST = True
 SCHEDULER_QUEUE_REFRESH = 10
 
 # throttled queue defaults per domain, x hits in a y second window
-QUEUE_HITS = 10
-QUEUE_WINDOW = 60
+QUEUE_HITS = int(os.getenv('QUEUE_HITS', 10))
+QUEUE_WINDOW = int(os.getenv('QUEUE_WINDOW', 60))
 
 # we want the queue to produce a consistent pop flow
-QUEUE_MODERATED = True
+QUEUE_MODERATED = str2bool(os.getenv('QUEUE_MODERATED', True))
 
 # how long we want the duplicate timeout queues to stick around in seconds
-DUPEFILTER_TIMEOUT = 600
+DUPEFILTER_TIMEOUT = int(os.getenv('DUPEFILTER_TIMEOUT', 600))
 
 # how often to refresh the ip address of the scheduler
 SCHEDULER_IP_REFRESH = 60
@@ -70,10 +75,10 @@ Type and IP - every spider's throttle queue is determined by the spider type AND
     ip address, allowing the most fined grained control over the throttling mechanism
 '''
 # add Spider type to throttle mechanism
-SCHEDULER_TYPE_ENABLED = True
+SCHEDULER_TYPE_ENABLED = str2bool(os.getenv('SCHEDULER_TYPE_ENABLED', True))
 
 # add ip address to throttle mechanism
-SCHEDULER_IP_ENABLED = True
+SCHEDULER_IP_ENABLED = str2bool(os.getenv('SCHEDULER_IP_ENABLED', True))
 '''
 ----------------------------------------
 '''
@@ -82,17 +87,17 @@ SCHEDULER_IP_ENABLED = True
 SCHEUDLER_ITEM_RETRIES = 3
 
 # how long to keep around stagnant domain queues
-SCHEDULER_QUEUE_TIMEOUT = 3600
+SCHEDULER_QUEUE_TIMEOUT = int(os.getenv('SCHEDULER_QUEUE_TIEOUT', 3600))
 
 # log setup scrapy cluster crawler
 SC_LOGGER_NAME = 'sc-crawler'
-SC_LOG_DIR = 'logs'
+SC_LOG_DIR = os.getenv('SC_LOG_DIR', 'logs')
 SC_LOG_FILE = 'sc_crawler.log'
 SC_LOG_MAX_BYTES = 10 * 1024 * 1024
 SC_LOG_BACKUPS = 5
-SC_LOG_STDOUT = True
-SC_LOG_JSON = False
-SC_LOG_LEVEL = 'INFO'
+SC_LOG_STDOUT = str2bool(os.getenv('SC_LOG_STDOUT', True))
+SC_LOG_JSON = str2bool(os.getenv('SC_LOG_JSON', False))
+SC_LOG_LEVEL = os.getenv('SC_LOG_LEVEL', 'INFO')
 
 
 # stats setup
@@ -155,7 +160,7 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 # Disable the built in logging in production
-LOG_ENABLED = False
+LOG_ENABLED = str2bool(os.getenv('LOG_ENABLED', False))
 
 # Allow all return codes
 HTTPERROR_ALLOW_ALL = True

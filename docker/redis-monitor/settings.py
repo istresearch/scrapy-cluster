@@ -1,22 +1,27 @@
+# THIS FILE SHOULD STAY IN SYNC WITH /redis-monitor/settings.py
+
 # This file houses all default settings for the Redis Monitor
 # to override please use a custom localsettings.py file
+import os
+def str2bool(v):
+    return str(v).lower() in ('true', '1') if type(v) == str else bool(v)
 
 # Redis host configuration
-REDIS_HOST = 'redis'
-REDIS_PORT = 6379
-REDIS_DB = 0
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+REDIS_DB = int(os.getenv('REDIS_DB', 0))
 
-KAFKA_HOSTS = 'kafka:9092'
-KAFKA_TOPIC_PREFIX = 'demo'
+KAFKA_HOSTS = [os.getenv('KAFKA_HOST', 'kafka:9092')]
+KAFKA_TOPIC_PREFIX = os.getenv('KAFKA_TOPIC_PREFIX', 'demo')
 KAFKA_CONN_TIMEOUT = 5
-KAFKA_APPID_TOPICS = False
+KAFKA_APPID_TOPICS = str2bool(os.getenv('KAFKA_APPID_TOPICS', False))
 KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
 KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
 
 # Zookeeper Settings
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'
-ZOOKEEPER_HOSTS = 'zookeeper:2181'
+ZOOKEEPER_HOSTS = os.getenv('ZOOKEEPER_HOSTS', 'zookeeper:2181')
 
 PLUGIN_DIR = "plugins/"
 PLUGINS = {
@@ -29,13 +34,13 @@ PLUGINS = {
 
 # logging setup
 LOGGER_NAME = 'redis-monitor'
-LOG_DIR = 'logs'
+LOG_DIR = os.getenv('LOG_DIR', 'logs')
 LOG_FILE = 'redis_monitor.log'
 LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUPS = 5
-LOG_STDOUT = True
-LOG_JSON = False
-LOG_LEVEL = 'INFO'
+LOG_STDOUT = str2bool(os.getenv('LOG_STDOUT', True))
+LOG_JSON = str2bool(os.getenv('LOG_JSON', False))
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 # stats setup
 STATS_TOTAL = True

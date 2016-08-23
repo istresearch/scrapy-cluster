@@ -1,14 +1,18 @@
-# This file is a copy of
+# THIS FILE SHOULD STAY IN SYNC WITH /kafka-monitor/settings.py
+
+import os
+def str2bool(v):
+    return str(v).lower() in ('true', '1') if type(v) == str else bool(v)
 
 # Redis host information
-REDIS_HOST = 'redis'
-REDIS_PORT = 6379
-REDIS_DB = 0
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+REDIS_DB = int(os.getenv('REDIS_DB', 0))
 
 # Kafka server information
-KAFKA_HOSTS = ['kafka:9092']
-KAFKA_INCOMING_TOPIC = 'demo.incoming'
-KAFKA_GROUP = 'demo-group'
+KAFKA_HOSTS = [os.getenv('KAFKA_HOST', 'kafka:9092')]
+KAFKA_INCOMING_TOPIC = os.getenv('KAFKA_INCOMING_TOPIC', 'demo.incoming')
+KAFKA_GROUP = os.getenv('KAFKA_GROUP', 'demo-group')
 KAFKA_FEED_TIMEOUT = 10
 KAFKA_CONSUMER_AUTO_OFFSET_RESET = 'earliest'
 KAFKA_CONSUMER_TIMEOUT = 50
@@ -29,13 +33,13 @@ PLUGINS = {
 
 # logging setup
 LOGGER_NAME = 'kafka-monitor'
-LOG_DIR = 'logs'
+LOG_DIR = os.getenv('LOG_DIR', 'logs')
 LOG_FILE = 'kafka_monitor.log'
 LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUPS = 5
-LOG_STDOUT = True
-LOG_JSON = False
-LOG_LEVEL = 'INFO'
+LOG_STDOUT = str2bool(os.getenv('LOG_STDOUT', True))
+LOG_JSON = str2bool(os.getenv('LOG_JSON', False))
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 # stats setup
 STATS_TOTAL = True

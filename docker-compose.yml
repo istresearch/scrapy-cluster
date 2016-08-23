@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  kafka-monitor:
+  kafka_monitor:
     image: istresearch/scrapy-cluster:kafka-monitor
     build:
       context: .
@@ -9,7 +9,7 @@ services:
     depends_on:
       - kafka
       - redis
-  redis-monitor:
+  redis_monitor:
     image: istresearch/scrapy-cluster:redis-monitor
     build:
       context: .
