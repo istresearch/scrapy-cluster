@@ -2,7 +2,7 @@ version: '2'
 
 services:
   kafka_monitor:
-    image: istresearch/scrapy-cluster:kafka-monitor
+    image: istresearch/scrapy-cluster:kafka-monitor-dev
     build:
       context: .
       dockerfile: docker/kafka-monitor/Dockerfile
@@ -11,7 +11,7 @@ services:
       - redis
     restart: always
   redis_monitor:
-    image: istresearch/scrapy-cluster:redis-monitor
+    image: istresearch/scrapy-cluster:redis-monitor-dev
     build:
       context: .
       dockerfile: docker/redis-monitor/Dockerfile
@@ -21,7 +21,7 @@ services:
       - zookeeper
     restart: always
   crawler:
-    image: istresearch/scrapy-cluster:crawler
+    image: istresearch/scrapy-cluster:crawler-dev
     build:
       context: .
       dockerfile: docker/crawler/Dockerfile
