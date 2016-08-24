@@ -20,6 +20,8 @@ Date: ??/??/????
 
 - Add setting to specify Redis db across all components
 
+- Docker support
+
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 

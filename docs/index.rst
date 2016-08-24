@@ -126,6 +126,9 @@ Advanced Topics
 :doc:`topics/advanced/integration`
     Visualizing your cluster with the ELK stack gives you new insight into your cluster
 
+:doc:`topics/advanced/docker`
+    Use docker to provision and scale your Scrapy Cluster
+
 :doc:`topics/advanced/crawlingresponsibly`
     Responsible Crawling with Scrapy Cluster
 
