@@ -145,19 +145,22 @@ At time of writing, there is no Docker container to interface and run all of the
 
     $ docker exec -it scrapycluster_crawler_1 bash
 
-5) Run the integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
+5) Run the unit and integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
 
 ::
 
-  $ python tests/online.py -v
-  ...
   ----------------------------------------------------------------------
-  Ran 1 test in 27.882s
+  Ran 20 tests in 5.742s
+
+  OK
+  ...
+
+  ----------------------------------------------------------------------
+  Ran 1 test in 27.583s
 
   OK
 
-
-.. note:: At time of writing the offline unit tests do not run with the traditional ``nose`` suite due to how the folder is laid out inside the docker container.
+This script will run both of offline unit tests and the online integration tests for your particular container. You will want to do this on all three component containers.
 
 You now appear to have a working docker environment, so jump down to `Your First Crawl`_ to finish the quickstart. Note that since this is a precanned cluster thanks to docker compose, you have everything already spun up except the dump utilities.
 

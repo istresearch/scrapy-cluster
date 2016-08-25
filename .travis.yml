@@ -21,8 +21,13 @@ before_install:
   - 'sudo docker pull ${distribution}:${version}'
   # Customize container
   - 'sudo docker build --rm=true --file=docker/travisci/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible docker'
+  # Build Dockerfiles for Scrapy Cluster
+  - 'sudo docker build --rm=true --file docker/kafka-monitor/Dockerfile --tag=istresearch/scrapy-cluster:kafka-monitor-test .'
+  - 'sudo docker build --rm=true --file docker/redis-monitor/Dockerfile --tag=istresearch/scrapy-cluster:redis-monitor-test .'
+  - 'sudo docker build --rm=true --file docker/crawler/Dockerfile --tag=istresearch/scrapy-cluster:crawler-test .'
 
 script:
+  # ---------- Ansible Provisioning Block ----------
   - container_id=$(mktemp)
 
   # Run container in detached state
@@ -37,14 +42,25 @@ script:
   # Install coveralls and other pip requiremnts
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; pip install -r ${PWD}/requirements.txt; pip uninstall scutils -y; cd ${PWD}; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install;"
 
-  # Run offline test
+  # Run offline tests
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; cd utils; python setup.py install; cd ../; pip freeze; ./run_offline_tests.sh"
 
-  # Run Online test
+  # Run online tests
   - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; pip freeze; ./run_online_tests.sh"
+  # ---------- End ----------
 
-  # Stop Docker Containers
+  # ---------- Docker Provisioning Block ----------
+  # Stop Docker Ansible Containers
   - sudo docker stop "$(cat ${container_id})"
+
+  # run docker compose up for docker tests
+  - sudo docker-compose -f docker-compose.test.yml up -d
+
+  # run docker unit and integration tests for each component
+  - sudo docker exec -it scrapycluster_kafka_monitor_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
+  - sudo docker exec -it scrapycluster_redis_monitor_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
+  - sudo docker exec -it scrapycluster_crawler_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
+  # ---------- End ----------
 
 notifications:
   slack:

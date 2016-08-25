@@ -22,14 +22,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY crawler /usr/src/app
 
 # scutils dev version install (not in pip yet)
-COPY utils /usr/src/app/utils
+COPY utils /tmp/utils
 RUN pip uninstall scutils -y
-WORKDIR /usr/src/app/utils
+WORKDIR /tmp/utils
 RUN python setup.py install
 WORKDIR /usr/src/app
 
 # override settings via localsettings.py
 COPY docker/crawler/settings.py /usr/src/app/crawling/localsettings.py
+
+# copy testing script into container
+COPY docker/run_docker_tests.sh /usr/src/app/run_docker_tests.sh
 
 # set up environment variables
 

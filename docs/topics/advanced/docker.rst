@@ -70,11 +70,20 @@ It is important to either look at the ``localsettings.py`` files within the cont
 Running
 -------
 
-It is recommended you use docker compose to orchestrate your cluster with all of the other components, and simply issuing ``docker-compose up`` will bring your cluster online. If you wish to build the containers from scratch or insert custom code, please use the ``docker-compose.dev.yml`` file like so.
+It is recommended you use docker compose to orchestrate your cluster with all of the other components, and simply issuing ``docker-compose up`` will bring your cluster online. If you wish to build the containers from scratch or insert custom code, please use add the following lines, customized for each component.
 
 ::
 
-    docker-compose -f docker-compose.dev.yml up --build --force-recreate
+    image: istresearch/scrapy-cluster:kafka-monitor-dev
+    build:
+      context: .
+      dockerfile: docker/kafka-monitor/Dockerfile
+
+You will then be able to issue the following:
+
+::
+
+    docker-compose -f docker-compose.yml up --build --force-recreate
 
 This will rebuild your containers and bring everything online.
 
