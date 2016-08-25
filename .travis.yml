@@ -3,64 +3,30 @@ sudo: required
 language: python
 python: '2.7'
 
-env:
-  - distribution: centos
-    version: 7
-    init: /usr/lib/systemd/systemd
-    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-  - distribution: ubuntu
-    version: 14.04
-    init: /sbin/init
-    run_opts: ""
+matrix:
+  fast_finish: true
+  include:
+    - distribution: centos
+      version: 7
+      init: /usr/lib/systemd/systemd
+      run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+      env: ANSIBLE_CENTOS=1
+    - distribution: ubuntu
+      version: 14.04
+      init: /sbin/init
+      run_opts: ""
+      env: ANSIBLE_UBUNTU=1
+    - env: DOCKER=1
+
+install: true
 
 services:
   - docker
 
-before_install:
-  # Pull container
-  - 'sudo docker pull ${distribution}:${version}'
-  # Customize container
-  - 'sudo docker build --rm=true --file=docker/travisci/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible docker'
-  # Build Dockerfiles for Scrapy Cluster
-  - 'sudo docker build --rm=true --file docker/kafka-monitor/Dockerfile --tag=istresearch/scrapy-cluster:kafka-monitor-test .'
-  - 'sudo docker build --rm=true --file docker/redis-monitor/Dockerfile --tag=istresearch/scrapy-cluster:redis-monitor-test .'
-  - 'sudo docker build --rm=true --file docker/crawler/Dockerfile --tag=istresearch/scrapy-cluster:crawler-test .'
-
 script:
-  # ---------- Ansible Provisioning Block ----------
-  - container_id=$(mktemp)
-
-  # Run container in detached state
-  - sudo docker run --detach --volume="${PWD}":"${PWD}":rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"
-
-  # Ansible syntax check.
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ${PWD}/ansible/travis.inventory ${PWD}/ansible/scrapy-cluster.yml --syntax-check"
-
-  # Ansible install playbook.
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ${PWD}/ansible/travis.inventory ${PWD}/ansible/scrapy-cluster.yml --connection=local --become"
-
-  # Install coveralls and other pip requiremnts
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; pip install -r ${PWD}/requirements.txt; pip uninstall scutils -y; cd ${PWD}; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install;"
-
-  # Run offline tests
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; cd utils; python setup.py install; cd ../; pip freeze; ./run_offline_tests.sh"
-
-  # Run online tests
-  - sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; pip freeze; ./run_online_tests.sh"
-  # ---------- End ----------
-
-  # ---------- Docker Provisioning Block ----------
-  # Stop Docker Ansible Containers
-  - sudo docker stop "$(cat ${container_id})"
-
-  # run docker compose up for docker tests
-  - sudo docker-compose -f docker-compose.test.yml up -d
-
-  # run docker unit and integration tests for each component
-  - sudo docker exec -it scrapycluster_kafka_monitor_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
-  - sudo docker exec -it scrapycluster_redis_monitor_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
-  - sudo docker exec -it scrapycluster_crawler_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
-  # ---------- End ----------
+  - if [ -n "ANSIBLE_CENTOS" ]; then ./travis_testing/ansible.sh ; fi;
+  - if [ -n "ANSIBLE_UBUNTU" ]; then ./travis_testing/ansible.sh ; fi;
+  - if [ -n "DOCKER" ]; then ./travis_testing/docker.sh ; fi;
 
 notifications:
   slack:
