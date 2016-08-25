@@ -11,7 +11,7 @@ sudo docker build --rm=true --file docker/crawler/Dockerfile --tag=istresearch/s
 sudo docker-compose -f docker-compose.test.yml up -d
 
 # cat kafka logs to check things are working
-sudo docker-compose logs kafka-monitor
+sudo docker-compose logs kafka_monitor
 sudo docker-compose logs kafka
 
 # run docker unit and integration tests for each component
