@@ -65,7 +65,8 @@ class TestKafkaMonitor(TestCase):
         json_req = "{\"uuid\":\"mytestid\"," \
             "\"appid\":\"testapp\",\"action\":\"info\",\"spiderid\":\"link\"}"
         parsed = json.loads(json_req)
-
+        # ensure the group id is present so we pick up the 1st message
+        self.kafka_monitor._process_messages()
         self.kafka_monitor.feed(parsed)
 
     def test_run(self):

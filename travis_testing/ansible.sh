@@ -27,3 +27,6 @@ sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "sou
 
 # Stop Docker Ansible Containers
 sudo docker stop "$(cat ${container_id})"
+
+# send coverage report
+pip install coveralls; coveralls
