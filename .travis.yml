@@ -22,9 +22,9 @@ services:
   - docker
 
 script:
-  - if [ -n "centos" ]; then sudo ./travis_testing/ansible.sh ; fi;
-  - if [ -n "ubuntu" ]; then sudo ./travis_testing/ansible.sh ; fi;
-  - if [ -n "docker" ]; then sudo ./travis_testing/docker.sh ; fi;
+  - if [ -n "$centos" ]; then sudo ./travis_testing/ansible.sh ; fi;
+  - if [ -n "$ubuntu" ]; then sudo ./travis_testing/ansible.sh ; fi;
+  - if [ -n "$docker" ]; then sudo ./travis_testing/docker.sh ; fi;
 
 notifications:
   slack:
