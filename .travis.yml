@@ -3,20 +3,19 @@ sudo: required
 language: python
 python: '2.7'
 
-matrix:
+env:
   fast_finish: true
-  include:
-    - distribution: centos
-      version: 7
-      init: /usr/lib/systemd/systemd
-      run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-      env: ANSIBLE_CENTOS=1
-    - distribution: ubuntu
-      version: 14.04
-      init: /sbin/init
-      run_opts: ""
-      env: ANSIBLE_UBUNTU=1
-    - env: DOCKER=1
+  - distribution: centos
+    version: 7
+    init: /usr/lib/systemd/systemd
+    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    centos: 1
+  - distribution: ubuntu
+    version: 14.04
+    init: /sbin/init
+    run_opts: ""
+    ubuntu: 1
+  - docker: 1
 
 install: true
 
@@ -24,9 +23,9 @@ services:
   - docker
 
 script:
-  - if [ -n "ANSIBLE_CENTOS" ]; then ./travis_testing/ansible.sh ; fi;
-  - if [ -n "ANSIBLE_UBUNTU" ]; then ./travis_testing/ansible.sh ; fi;
-  - if [ -n "DOCKER" ]; then ./travis_testing/docker.sh ; fi;
+  - if [ -n "centos" ]; then sudo ./travis_testing/ansible.sh ; fi;
+  - if [ -n "ubuntu" ]; then sudo ./travis_testing/ansible.sh ; fi;
+  - if [ -n "docker" ]; then sudo ./travis_testing/docker.sh ; fi;
 
 notifications:
   slack:
