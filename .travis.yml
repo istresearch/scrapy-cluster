@@ -4,17 +4,16 @@ language: python
 python: '2.7'
 
 env:
-  fast_finish: true
-  - distribution: centos
+  - centos: 1
+    distribution: centos
     version: 7
     init: /usr/lib/systemd/systemd
     run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    centos: 1
-  - distribution: ubuntu
+  - ubuntu: 1
+    distribution: ubuntu
     version: 14.04
     init: /sbin/init
     run_opts: ""
-    ubuntu: 1
   - docker: 1
 
 install: true
