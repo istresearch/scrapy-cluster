@@ -20,7 +20,7 @@ Date: ??/??/????
 
 - Add setting to specify Redis db across all components
 
-- Docker support
+- `Docker <https://hub.docker.com/r/istresearch/scrapy-cluster/>`_ support
 
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
