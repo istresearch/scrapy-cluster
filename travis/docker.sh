@@ -22,4 +22,4 @@ sudo docker exec -it travis_redis_monitor_1 env TERM=xterm /bin/bash -c "./run_d
 sudo docker exec -it travis_crawler_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
 
 # spin down compose
-sudo docker-compose down
+sudo docker-compose -f travis/docker-compose.test.yml down
