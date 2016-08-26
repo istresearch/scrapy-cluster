@@ -8,7 +8,7 @@ sudo docker build --rm=true --file docker/redis-monitor/Dockerfile --tag=istrese
 sudo docker build --rm=true --file docker/crawler/Dockerfile --tag=istresearch/scrapy-cluster:crawler-test .
 
 # run docker compose up for docker tests
-sudo docker-compose -f docker-compose.test.yml up -d
+sudo docker-compose -f travis/docker-compose.test.yml up -d
 
 # cat kafka logs to check things are working
 sudo docker-compose logs kafka_monitor
