@@ -149,6 +149,9 @@ At time of writing, there is no Docker container to interface and run all of the
 
 ::
 
+  $ ./run_docker_tests.sh
+  ...
+
   ----------------------------------------------------------------------
   Ran 20 tests in 5.742s
 
