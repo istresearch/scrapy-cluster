@@ -21,7 +21,7 @@ class ZookeeperMonitor(KafkaBaseMonitor):
         self.path = settings['ZOOKEEPER_ASSIGN_PATH'] + settings['ZOOKEEPER_ID']
 
         if not self.zoo_client.exists(self.path):
-            self.zoo_client.create(self.path)
+            self.zoo_client.ensure_path(self.path)
 
     def handle(self, key, value):
         '''

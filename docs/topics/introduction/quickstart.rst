@@ -5,10 +5,15 @@ Quick Start
 
 *This guide does not go into detail as to how everything works, but hopefully will get you scraping quickly. For more information about each process works please see the rest of the documentation.*
 
+Setup
+-----
+
+There are a number of different options available to set up Scrapy Cluster. You can chose to provision with `Vagrant Quickstart`_, use the `Docker Quickstart`_, or manually configure via the `Cluster Quickstart`_ yourself.
+
 .. _vagrant_setup:
 
 Vagrant Quickstart
-------------------
+^^^^^^^^^^^^^^^^^^
 
 The Vagrant Quickstart provides you a simple Vagrant Virtual Machine in order to try out Scrapy Cluster. It is not meant to be a production crawling machine, and should be treated more like a test ground for development.
 
@@ -97,8 +102,72 @@ Lets assume our project is now in ``~/scrapy-cluster``
 
 You now appear to have a working test environment, so jump down to `Your First Crawl`_ to finish the quickstart.
 
+.. _docker_setup:
+
+Docker Quickstart
+^^^^^^^^^^^^^^^^^
+
+The Docker Quickstart will help you spin up a complete standalone cluster thanks to Docker and `Docker Compose <https://docs.docker.com/compose/>`_. All individual components will run in standard docker containers, and be controlled through the ``docker-compose`` command line interface.
+
+1) Ensure you have Docker Engine and Docker Compose installed on your machine. For more information about installation please refer to Docker's official documentation.
+
+2) Download and unzip the latest release `here <https://github.com/istresearch/scrapy-cluster/releases>`_.
+
+Lets assume our project is now in ``~/scrapy-cluster``
+
+3) Run docker compose
+
+::
+
+  $ docker-compose up -d
+
+This will pull the latest stable images from Docker hub and build your scraping cluster.
+
+At time of writing, there is no Docker container to interface and run all of the tests within your compose-based cluster. Instead, if you wish to run the unit and integration tests plese see the following steps.
+
+4) To run the integration tests, get into the bash shell on any of the containers.
+
+  Kafka monitor
+
+  ::
+
+    $ docker exec -it scrapycluster_kafka_monitor_1 bash
+
+  Redis monitor
+
+  ::
+
+    $ docker exec -it scrapycluster_redis_monitor_1 bash
+
+  Crawler
+
+  ::
+
+    $ docker exec -it scrapycluster_crawler_1 bash
+
+5) Run the unit and integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
+
+::
+
+  ----------------------------------------------------------------------
+  Ran 20 tests in 5.742s
+
+  OK
+  ...
+
+  ----------------------------------------------------------------------
+  Ran 1 test in 27.583s
+
+  OK
+
+This script will run both of offline unit tests and the online integration tests for your particular container. You will want to do this on all three component containers.
+
+You now appear to have a working docker environment, so jump down to `Your First Crawl`_ to finish the quickstart. Note that since this is a precanned cluster thanks to docker compose, you have everything already spun up except the dump utilities.
+
+.. _cluster_setup:
+
 Cluster Quickstart
---------------------
+^^^^^^^^^^^^^^^^^^
 
 The Cluster Quickstart will help you set up your components across a number of different machines. Here, we assume everything runs on a single box with external Kafka, Zookeeper, and Redis.
 
@@ -262,13 +331,13 @@ At this point you should have a Vagrant or Cluster setup that has been tested an
 
 **Fully Operational:**
 
--  The Kafka Monitor:
+-  The Kafka Monitor (1+):
 
    ::
 
        python kafka_monitor.py run
 
--  The Redis Monitor:
+-  The Redis Monitor (1+):
 
    ::
 

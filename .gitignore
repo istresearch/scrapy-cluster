@@ -49,3 +49,11 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+
+# excess docker-compose files
+docker-compose.dev.yml
+docker-compose.prod.yml
+docker-compose.override.yml
+
+# backup files
+*.bak

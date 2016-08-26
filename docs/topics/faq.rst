@@ -44,6 +44,10 @@ General
 
     Deploying a scrapy cluster in an automated fashion is highly dependent on the environment **you** are working in. Because we cannot control the OS you are running, packages installed, or network setup, it is best recommended you use an automated deployment framework that fits your needs. Some suggestions include `Ansible <https://www.ansible.com/>`_, `Puppet <https://puppetlabs.com/>`_, `Chef <https://www.chef.io/chef/>`_, `Salt <http://saltstack.com/>`_, `Anaconda Cluster <http://docs.continuum.io/anaconda-cluster/index>`_, etc.
 
+**Do you support Docker?**
+
+    Docker support is new with the ``1.2`` release, please see the :doc:`advanced/docker` guide for more information.
+
 **Are there other distributed Scrapy projects?**
 
     Yes! Please see our breakdown at :ref:`other_projects`
