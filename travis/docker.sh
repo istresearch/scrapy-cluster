@@ -10,16 +10,19 @@ sudo docker build --rm=true --file docker/crawler/Dockerfile.py2 --tag=istresear
 # run docker compose up for docker tests
 sudo docker-compose -f travis/docker-compose.test.yml up -d
 
+# waiting 10 secs for fully operational cluster
+sleep 10
+
 # cat kafka logs to check things are working
-sudo docker-compose ps
-sudo docker-compose logs kafka_monitor
-sudo docker-compose logs kafka
+sudo docker-compose -f travis/docker-compose.test.yml ps
+sudo docker-compose -f travis/docker-compose.test.yml logs kafka_monitor
+sudo docker-compose -f travis/docker-compose.test.yml logs kafka
 
 
 # run docker unit and integration tests for each component
-sudo docker exec -it travis_kafka_monitor_1 /bin/sh -c "./run_docker_tests.sh"
-sudo docker exec -it travis_redis_monitor_1 /bin/sh -c "./run_docker_tests.sh"
-sudo docker exec -it travis_crawler_1 /bin/sh -c "./run_docker_tests.sh"
+sudo docker-compose -f travis/docker-compose.test.yml exec kafka_monitor ./run_docker_tests.sh
+sudo docker-compose -f travis/docker-compose.test.yml exec redis_monitor ./run_docker_tests.sh
+sudo docker-compose -f travis/docker-compose.test.yml exec crawler ./run_docker_tests.sh
 
 # spin down compose
 sudo docker-compose -f travis/docker-compose.test.yml down
