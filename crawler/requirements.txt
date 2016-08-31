@@ -1,0 +1,9 @@
+kafka-python
+kazoo
+nose
+PyYAML
+redis
+retrying
+Scrapy
+scutils
+tldextract

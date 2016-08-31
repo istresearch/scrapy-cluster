@@ -1,0 +1,9 @@
+scutils
+retrying
+python-redis-lock
+PyYAML
+jsonschema
+kafka-python
+kazoo
+tldextract
+nose

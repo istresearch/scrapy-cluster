@@ -1,0 +1,8 @@
+kafka-python
+kazoo
+python-redis-lock
+PyYAML
+retrying
+scutils
+nose
+redis

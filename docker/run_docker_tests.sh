@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Script for testing Scrapy Cluster when inside a docker container
 # Will run both the offline and online tests for the particular container,
