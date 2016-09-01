@@ -15,6 +15,7 @@ sudo docker-compose ps
 sudo docker-compose logs kafka_monitor
 sudo docker-compose logs kafka
 
+sleep 10
 
 # run docker unit and integration tests for each component
 sudo docker exec -it travis_kafka_monitor_1 env TERM=xterm /bin/bash -c "./run_docker_tests.sh"
