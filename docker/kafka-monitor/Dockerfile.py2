@@ -22,9 +22,6 @@ RUN mkdir -p /usr/src/app \
       build-base \
 # Updating pip itself before installing packages from requirements.txt
  && pip install --no-cache-dir pip setuptools \
-# Installing simple init system as protection of Zombie PID 1 problem
- && curl -L https://github.com/krallin/tini/releases/download/v0.9.0/tini-static -o /usr/local/bin/tini \
- && chmod +x /usr/local/bin/tini \
 # Installing pip packages from requirements.txt
  && pip install --no-cache-dir -r requirements.txt \
  && cd /tmp/utils \
@@ -51,4 +48,4 @@ COPY docker/run_docker_tests.sh /usr/src/app/run_docker_tests.sh
 # set up environment variables
 
 # run command
-CMD ["tini", "--", "python", "kafka_monitor.py", "run"]
+CMD ["python", "kafka_monitor.py", "run"]

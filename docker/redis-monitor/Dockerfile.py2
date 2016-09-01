@@ -21,15 +21,12 @@ RUN mkdir -p /usr/src/app \
       build-base \
 # Updating pip itself before installing packages from requirements.txt
  && pip install --no-cache-dir pip setuptools \
-# Installing simple init system as protection of Zombie PID 1 problem
- && curl -L https://github.com/krallin/tini/releases/download/v0.9.0/tini-static -o /usr/local/bin/tini \
- && chmod +x /usr/local/bin/tini \
 # Installing pip packages from requirements.txt
  && pip install --no-cache-dir -r requirements.txt \
  && cd /tmp/utils \
 # Removing release version of scutils package
  && pip uninstall scutils -y \
-# Installing development version of scutils package 
+# Installing development version of scutils package
  && python setup.py install \
  && cd /usr/src/app \
 # Removing build dependencies leaving image layer clean and neat
@@ -50,4 +47,4 @@ COPY docker/run_docker_tests.sh /usr/src/app/run_docker_tests.sh
 # set up environment variables
 
 # run command
-CMD ["tini", "--", "python", "redis_monitor.py"]
+CMD ["python", "redis_monitor.py"]
