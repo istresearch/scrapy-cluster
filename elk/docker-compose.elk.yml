@@ -1,0 +1,89 @@
+version: '2'
+# This compose file stands up Scrapy Cluster with an
+# associated ELK Stack. You should run a few crawls and then import the
+# `export.json` file into your Kibana objects
+
+services:
+  kafka_monitor:
+    image: istresearch/scrapy-cluster:kafka-monitor-dev
+    volumes:
+      - logs:/usr/src/app/logs
+    environment:
+      - LOG_STDOUT=False
+      - LOG_JSON=True
+    depends_on:
+      - kafka
+      - redis
+    restart: always
+  redis_monitor:
+    image: istresearch/scrapy-cluster:redis-monitor-dev
+    volumes:
+      - logs:/usr/src/app/logs
+    environment:
+      - LOG_STDOUT=False
+      - LOG_JSON=True
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
+    restart: always
+  crawler:
+    image: istresearch/scrapy-cluster:crawler-dev
+    volumes:
+      - logs:/usr/src/app/logs
+    environment:
+      - SC_LOG_STDOUT=False
+      - SC_LOG_JSON=True
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
+    restart: always
+  redis:
+    image: redis
+    ports:
+      - "6379"
+    restart: always
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    restart: always
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+    restart: always
+  elasticsearch:
+    image: elasticsearch:latest
+    command: elasticsearch -Des.network.host=0.0.0.0
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  logstash:
+    image: logstash:latest
+    command: logstash -f /etc/logstash/conf.d/logstash.conf
+    volumes:
+      - ./scrapy-cluster-logstash-docker.conf:/etc/logstash/conf.d/logstash.conf
+      - ./logs-template.json:/etc/logstash/templates/logs-template.json
+      - logs:/var/log/scrapy-cluster
+    ports:
+      - "5000:5000"
+    links:
+      - elasticsearch
+  kibana:
+    image: kibana:latest
+    ports:
+      - "5601:5601"
+    links:
+      - elasticsearch
+
+volumes:
+  logs:

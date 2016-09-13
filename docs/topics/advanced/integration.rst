@@ -144,6 +144,8 @@ Here, we have done a bit of crawling already and have around 20,000 log records 
 
 At this point you should now have your logs indexed in Elasticsearch, and we can use Kibana to visualize them.
 
+.. _elk_kibana:
+
 Kibana
 ------
 
@@ -152,6 +154,8 @@ In your Kibana instance, you now need to configure a new index pattern. If you w
 From here, you can play around with the different searching and visualization functions provided by Kibana.
 
 If you would like to use some preconfigured searches and visualizations, go to **Settings** and (at time of writing) click **Objects**, then **Import**. We are going to import a sample set of visualizations and searches from the Scrapy Cluster project under the folder ``elk``. Select the ``export.json`` file to import everything in.
+
+.. note:: It is important you actually use your cluster before you try to upload the preconfigured visualizations. This ensures the defined mappings within Elasticsearch are present for the widgets. You can check this by looking at the number of fields in your index defined above - if is has over **130** different fields you should be ok to import, otherwise refresh it or use the cluster more.
 
 You should now have a number of different Visualizations, Dashboards, and Searches so you can better understand how your cluster is operating at scale.
 

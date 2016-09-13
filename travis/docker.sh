@@ -18,6 +18,7 @@ sudo docker-compose -f travis/docker-compose.test.yml ps
 sudo docker-compose -f travis/docker-compose.test.yml logs kafka_monitor
 sudo docker-compose -f travis/docker-compose.test.yml logs kafka
 
+sleep 10
 
 # run docker unit and integration tests for each component
 sudo docker-compose -f travis/docker-compose.test.yml exec kafka_monitor ./run_docker_tests.sh
@@ -26,3 +27,18 @@ sudo docker-compose -f travis/docker-compose.test.yml exec crawler ./run_docker_
 
 # spin down compose
 sudo docker-compose -f travis/docker-compose.test.yml down
+
+# ---- Everything passed, now push to Dockerhub ------
+
+if [ "$TRAVIS_BRANCH" == "dev" ]; then
+    # build 'dev' docker images for dockerhub
+    sudo docker build --rm=true --file docker/kafka-monitor/Dockerfile --tag=istresearch/scrapy-cluster:kafka-monitor-dev .
+    sudo docker build --rm=true --file docker/redis-monitor/Dockerfile --tag=istresearch/scrapy-cluster:redis-monitor-dev .
+    sudo docker build --rm=true --file docker/crawler/Dockerfile --tag=istresearch/scrapy-cluster:crawler-dev .
+
+    # log into docker
+    sudo docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+
+    # push new containers
+    sudo docker push istresearch/scrapy-cluster
+fi

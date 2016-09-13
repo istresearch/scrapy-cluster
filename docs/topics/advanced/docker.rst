@@ -89,4 +89,73 @@ This will rebuild your containers and bring everything online.
 
 .. warning:: The Kafka container does not like being stopped and started over and over again, and will sometimes fail to start cleanly. You can mitigate this by issuing ``docker-compose down`` (note this will clean out all data).
 
+Compose ELK Stack
+-----------------
+
+You can use Docker Compose to configure both Scrapy Cluster and an associated ELK stack to view your log data from the 3 core components.
+
+The docker compose file is located in ``elk/docker-compose.elk.yml``, and contains all of the necessary ingredients to bring up
+
+* Scrapy Cluster
+
+  * Kafka Monitor
+
+  * Redis Monitor
+
+  * Crawler
+
+* Infrastructure
+
+  * Kafka
+
+  * Zookeeper
+
+  * Redis
+
+* ELK
+
+  * Elasticsearch
+
+  * Logstash
+
+  * Kibana
+
+Bring it up by issuing the following command from within the ``elk`` folder:
+
+::
+
+  $ docker-compose -f docker-compose.elk.yml up -d
+
+You can ensure everything started up via:
+
+::
+
+  $ docker-compose -f docker-compose.elk.yml ps
+          Name                   Command                  State                   Ports
+  ---------------------------------------------------------------------------------------------
+  elk_crawler_1           scrapy                  Up
+                          runspider c ...
+  elk_elasticsearch_1     /docker-entrypoint.sh   Up                      0.0.0.0:9200->9200/tc
+                          elas ...                                        p, 0.0.0.0:9300->9300
+                                                                          /tcp
+  elk_kafka_1             start-kafka.sh          Up                      0.0.0.0:9092->9092/tc
+                                                                          p
+  elk_kafka_monitor_1     python                  Up
+                          kafka_monit ...
+  elk_kibana_1            /docker-entrypoint.sh   Up                      0.0.0.0:5601->5601/tc
+                          kibana                                          p
+  elk_logstash_1          /docker-entrypoint.sh   Up                      0.0.0.0:5000->5000/tc
+                          logs ...                                        p
+  elk_redis_1             docker-entrypoint.sh    Up                      0.0.0.0:32776->6379/t
+                          redis ...                                       cp
+  elk_redis_monitor_1     python                  Up
+                          redis_monit ...
+  elk_zookeeper_1         /bin/sh -c              Up                      0.0.0.0:2181->2181/tc
+                          /usr/sbin/sshd  ...                             p, 22/tcp, 2888/tcp,
+                                                                          3888/tcp
+
+From here, please continue to the :ref:`Kibana <elk_kibana>` portion of the :doc:`ELK <integration>` integration guide.
+
+------
+
 As we continue to to expand into the docker world this page is subject to change. If you have a novel or different way you would like to use Scrapy Cluster in your container based application we would love to hear about it.
