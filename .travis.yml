@@ -15,6 +15,7 @@ env:
     init: /sbin/init
     run_opts: ""
   - docker: 1
+    secure: TDv9KpZM+2/5Wc2qH2kYXpQLccA4y+mTq55iDKko2BHc0MjeD3KDoZFp4IArXJwAm+KVRjior83a8vKditdVA3YWqsGfj0Zu5boy8d72Nb/it4rM2nqVN5D9fPJYFKAv/BnNAQ3QHeervqX3GDbvTXP0FgWfDqgf+swsDrL8Cqo=
 
 install: true
 

@@ -24,3 +24,18 @@ sudo docker exec -it travis_crawler_1 env TERM=xterm /bin/bash -c "./run_docker_
 
 # spin down compose
 sudo docker-compose -f travis/docker-compose.test.yml down
+
+# ---- Everything passed, now push to Dockerhub ------
+
+if [ "$TRAVIS_BRANCH" == "dev" ]; then
+    # build 'dev' docker images for dockerhub
+    sudo docker build --rm=true --file docker/kafka-monitor/Dockerfile --tag=istresearch/scrapy-cluster:kafka-monitor-dev .
+    sudo docker build --rm=true --file docker/redis-monitor/Dockerfile --tag=istresearch/scrapy-cluster:redis-monitor-dev .
+    sudo docker build --rm=true --file docker/crawler/Dockerfile --tag=istresearch/scrapy-cluster:crawler-dev .
+
+    # log into docker
+    sudo docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+
+    # push new containers
+    sudo docker push istresearch/scrapy-cluster
+fi
