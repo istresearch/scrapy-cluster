@@ -23,7 +23,7 @@ services:
       - zookeeper
     restart: always
   redis:
-    image: redis:alpine
+    image: redis
     ports:
       - "6379"
     restart: always
