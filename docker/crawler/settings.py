@@ -16,7 +16,7 @@ REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 REDIS_DB = int(os.getenv('REDIS_DB', 0))
 
 # Kafka server information
-KAFKA_HOSTS = [os.getenv('KAFKA_HOST', 'kafka:9092')]
+KAFKA_HOSTS = [x.strip() for x in os.getenv('KAFKA_HOSTS', 'kafka:9092').split(',')]
 KAFKA_TOPIC_PREFIX = os.getenv('KAFKA_TOPIC_PREFIX', 'demo')
 KAFKA_APPID_TOPICS = str2bool(os.getenv('KAFKA_APPID_TOPICS', False))
 # base64 encode the html body to avoid json dump errors due to malformed text
