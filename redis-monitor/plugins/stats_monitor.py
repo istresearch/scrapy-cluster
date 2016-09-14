@@ -7,18 +7,18 @@ class StatsMonitor(KafkaBaseMonitor):
     regex = "statsrequest:*:*"
 
     def setup(self, settings):
-        '''
+        """
         Setup kafka
-        '''
+        """
         KafkaBaseMonitor.setup(self, settings)
 
     def handle(self, key, value):
-        '''
+        """
         Processes a vaild stats request
 
         @param key: The key that matched the request
         @param value: The value associated with the key
-        '''
+        """
         # break down key
         elements = key.split(":")
 
@@ -65,9 +65,9 @@ class StatsMonitor(KafkaBaseMonitor):
             self.logger.error('Failed to send stats to kafka', extra=extras)
 
     def get_all_stats(self):
-        '''
+        """
         Gather all stats objects
-        '''
+        """
         self.logger.debug("Gathering all stats")
         the_dict = {}
         the_dict['kafka-monitor'] = self.get_kafka_monitor_stats()
@@ -77,31 +77,31 @@ class StatsMonitor(KafkaBaseMonitor):
         return the_dict
 
     def get_kafka_monitor_stats(self):
-        '''
+        """
         Gather Kafka Monitor stats
 
         @return: A dict of stats
-        '''
+        """
         self.logger.debug("Gathering kafka-monitor stats")
         return self._get_plugin_stats('kafka-monitor')
 
     def get_redis_monitor_stats(self):
-        '''
+        """
         Gather Redis Monitor stats
 
         @return: A dict of stats
-        '''
+        """
         self.logger.debug("Gathering redis-monitor stats")
         return self._get_plugin_stats('redis-monitor')
 
     def _get_plugin_stats(self, name):
-        '''
+        """
         Used for getting stats for Plugin based stuff, like Kafka Monitor
         and Redis Monitor
 
         @param name: the main class stats name
         @return: A formatted dict of stats
-        '''
+        """
         the_dict = {}
 
         keys = self.redis_conn.keys('stats:{n}:*'.format(n=name))
@@ -127,12 +127,12 @@ class StatsMonitor(KafkaBaseMonitor):
         return the_dict
 
     def _get_key_value(self, key, is_hll=False):
-        '''
+        """
         Returns the proper key value for the stats
 
         @param key: the redis key
         @param is_hll: the key is a HyperLogLog, else is a sorted set
-        '''
+        """
         if is_hll:
             # get hll value
             return self.redis_conn.execute_command("PFCOUNT", key)
@@ -141,9 +141,9 @@ class StatsMonitor(KafkaBaseMonitor):
             return self.redis_conn.zcard(key)
 
     def get_spider_stats(self):
-        '''
+        """
         Gather spider based stats
-        '''
+        """
         self.logger.debug("Gathering spider stats")
         the_dict = {}
         spider_set = set()
@@ -188,9 +188,9 @@ class StatsMonitor(KafkaBaseMonitor):
         return ret_dict
 
     def get_machine_stats(self):
-        '''
+        """
         Gather spider based stats
-        '''
+        """
         self.logger.debug("Gathering machine stats")
         the_dict = {}
         keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
@@ -224,11 +224,11 @@ class StatsMonitor(KafkaBaseMonitor):
         return ret_dict
 
     def get_crawler_stats(self):
-        '''
+        """
         Gather crawler stats
 
         @return: A dict of stats
-        '''
+        """
         self.logger.debug("Gathering crawler stats")
         the_dict = {}
 
@@ -239,11 +239,11 @@ class StatsMonitor(KafkaBaseMonitor):
         return the_dict
 
     def get_queue_stats(self):
-        '''
+        """
         Gather queue stats
 
         @return: A dict of stats
-        '''
+        """
         self.logger.debug("Gathering queue based stats")
 
         the_dict = {}

@@ -3,22 +3,22 @@ from .stop_monitor import StopMonitor
 
 
 class ExpireMonitor(StopMonitor):
-    '''
+    """
     Monitors for expiring crawls
-    '''
+    """
 
     regex = "timeout:*:*:*"
 
     def setup(self, settings):
-        '''
+        """
         Setup kafka
-        '''
+        """
         StopMonitor.setup(self, settings)
 
     def check_precondition(self, key, value):
-        '''
+        """
         Override to check for timeout
-        '''
+        """
         timeout = float(value)
         curr_time = self.get_current_time()
         if curr_time > timeout:
@@ -26,12 +26,12 @@ class ExpireMonitor(StopMonitor):
         return False
 
     def handle(self, key, value):
-        '''
+        """
         Processes a vaild action info request
 
         @param key: The key that matched the request
         @param value: The value associated with the key
-        '''
+        """
         # very similar to stop
         # break down key
         elements = key.split(":")

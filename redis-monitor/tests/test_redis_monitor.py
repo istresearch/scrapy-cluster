@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from unittest import TestCase
 from mock import MagicMock
 from mock import call
@@ -140,7 +140,6 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._process_plugin(plugin)
         lock.release.assert_not_called()
 
-
     def test_load_stats_plugins(self):
         # lets assume we are loading the default plugins
         self.redis_monitor._load_plugins()
@@ -176,7 +175,7 @@ class TestRedisMonitor(TestCase):
             'SECONDS_DUMB',
         ]
         good = [
-            'lifetime', # for totals, not DUMB
+            'lifetime',  # for totals, not DUMB
             '900',
             '3600',
         ]

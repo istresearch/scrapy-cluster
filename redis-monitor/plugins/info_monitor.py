@@ -8,18 +8,18 @@ class InfoMonitor(KafkaBaseMonitor):
     regex = "info:*:*"
 
     def setup(self, settings):
-        '''
+        """
         Setup kafka
-        '''
+        """
         KafkaBaseMonitor.setup(self, settings)
 
     def handle(self, key, value):
-        '''
+        """
         Processes a vaild action info request
 
         @param key: The key that matched the request
         @param value: The value associated with the key
-        '''
+        """
         # the master dict to return
         master = {}
         master['uuid'] = value
@@ -58,34 +58,34 @@ class InfoMonitor(KafkaBaseMonitor):
                               extra=extras)
 
     def _get_bin(self, key):
-        '''
+        """
         Returns a binned dictionary based on redis zscore
 
         @return: The sorted dict
-        '''
+        """
         # keys based on score
-        sortedDict = {}
+        sorted_dict = {}
         # this doesnt return them in order, need to bin first
         for item in self.redis_conn.zscan_iter(key):
             my_item = ujson.loads(item[0])
             # score is negated in redis
             my_score = -item[1]
 
-            if my_score not in sortedDict:
-                sortedDict[my_score] = []
+            if my_score not in sorted_dict:
+                sorted_dict[my_score] = []
 
-            sortedDict[my_score].append(my_item)
+            sorted_dict[my_score].append(my_item)
 
-        return sortedDict
+        return sorted_dict
 
     def _build_appid_info(self, master, dict):
-        '''
+        """
         Builds the appid info object
 
         @param master: the master dict
         @param dict: the dict object received
         @return: the appid info object
-        '''
+        """
         master['total_crawlids'] = 0
         master['total_pending'] = 0
         master['total_domains'] = 0
@@ -100,11 +100,11 @@ class InfoMonitor(KafkaBaseMonitor):
         match_string = '{sid}:*:queue'.format(sid=dict['spiderid'])
         for key in self.redis_conn.scan_iter(match=match_string):
             domain = key.split(":")[1]
-            sortedDict = self._get_bin(key)
+            sorted_dict = self._get_bin(key)
 
             # now iterate through binned dict
-            for score in sortedDict:
-                for item in sortedDict[score]:
+            for score in sorted_dict:
+                for item in sorted_dict[score]:
                     if 'meta' in item:
                         item = item['meta']
                     if item['appid'] == dict['appid']:
@@ -134,7 +134,6 @@ class InfoMonitor(KafkaBaseMonitor):
                             master['crawlids'][crawlid]['distinct_domains'] += 1
                             domain_dict[domain] = True
 
-
                         master['crawlids'][crawlid]['domains'][domain]['total'] = master['crawlids'][crawlid]['domains'][domain]['total'] + 1
 
                         if item['priority'] > master['crawlids'][crawlid]['domains'][domain]['high_priority']:
@@ -150,13 +149,13 @@ class InfoMonitor(KafkaBaseMonitor):
         return master
 
     def _build_crawlid_info(self, master, dict):
-        '''
+        """
         Builds the crawlid info object
 
         @param master: the master dict
         @param dict: the dict object received
         @return: the crawlid info object
-        '''
+        """
         master['total_pending'] = 0
         master['total_domains'] = 0
         master['appid'] = dict['appid']
