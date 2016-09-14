@@ -9,14 +9,14 @@ from scrapy.utils.response import response_status_message
 from scrapy.xlib.tx import ResponseFailed
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
-        ConnectionRefusedError, ConnectionDone, ConnectError, \
-        ConnectionLost, TCPTimedOutError
+    ConnectionRefusedError, ConnectionDone, ConnectError, \
+    ConnectionLost, TCPTimedOutError
 
 from scutils.stats_collector import StatsCollector
 from scutils.log_factory import LogFactory
 
-class LogRetryMiddleware(object):
 
+class LogRetryMiddleware(object):
     EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
                            ConnectionRefusedError, ConnectionDone, ConnectError,
                            ConnectionLost, TCPTimedOutError, ResponseFailed,
@@ -26,9 +26,9 @@ class LogRetryMiddleware(object):
         self.setup(settings)
 
     def setup(self, settings):
-        '''
+        """
         Does the actual setup of the middleware
-        '''
+        """
         # set up the default sc logger
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
@@ -40,15 +40,15 @@ class LogRetryMiddleware(object):
         my_backups = settings.get('SC_LOG_BACKUPS', 5)
 
         self.logger = LogFactory.get_instance(json=my_json,
-                                         name=my_name,
-                                         stdout=my_output,
-                                         level=my_level,
-                                         dir=my_dir,
-                                         file=my_file,
-                                         bytes=my_bytes,
-                                         backups=my_backups)
+                                              name=my_name,
+                                              stdout=my_output,
+                                              level=my_level,
+                                              dir=my_dir,
+                                              file=my_file,
+                                              bytes=my_bytes,
+                                              backups=my_backups)
 
-        #self.logger.setLevel(logging.DEBUG)
+        # self.logger.setLevel(logging.DEBUG)
         self.retry_http_codes = set(int(x) for x in
                                     settings.getlist('RETRY_HTTP_CODES'))
 
@@ -92,9 +92,9 @@ class LogRetryMiddleware(object):
         self.logger.error('Scraper Retry', extra=extras)
 
     def _setup_stats_status_codes(self):
-        '''
+        """
         Sets up the status code stats collectors
-        '''
+        """
         hostname = self._get_hostname()
         # we chose to handle 504's here as well as in the middleware
         # in case the middleware is disabled
@@ -107,40 +107,40 @@ class LogRetryMiddleware(object):
                 time = getattr(StatsCollector, item)
 
                 self.stats_dict[time] = StatsCollector \
-                        .get_rolling_time_window(
-                                redis_conn=self.redis_conn,
-                                key='{k}:{t}'.format(k=temp_key, t=time),
-                                window=time,
-                                cycle_time=self.settings['STATS_CYCLE'])
-                self.logger.debug("Set up LRM status code {s}, {n} spider,"\
-                    " host {h} Stats Collector '{i}'"\
-                    .format(h=hostname, n=self.name, s=status_code, i=item))
+                    .get_rolling_time_window(
+                    redis_conn=self.redis_conn,
+                    key='{k}:{t}'.format(k=temp_key, t=time),
+                    window=time,
+                    cycle_time=self.settings['STATS_CYCLE'])
+                self.logger.debug("Set up LRM status code {s}, {n} spider," \
+                                  " host {h} Stats Collector '{i}'" \
+                                  .format(h=hostname, n=self.name, s=status_code, i=item))
             except AttributeError as e:
-                self.logger.warning("Unable to find Stats Time '{s}'"\
-                        .format(s=item))
+                self.logger.warning("Unable to find Stats Time '{s}'" \
+                                    .format(s=item))
         total = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
-                        key='{k}:lifetime'.format(k=temp_key),
-                        cycle_time=self.settings['STATS_CYCLE'],
-                        roll=False)
-        self.logger.debug("Set up status code {s}, {n} spider,"\
-                    "host {h} Stats Collector 'lifetime'"\
-                        .format(h=hostname, n=self.name, s=status_code))
+                                               key='{k}:lifetime'.format(k=temp_key),
+                                               cycle_time=self.settings['STATS_CYCLE'],
+                                               roll=False)
+        self.logger.debug("Set up status code {s}, {n} spider," \
+                          "host {h} Stats Collector 'lifetime'" \
+                          .format(h=hostname, n=self.name, s=status_code))
         self.stats_dict['lifetime'] = total
 
     def _get_hostname(self):
-        '''
+        """
         Gets the hostname of the machine the spider is running on
 
         @return: the hostname of the machine
-        '''
+        """
         return socket.gethostname()
 
     def _increment_504_stat(self, request):
-        '''
+        """
         Increments the 504 stat counters
 
         @param request: The scrapy request in the spider
-        '''
+        """
         for key in self.stats_dict:
             if key == 'lifetime':
                 unique = request.url + str(time.time())

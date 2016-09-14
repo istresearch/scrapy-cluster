@@ -29,7 +29,7 @@ RUN mkdir -p /usr/src/app \
       libxml2-dev \
       libxslt-dev \
 # Updating pip itself before installing packages from requirements.txt
- && pip install --no-cache-dir pip setuptools \
+ && pip install -U --no-cache-dir pip setuptools wheel \
 # Installing pip packages from requirements.txt
  && pip install --no-cache-dir -r requirements.txt \
  && cd /tmp/utils \

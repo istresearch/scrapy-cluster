@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from unittest import TestCase
 from mock import MagicMock
 from crawling.redis_retry_middleware import RedisRetryMiddleware
@@ -8,7 +8,6 @@ from scrapy.http import Request
 
 
 class TestRedisRetryMiddleware(TestCase):
-
     def setUp(self):
         self.retry = RedisRetryMiddleware(MagicMock())
         self.retry.max_retry_times = 1

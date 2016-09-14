@@ -3,10 +3,10 @@ import sys
 
 
 def main():
-    '''
+    """
     A manual configuration file pusher for the crawlers. This will update
     Zookeeper with the contents of the file specified in the args.
-    '''
+    """
     import argparse
     from kazoo.client import KazooClient
 
@@ -26,7 +26,7 @@ def main():
     args = vars(parser.parse_args())
 
     filename = args['file']
-    id = args['id']
+    crawler_id = args['id']
     wipe = args['wipe']
     zoo = args['zoo_keeper']
     path = args['path']
@@ -37,19 +37,19 @@ def main():
     # ensure path exists
     zk.ensure_path(path)
 
-    bytes = open(filename, 'rb').read()
+    content = open(filename, 'rb').read()
 
     if zk.exists(path):
         # push the conf file
-        if not zk.exists(path + id) and not wipe:
+        if not zk.exists(path + crawler_id) and not wipe:
             print("creaing conf node")
-            zk.create(path + id, bytes)
+            zk.create(path + crawler_id, content)
         elif not wipe:
             print("updating conf file")
-            zk.set(path + id, bytes)
+            zk.set(path + crawler_id, content)
 
         if wipe:
-            zk.set(path + id, None)
+            zk.set(path + crawler_id, None)
 
     zk.stop()
 

@@ -13,6 +13,6 @@ class RedisRetryMiddleware(RetryMiddleware):
             retryreq.meta['retry_times'] = retries
             retryreq.dont_filter = True
             # our priority setup is different from super
-            retryreq.meta['priority'] = retryreq.meta['priority'] - 10
+            retryreq.meta['priority'] -= 10
 
             return retryreq

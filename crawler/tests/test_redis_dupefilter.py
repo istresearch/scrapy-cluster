@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from unittest import TestCase
 from mock import MagicMock
 from crawling.redis_dupefilter import RFPDupeFilter

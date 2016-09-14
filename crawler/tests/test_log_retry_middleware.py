@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from unittest import TestCase
 import mock
 from mock import MagicMock
@@ -9,7 +9,7 @@ from crawling.log_retry_middleware import LogRetryMiddleware
 
 class TestLogRetryMiddlewareStats(TestCase):
 
-    @mock.patch('crawling.log_retry_middleware.LogRetryMiddleware' \
+    @mock.patch('crawling.log_retry_middleware.LogRetryMiddleware'
                 '.setup')
     def setUp(self, s):
         self.lrm = LogRetryMiddleware(MagicMock())

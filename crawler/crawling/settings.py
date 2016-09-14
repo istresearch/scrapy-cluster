@@ -127,7 +127,6 @@ NEWSPIDER_MODULE = 'crawling.spiders'
 SCHEDULER = "crawling.distributed_scheduler.DistributedScheduler"
 
 
-
 # Store scraped item in redis for post-processing.
 ITEM_PIPELINES = {
     'crawling.pipelines.KafkaPipeline': 100,

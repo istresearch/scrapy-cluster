@@ -4,7 +4,7 @@ import scrapy
 
 from scrapy.http import Request
 from .lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
-from scrapy.conf import settings
+# from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
 from .redis_spider import RedisSpider
@@ -13,10 +13,10 @@ import random
 
 
 class WanderingSpider(RedisSpider):
-    '''
+    """
     A spider that randomly stumbles through the internet, until it hits a
     page with no links on it.
-    '''
+    """
     name = "wandering"
 
     def __init__(self, *args, **kwargs):
