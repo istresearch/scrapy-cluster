@@ -12,9 +12,9 @@ class ScraperHandler(BaseHandler):
     schema = "scraper_schema.json"
 
     def setup(self, settings):
-        '''
+        """
         Setup redis and tldextract
-        '''
+        """
         self.extract = tldextract.TLDExtract()
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
                                       port=settings['REDIS_PORT'],
@@ -28,33 +28,33 @@ class ScraperHandler(BaseHandler):
             # plugin is essential to functionality
             sys.exit(1)
 
-    def handle(self, dict):
-        '''
+    def handle(self, item):
+        """
         Processes a vaild crawl request
 
-        @param dict: a valid dictionary object
-        '''
+        @param item: a valid dictionary object
+        """
         # format key
-        ex_res = self.extract(dict['url'])
+        ex_res = self.extract(item['url'])
         key = "{sid}:{dom}.{suf}:queue".format(
-            sid=dict['spiderid'],
+            sid=item['spiderid'],
             dom=ex_res.domain,
             suf=ex_res.suffix)
 
-        val = ujson.dumps(dict)
+        val = ujson.dumps(item)
 
         # shortcut to shove stuff into the priority queue
-        self.redis_conn.zadd(key, val, -dict['priority'])
+        self.redis_conn.zadd(key, val, -item['priority'])
 
         # if timeout crawl, add value to redis
-        if 'expires' in dict and dict['expires'] != 0:
+        if 'expires' in item and item['expires'] != 0:
             key = "timeout:{sid}:{appid}:{crawlid}".format(
-                            sid=dict['spiderid'],
-                            appid=dict['appid'],
-                            crawlid=dict['crawlid'])
-            self.redis_conn.set(key, dict['expires'])
+                            sid=item['spiderid'],
+                            appid=item['appid'],
+                            crawlid=item['crawlid'])
+            self.redis_conn.set(key, item['expires'])
 
         # log success
-        dict['parsed'] = True
-        dict['valid'] = True
-        self.logger.info('Added crawl to Redis', extra=dict)
+        item['parsed'] = True
+        item['valid'] = True
+        self.logger.info('Added crawl to Redis', extra=item)

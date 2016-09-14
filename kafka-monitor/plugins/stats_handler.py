@@ -10,9 +10,9 @@ class StatsHandler(BaseHandler):
     schema = "stats_schema.json"
 
     def setup(self, settings):
-        '''
+        """
         Setup redis and tldextract
-        '''
+        """
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
                                       port=settings['REDIS_PORT'],
                                       db=settings.get('REDIS_DB'))
@@ -25,19 +25,19 @@ class StatsHandler(BaseHandler):
             # plugin is essential to functionality
             sys.exit(1)
 
-    def handle(self, dict):
-        '''
-        Processes a vaild stats request
+    def handle(self, item):
+        """
+        Processes a valid stats request
 
-        @param dict: a valid dictionary object
-        '''
+        @param item: a valid dictionary object
+        """
         # format key
         key = "statsrequest:{stats}:{appid}".format(
-                stats=dict['stats'],
-                appid=dict['appid'])
+                stats=item['stats'],
+                appid=item['appid'])
 
-        self.redis_conn.set(key, dict['uuid'])
+        self.redis_conn.set(key, item['uuid'])
 
-        dict['parsed'] = True
-        dict['valid'] = True
-        self.logger.info('Added stat request to Redis', extra=dict)
+        item['parsed'] = True
+        item['valid'] = True
+        self.logger.info('Added stat request to Redis', extra=item)

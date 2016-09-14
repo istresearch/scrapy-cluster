@@ -11,9 +11,9 @@ class ActionHandler(BaseHandler):
     schema = "action_schema.json"
 
     def setup(self, settings):
-        '''
+        """
         Setup redis and tldextract
-        '''
+        """
         self.extract = tldextract.TLDExtract()
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
                                       port=settings['REDIS_PORT'],
@@ -27,23 +27,23 @@ class ActionHandler(BaseHandler):
             # plugin is essential to functionality
             sys.exit(1)
 
-    def handle(self, dict):
-        '''
-        Processes a vaild action request
+    def handle(self, item):
+        """
+        Processes a valid action request
 
-        @param dict: a valid dictionary object
-        '''
+        @param item: a valid dictionary object
+        """
         # format key
         key = "{action}:{spiderid}:{appid}".format(
-                action=dict['action'],
-                spiderid=dict['spiderid'],
-                appid=dict['appid'])
+                action=item['action'],
+                spiderid=item['spiderid'],
+                appid=item['appid'])
 
-        if "crawlid" in dict:
-            key = key + ":" + dict['crawlid']
+        if "crawlid" in item:
+            key = key + ":" + item['crawlid']
 
-        self.redis_conn.set(key, dict['uuid'])
+        self.redis_conn.set(key, item['uuid'])
 
-        dict['parsed'] = True
-        dict['valid'] = True
-        self.logger.info('Added action to Redis', extra=dict)
+        item['parsed'] = True
+        item['valid'] = True
+        self.logger.info('Added action to Redis', extra=item)
