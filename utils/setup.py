@@ -10,17 +10,17 @@ def get_version():
 
 
 def readme():
-    ''' Returns README.rst contents as str '''
+    """ Returns README.rst contents as str """
     with open('README.rst') as f:
         return f.read()
 
 install_requires = [
-    'python-json-logger==0.1.4',
+    'python-json-logger==0.1.5',
     'ConcurrentLogHandler>=0.9.1',
     'redis==2.10.5',
     'kazoo>=2.2.1',
     'mock==2.0.0',
-    'testfixtures==4.10.0',
+    'testfixtures==4.10.1',
     'ujson==1.35',
     'future==0.15.2'
 ]
@@ -32,7 +32,7 @@ lint_requires = [
 
 tests_require = [
     'mock==2.0.0',
-    'testfixtures==4.10.0'
+    'testfixtures==4.10.1'
 ]
 
 dependency_links = []

@@ -1,6 +1,6 @@
-'''
+"""
 Offline utility tests
-'''
+"""
 from unittest import TestCase
 from scutils.stats_collector import AbstractCounter
 

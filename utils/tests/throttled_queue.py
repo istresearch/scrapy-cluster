@@ -1,5 +1,3 @@
-#!/opt/miniconda/bin/python
-
 from __future__ import print_function
 from builtins import str
 from builtins import range
@@ -7,7 +5,6 @@ import sys
 
 
 def main():
-
     import argparse
     import redis
     import time
@@ -20,8 +17,8 @@ def main():
     from scutils.redis_throttled_queue import RedisThrottledQueue
 
     parser = argparse.ArgumentParser(description="Throttled Queue Test Script."
-                    " Start either a single or multiple processes to see the "
-                " throttled queue mechanism in action.")
+                                                 " Start either a single or multiple processes to see the "
+                                                 " throttled queue mechanism in action.")
     parser.add_argument('-r', '--redis-host', action='store', required=True,
                         help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
@@ -51,7 +48,7 @@ def main():
 
     def push_items(amount):
         for i in range(0, amount):
-            t.push('item-'+str(i), i)
+            t.push('item-' + str(i), i)
 
     print("Adding", num * 2, "items for testing")
     push_items(num * 2)
@@ -72,6 +69,7 @@ def main():
         pass
     t.clear()
     print("Finished")
+
 
 if __name__ == "__main__":
     sys.exit(main())

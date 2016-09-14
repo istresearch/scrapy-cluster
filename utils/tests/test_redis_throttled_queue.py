@@ -1,6 +1,6 @@
-'''
+"""
 Offline utility tests
-'''
+"""
 from unittest import TestCase
 from mock import MagicMock
 from redis.exceptions import WatchError
