@@ -1,6 +1,6 @@
-'''
+"""
 Online utils test
-'''
+"""
 from __future__ import division
 from builtins import range
 from past.utils import old_div
@@ -286,7 +286,8 @@ class TestStatsHyperLogLogCounter(RedisMixin, TestCase, CleanMixin):
 
     tolerance = 2   # percent
 
-    def get_percent_diff(self, value, actual):
+    @staticmethod
+    def get_percent_diff(value, actual):
         return abs(actual - value) / (old_div((value + actual), 2.0)) * 100.0
 
     def test_hll_counter(self):
@@ -366,6 +367,7 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
         self.assertEqual(1, counter.value())
         counter.stop()
         self.clean_keys(counter.key)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Online deployment Test"

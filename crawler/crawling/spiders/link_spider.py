@@ -3,17 +3,17 @@ import scrapy
 
 from scrapy.http import Request
 from crawling.spiders.lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
-from scrapy.conf import settings
+# from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
 from crawling.spiders.redis_spider import RedisSpider
 
 
 class LinkSpider(RedisSpider):
-    '''
+    """
     A spider that walks all links from the requested URL. This is
     the entrypoint for generic crawling.
-    '''
+    """
     name = "link"
 
     def __init__(self, *args, **kwargs):
@@ -45,18 +45,18 @@ class LinkSpider(RedisSpider):
 
         # determine whether to continue spidering
         if cur_depth >= response.meta['maxdepth']:
-            self._logger.debug("Not spidering links in '{}' because" \
-                " cur_depth={} >= maxdepth={}".format(
-                                                      response.url,
-                                                      cur_depth,
-                                                      response.meta['maxdepth']))
+            self._logger.debug("Not spidering links in '{}' because"
+                               " cur_depth={} >= maxdepth={}".format(
+                response.url,
+                cur_depth,
+                response.meta['maxdepth']))
         else:
             # we are spidering -- yield Request for each discovered link
             link_extractor = LinkExtractor(
-                            allow_domains=response.meta['allowed_domains'],
-                            allow=response.meta['allow_regex'],
-                            deny=response.meta['deny_regex'],
-                            deny_extensions=response.meta['deny_extensions'])
+                allow_domains=response.meta['allowed_domains'],
+                allow=response.meta['allow_regex'],
+                deny=response.meta['deny_regex'],
+                deny_extensions=response.meta['deny_extensions'])
 
             for link in link_extractor.extract_links(response):
                 # link that was discovered
@@ -71,7 +71,7 @@ class LinkSpider(RedisSpider):
                 req.meta['curdepth'] = response.meta['curdepth'] + 1
 
                 if 'useragent' in response.meta and \
-                        response.meta['useragent'] is not None:
+                                response.meta['useragent'] is not None:
                     req.headers['User-Agent'] = response.meta['useragent']
 
                 self._logger.debug("Trying to follow link '{}'".format(req.url))

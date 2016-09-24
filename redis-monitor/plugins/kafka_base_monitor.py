@@ -12,16 +12,16 @@ import traceback
 
 
 class KafkaBaseMonitor(BaseMonitor):
-    '''
+    """
     Base monitor for handling outbound Kafka results
-    '''
+    """
 
     def setup(self, settings):
-        '''
+        """
         Setup the handler
 
         @param settings: The loaded settings file
-        '''
+        """
         self.producer = self._create_producer(settings)
         self.topic_prefix = settings['KAFKA_TOPIC_PREFIX']
 
@@ -52,11 +52,11 @@ class KafkaBaseMonitor(BaseMonitor):
             raise
 
     def _send_to_kafka(self, master):
-        '''
+        """
         Sends the message back to Kafka
         @param master: the final dict to send
         @returns: True if successfully sent to kafka
-        '''
+        """
         appid_topic = "{prefix}.outbound_{appid}".format(
                                                     prefix=self.topic_prefix,
                                                     appid=master['appid'])

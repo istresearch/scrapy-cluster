@@ -1,6 +1,6 @@
-'''
+"""
 Online integration tests
-'''
+"""
 from builtins import next
 
 import unittest
@@ -22,9 +22,9 @@ from time import sleep
 
 
 class CustomMonitor(KafkaBaseMonitor):
-    '''
+    """
     Custom Monitor so we can run this test live without interference
-    '''
+    """
     regex = "info-test:*"
 
     def setup(self, settings):

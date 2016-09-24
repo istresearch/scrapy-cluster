@@ -18,73 +18,73 @@ class RedisThrottledQueue(object):
     window_append = ":throttle_window"  # appended to end of window queue key
     time_append = ":throttle_time"  # appended to end to time key
 
-    def __init__(self, redisConn, myQueue, throttleWindow, throttleLimit,
-                        moderate=False, windowName=None, modName=None):
-        '''
+    def __init__(self, redis_conn, my_queue, throttle_window, throttle_limit,
+                 moderation=False, window_name=None, mod_name=None):
+        """
         For best performance, all instances of a throttled queue should have
             the same settings
         Limits outbound flow (pop) from any Redis Queue, does not hinder pushes
         This queue is also temporary, which is why is is a bit complex
 
-        @param redis: The redis connection to use
-        @param queueClass: The instantiated RedisQueue class
+        @param redis_conn: The redis connection to use
+        @param my_queue: The instantiated RedisQueue class
             (Queue, Stack, Priority)
-        @param throttleWindow: The time window to throttle pop requests (secs)
-        @param throttleLimit: The number of pops allows in a given time window
+        @param throttle_window: The time window to throttle pop requests (secs)
+        @param throttle_limit: The number of pops allows in a given time window
         @param moderation: Set to True if you would like the queue to have
             a more consistent outbound flow.
-        @param windowName: Use a different rolling window key name
-        @param modName: Use a different moderate time key name
-        '''
-        self.redis_conn = redisConn
-        self.queue = myQueue
-        self.window = float(throttleWindow)
-        self.limit = float(throttleLimit)
+        @param window_name: Use a different rolling window key name
+        @param mod_name: Use a different moderate time key name
+        """
+        self.redis_conn = redis_conn
+        self.queue = my_queue
+        self.window = float(throttle_window)
+        self.limit = float(throttle_limit)
 
-        if windowName is None:
+        if window_name is None:
             # default window name
             self.window_key = self.queue.key + self.window_append
         else:
-            self.window_key = windowName + self.window_append
+            self.window_key = window_name + self.window_append
 
         # moderation is useless when only grabbing 1 item in x secs
-        if moderate and throttleLimit != 1:
+        if moderation and throttle_limit != 1:
             self.moderation = old_div(self.window, self.limit)
             # used for communicating throttle moderation across queue instances
-            if modName is None:
+            if mod_name is None:
                 self.moderate_key = self.queue.key + self.time_append
             else:
-                self.moderate_key = modName + self.time_append
+                self.moderate_key = mod_name + self.time_append
 
     def __len__(self):
-        '''
+        """
         Return the length of the queue
-        '''
+        """
         return len(self.queue)
 
     def clear(self):
-        '''
+        """
         Clears all data associated with the throttled queue
-        '''
+        """
         self.redis_conn.delete(self.window_key)
         self.redis_conn.delete(self.moderate_key)
         self.queue.clear()
 
     def push(self, *args):
-        '''
+        """
         Push a request into the queue
-        '''
+        """
         self.queue.push(*args)
 
     def pop(self, *args):
-        '''
+        """
         Non-blocking from throttled queue standpoint, tries to return a
         queue pop request, only will return a request if
         the given time window has not been exceeded
 
         @return: The item if the throttle limit has not been hit,
         otherwise None
-        '''
+        """
         if self.allowed():
             return self.queue.pop(*args)
         else:
@@ -97,12 +97,12 @@ class RedisThrottledQueue(object):
     mechanisms around the operations
     '''
     def allowed(self):
-        '''
+        """
         Check to see if the pop request is allowed
 
         @return: True means the maximum was not been reached for the current
             time window, thus allowing what ever operation follows
-        '''
+        """
         # Expire old keys (hits)
         expires = time.time() - self.window
         self.redis_conn.zremrangebyscore(self.window_key, '-inf', expires)
@@ -143,13 +143,13 @@ class RedisThrottledQueue(object):
         return False
 
     def is_moderated(self, curr_time, pipe):
-        '''
+        """
         Tests to see if the moderation limit is not exceeded
 
         @return: True if the moderation limit is exceeded
-        '''
+        """
         # get key, otherwise default the moderate key expired and
-        # we dont care
+        # we don't care
         value = pipe.get(self.moderate_key)
         if value is None:
             value = 0.0
@@ -163,11 +163,11 @@ class RedisThrottledQueue(object):
         return False
 
     def test_hits(self):
-        '''
+        """
         Tests to see if the number of throttle queue hits is within our limit
 
         @return: True if the queue was below the limit AND atomically updated
-        '''
+        """
         with self.redis_conn.pipeline() as pipe:
             try:
                 pipe.watch(self.window_key)  # ---- LOCK

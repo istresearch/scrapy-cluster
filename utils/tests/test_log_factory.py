@@ -1,6 +1,6 @@
-'''
+"""
 Offline utility tests
-'''
+"""
 
 from unittest import TestCase
 import os
@@ -77,6 +77,7 @@ class TestLogFactory(TestCase):
             ('test', 'CRITICAL', 'critical message'),
         )
 
+
 class TestLogJSONFile(TestCase):
     def setUp(self):
         self.logger = LogObject(name='test', json=True,
@@ -93,8 +94,8 @@ class TestLogJSONFile(TestCase):
             six.assertCountEqual(self, the_dict, {
                 "message": "Test log",
                 "level": "INFO",
-                "logger":"test",
-                "timestamp":"2015-11-12T10:11:12.0Z"})
+                "logger": "test",
+                "timestamp": "2015-11-12T10:11:12.0Z"})
 
     def test_preserve_extra(self):
         self.logger.log_level = 'DEBUG'

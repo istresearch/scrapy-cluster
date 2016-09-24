@@ -1,8 +1,9 @@
 from __future__ import print_function
 import argparse
 
+
 class ArgparseHelper(argparse._HelpAction):
-    '''
+    """
     Used to help print top level '--help' arguments from argparse
     when used with subparsers
 
@@ -12,7 +13,7 @@ class ArgparseHelper(argparse._HelpAction):
     parser.add_argument('-h', '--help', action=ArgparseHelper,
                         help='show this help message and exit')
     # add subparsers below these lines
-    '''
+    """
 
     def __call__(self, parser, namespace, values, option_string=None):
         parser.print_help()

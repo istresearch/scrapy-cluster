@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from builtins import object
 from unittest import TestCase
 import mock
@@ -425,8 +425,8 @@ class TestDistributedSchedulerExpireQueues(ThrottleMixin, TestCase):
 class TestDistributedSchedulerParseCookie(ThrottleMixin, TestCase):
 
     def test_parse_cookie(self):
-        cookie = "blah=stuff; expires=Thu, 18 May 2017 12:42:29 GMT; path"\
-        "=/; Domain=.domain.com"
+        cookie = "blah=stuff; expires=Thu, 18 May 2017 12:42:29 GMT; " \
+                 "path=/; Domain=.domain.com"
         result = {
             "blah": "stuff",
             "expires": "Thu, 18 May 2017 12:42:29 GMT",

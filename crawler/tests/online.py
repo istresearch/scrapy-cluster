@@ -1,6 +1,6 @@
-'''
+"""
 Online link spider test
-'''
+"""
 from __future__ import print_function
 from future import standard_library
 standard_library.install_aliases()
@@ -26,9 +26,9 @@ from kafka import KafkaConsumer
 
 
 class CustomSpider(LinkSpider):
-    '''
+    """
     Overridden link spider for testing
-    '''
+    """
     name = "test-spider"
 
 

@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from builtins import object
 
 from unittest import TestCase
@@ -21,7 +21,6 @@ class ExampleHandler(BaseHandler):
 
 
 class TestKafkaMonitor(TestCase):
-
     def setUp(self):
         self.kafka_monitor = KafkaMonitor("settings.py", True)
         self.kafka_monitor.settings = self.kafka_monitor.wrapper.load("settings.py")
@@ -94,25 +93,24 @@ class TestKafkaMonitor(TestCase):
                 self.assertEquals(
                     self.kafka_monitor.stats_dict['total'][0].key,
                     '{k}:lifetime'.format(k=k1)
-                    )
+                )
             else:
                 self.assertEquals(
                     self.kafka_monitor.stats_dict['total'][time_key].key,
                     '{k}:{t}'.format(k=k1, t=time_key)
-                    )
+                )
 
         for time_key in self.kafka_monitor.stats_dict['fail']:
             if time_key == 0:
                 self.assertEquals(
                     self.kafka_monitor.stats_dict['fail'][0].key,
                     '{k}:lifetime'.format(k=k2)
-                    )
+                )
             else:
                 self.assertEquals(
                     self.kafka_monitor.stats_dict['fail'][time_key].key,
                     '{k}:{t}'.format(k=k2, t=time_key)
-                    )
-
+                )
 
     def test_load_stats_plugins(self):
         # lets assume we are loading the default plugins
@@ -171,12 +169,12 @@ class TestKafkaMonitor(TestCase):
                     self.assertEquals(
                         self.kafka_monitor.stats_dict['plugins'][plugin_key][0].key,
                         '{k}:lifetime'.format(k=k1)
-                        )
+                    )
                 else:
                     self.assertEquals(
                         self.kafka_monitor.stats_dict['plugins'][plugin_key][time_key].key,
                         '{k}:{t}'.format(k=k1, t=time_key)
-                        )
+                    )
 
     def test_process_messages(self):
         self.kafka_monitor.consumer = MagicMock()
@@ -184,7 +182,7 @@ class TestKafkaMonitor(TestCase):
 
         # handle kafka offset errors
         self.kafka_monitor.consumer = MagicMock(
-                        side_effect=OffsetOutOfRangeError("1"))
+            side_effect=OffsetOutOfRangeError("1"))
         try:
             self.kafka_monitor._process_messages()
         except OffsetOutOfRangeError:
@@ -211,12 +209,14 @@ class TestKafkaMonitor(TestCase):
         # set up to process messages
         self.kafka_monitor._load_plugins()
         self.kafka_monitor.validator = self.kafka_monitor.extend_with_default(Draft4Validator)
-        list(self.kafka_monitor.plugins_dict.items())[0][1]['instance'].handle = MagicMock(side_effect=AssertionError("scrape"))
-        list(self.kafka_monitor.plugins_dict.items())[1][1]['instance'].handle = MagicMock(side_effect=AssertionError("action"))
+        list(self.kafka_monitor.plugins_dict.items())[0][1]['instance'].handle = MagicMock(
+            side_effect=AssertionError("scrape"))
+        list(self.kafka_monitor.plugins_dict.items())[1][1]['instance'].handle = MagicMock(
+            side_effect=AssertionError("action"))
 
         #  test that handler function is called for the scraper
         message_string = "{\"url\":\"www.stuff.com\",\"crawlid\":\"1234\"," \
-            "\"appid\":\"testapp\"}"
+                         "\"appid\":\"testapp\"}"
         m.value = message_string
         messages = [m]
         self.kafka_monitor.consumer.__iter__.return_value = messages
@@ -228,7 +228,7 @@ class TestKafkaMonitor(TestCase):
 
         # test that handler function is called for the actions
         message_string = "{\"uuid\":\"blah\",\"crawlid\":\"1234\"," \
-            "\"appid\":\"testapp\",\"action\":\"info\",\"spiderid\":\"link\"}"
+                         "\"appid\":\"testapp\",\"action\":\"info\",\"spiderid\":\"link\"}"
 
         m.value = message_string
         messages = [m]
@@ -238,4 +238,3 @@ class TestKafkaMonitor(TestCase):
             self.fail("Action not called")
         except AssertionError as e:
             self.assertEquals("action", str(e))
-

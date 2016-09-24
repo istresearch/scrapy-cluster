@@ -22,12 +22,11 @@ from redis_lock import AlreadyAcquired
 
 
 class RedisMonitor(object):
-
     def __init__(self, settings_name, unit_test=False):
-        '''
+        """
         @param settings_name: the local settings file name
         @param unit_test: whether running unit tests or not
-        '''
+        """
         self.settings_name = settings_name
         self.redis_conn = None
         self.wrapper = SettingsWrapper()
@@ -36,14 +35,14 @@ class RedisMonitor(object):
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
 
     def setup(self, level=None, log_file=None, json=None):
-        '''
+        """
         Load everything up. Note that any arg here will override both
         default and custom settings
 
         @param level: the log level
         @param log_file: boolean t/f whether to log to a file, else stdout
         @param json: boolean t/f whether to write the logs in json
-        '''
+        """
         self.settings = self.wrapper.load(self.settings_name)
 
         my_level = level if level else self.settings['LOG_LEVEL']
@@ -59,8 +58,8 @@ class RedisMonitor(object):
                                               backups=self.settings['LOG_BACKUPS'])
 
         self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
-                                      port=self.settings['REDIS_PORT'],
-                                      db=self.settings['REDIS_DB'])
+                                            port=self.settings['REDIS_PORT'],
+                                            db=self.settings['REDIS_DB'])
 
         try:
             self.redis_conn.info()
@@ -74,20 +73,20 @@ class RedisMonitor(object):
         self._setup_stats()
 
     def import_class(self, cl):
-        '''
+        """
         Imports a class from a string
 
-        @param name: the module and class name in dot notation
-        '''
+        @param cl: the module and class name in dot notation
+        """
         d = cl.rfind(".")
-        classname = cl[d+1:len(cl)]
+        classname = cl[d + 1:len(cl)]
         m = __import__(cl[0:d], globals(), locals(), [classname])
         return getattr(m, classname)
 
     def _load_plugins(self):
-        '''
+        """
         Sets up all plugins and defaults
-        '''
+        """
         plugins = self.settings['PLUGINS']
 
         self.plugins_dict = {}
@@ -119,15 +118,15 @@ class RedisMonitor(object):
                                                key=lambda t: t[0]))
 
     def run(self):
-        '''
+        """
         The external main run loop
-        '''
+        """
         self._main_loop()
 
     def _main_loop(self):
-        '''
+        """
         The internal while true main loop for the redis monitor
-        '''
+        """
         self.logger.debug("Running main loop")
         old_time = 0
         while True:
@@ -152,11 +151,11 @@ class RedisMonitor(object):
             time.sleep(self.settings['SLEEP_TIME'])
 
     def _process_plugin(self, plugin):
-        '''
+        """
         Logic to handle each plugin that is active
 
         @param plugin: a plugin dict object
-        '''
+        """
         instance = plugin['instance']
         regex = plugin['regex']
         for key in self.redis_conn.scan_iter(match=regex):
@@ -179,23 +178,23 @@ class RedisMonitor(object):
                 lock.release()
 
     def _create_lock_object(self, key):
-        '''
+        """
         Returns a lock object, split for testing
-        '''
+        """
         return redis_lock.Lock(self.redis_conn, key,
                                expire=self.settings['REDIS_LOCK_EXPIRATION'],
                                auto_renewal=True)
 
     def _get_fail_key(self, key):
-        '''
+        """
         Returns the fail key string of a normal key
-        '''
+        """
         return 'lock:{k}:failures'.format(k=key)
 
     def _process_failures(self, key):
-        '''
+        """
         Handles the retrying of the failed key
-        '''
+        """
         if self.settings['RETRY_FAILURES']:
             self.logger.debug("going to retry failure")
             # get the current failure count
@@ -216,14 +215,14 @@ class RedisMonitor(object):
                 self.redis_conn.delete(key)
 
     def _process_key_val(self, instance, key, val):
-        '''
+        """
         Logic to let the plugin instance process the redis key/val
         Split out for unit testing
 
         @param instance: the plugin instance
         @param key: the redis key
         @param val: the key value from redis
-        '''
+        """
         if instance.check_precondition(key, val):
             combined = '{k}:{v}'.format(k=key, v=val)
             self._increment_total_stat(combined)
@@ -237,9 +236,9 @@ class RedisMonitor(object):
                 self.redis_conn.delete(failkey)
 
     def _setup_stats(self):
-        '''
+        """
         Sets up the stats
-        '''
+        """
         # stats setup
         self.stats_dict = {}
 
@@ -250,9 +249,9 @@ class RedisMonitor(object):
             self._setup_stats_plugins()
 
     def _setup_stats_total(self):
-        '''
+        """
         Sets up the total stats collectors
-        '''
+        """
         self.stats_dict['total'] = {}
         self.stats_dict['fail'] = {}
         temp_key1 = 'stats:redis-monitor:total'
@@ -261,38 +260,38 @@ class RedisMonitor(object):
             try:
                 time = getattr(StatsCollector, item)
                 self.stats_dict['total'][time] = StatsCollector \
-                        .get_rolling_time_window(
-                                redis_conn=self.redis_conn,
-                                key='{k}:{t}'.format(k=temp_key1, t=time),
-                                window=time,
-                                cycle_time=self.settings['STATS_CYCLE'])
+                    .get_rolling_time_window(
+                    redis_conn=self.redis_conn,
+                    key='{k}:{t}'.format(k=temp_key1, t=time),
+                    window=time,
+                    cycle_time=self.settings['STATS_CYCLE'])
                 self.stats_dict['fail'][time] = StatsCollector \
-                        .get_rolling_time_window(
-                                redis_conn=self.redis_conn,
-                                key='{k}:{t}'.format(k=temp_key2, t=time),
-                                window=time,
-                                cycle_time=self.settings['STATS_CYCLE'])
-                self.logger.debug("Set up total/fail Stats Collector '{i}'"\
-                        .format(i=item))
+                    .get_rolling_time_window(
+                    redis_conn=self.redis_conn,
+                    key='{k}:{t}'.format(k=temp_key2, t=time),
+                    window=time,
+                    cycle_time=self.settings['STATS_CYCLE'])
+                self.logger.debug("Set up total/fail Stats Collector '{i}'"
+                                  .format(i=item))
             except AttributeError as e:
-                self.logger.warning("Unable to find Stats Time '{s}'"\
-                        .format(s=item))
+                self.logger.warning("Unable to find Stats Time '{s}'"
+                                    .format(s=item))
         total1 = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
-                        key='{k}:lifetime'.format(k=temp_key1),
-                        cycle_time=self.settings['STATS_CYCLE'],
-                        roll=False)
+                                                key='{k}:lifetime'.format(k=temp_key1),
+                                                cycle_time=self.settings['STATS_CYCLE'],
+                                                roll=False)
         total2 = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
-                        key='{k}:lifetime'.format(k=temp_key2),
-                        cycle_time=self.settings['STATS_CYCLE'],
-                        roll=False)
+                                                key='{k}:lifetime'.format(k=temp_key2),
+                                                cycle_time=self.settings['STATS_CYCLE'],
+                                                roll=False)
         self.logger.debug("Set up total/fail Stats Collector 'lifetime'")
         self.stats_dict['total']['lifetime'] = total1
         self.stats_dict['fail']['lifetime'] = total2
 
     def _setup_stats_plugins(self):
-        '''
+        """
         Sets up the plugin stats collectors
-        '''
+        """
         self.stats_dict['plugins'] = {}
         for key in self.plugins_dict:
             plugin_name = self.plugins_dict[key]['instance'].__class__.__name__
@@ -303,30 +302,30 @@ class RedisMonitor(object):
                     time = getattr(StatsCollector, item)
 
                     self.stats_dict['plugins'][plugin_name][time] = StatsCollector \
-                            .get_rolling_time_window(
-                                    redis_conn=self.redis_conn,
-                                    key='{k}:{t}'.format(k=temp_key, t=time),
-                                    window=time,
-                                    cycle_time=self.settings['STATS_CYCLE'])
-                    self.logger.debug("Set up {p} plugin Stats Collector '{i}'"\
-                            .format(p=plugin_name, i=item))
+                        .get_rolling_time_window(
+                        redis_conn=self.redis_conn,
+                        key='{k}:{t}'.format(k=temp_key, t=time),
+                        window=time,
+                        cycle_time=self.settings['STATS_CYCLE'])
+                    self.logger.debug("Set up {p} plugin Stats Collector '{i}'"
+                                      .format(p=plugin_name, i=item))
                 except AttributeError as e:
-                    self.logger.warning("Unable to find Stats Time '{s}'"\
-                            .format(s=item))
+                    self.logger.warning("Unable to find Stats Time '{s}'"
+                                        .format(s=item))
             total = StatsCollector.get_hll_counter(redis_conn=self.redis_conn,
-                            key='{k}:lifetime'.format(k=temp_key),
-                            cycle_time=self.settings['STATS_CYCLE'],
-                            roll=False)
-            self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"\
-                            .format(p=plugin_name))
+                                                   key='{k}:lifetime'.format(k=temp_key),
+                                                   cycle_time=self.settings['STATS_CYCLE'],
+                                                   roll=False)
+            self.logger.debug("Set up {p} plugin Stats Collector 'lifetime'"
+                              .format(p=plugin_name))
             self.stats_dict['plugins'][plugin_name]['lifetime'] = total
 
     def _increment_total_stat(self, item):
-        '''
+        """
         Increments the total stat counters
 
         @param item: the unique print for HLL counter
-        '''
+        """
         item = item + str(time.time())
         if 'total' in self.stats_dict:
             self.logger.debug("Incremented total stats")
@@ -337,12 +336,12 @@ class RedisMonitor(object):
                     self.stats_dict['total'][key].increment()
 
     def _increment_fail_stat(self, item):
-        '''
+        """
         Increments the total stat counters
 
         @param item: the unique print for HLL counter
-        '''
-        item = item + str(time.time())
+        """
+        item += str(time.time())
         if 'fail' in self.stats_dict:
             self.logger.debug("Incremented fail stats")
             for key in self.stats_dict['fail']:
@@ -352,16 +351,16 @@ class RedisMonitor(object):
                     self.stats_dict['fail'][key].increment()
 
     def _increment_plugin_stat(self, name, item):
-        '''
+        """
         Increments the total stat counters
 
         @param name: The formal name of the plugin
         @param item: the unique print for HLL counter
-        '''
-        item = item + str(time.time())
+        """
+        item += str(time.time())
         if 'plugins' in self.stats_dict:
-            self.logger.debug("Incremented plugin '{p}' plugin stats"\
-                    .format(p=name))
+            self.logger.debug("Incremented plugin '{p}' plugin stats"
+                              .format(p=name))
             for key in self.stats_dict['plugins'][name]:
                 if key == 'lifetime':
                     self.stats_dict['plugins'][name][key].increment(item)
@@ -369,9 +368,9 @@ class RedisMonitor(object):
                     self.stats_dict['plugins'][name][key].increment()
 
     def _dump_stats(self):
-        '''
+        """
         Dumps the stats out
-        '''
+        """
         extras = {}
         if 'total' in self.stats_dict:
             self.logger.debug("Compiling total/fail dump stats")
@@ -391,14 +390,14 @@ class RedisMonitor(object):
 
         if not self.logger.json:
             self.logger.info('Redis Monitor Stats Dump:\n{0}'.format(
-                    json.dumps(extras, indent=4, sort_keys=True)))
+                json.dumps(extras, indent=4, sort_keys=True)))
         else:
             self.logger.info('Redis Monitor Stats Dump', extra=extras)
 
     def _dump_crawl_stats(self):
-        '''
+        """
         Dumps flattened crawling stats so the spiders do not have to
-        '''
+        """
         extras = {}
         spiders = {}
 
@@ -435,7 +434,7 @@ class RedisMonitor(object):
                 spider_set.add(spider)
 
             else:
-                self.logger.warn("Unknown crawler stat key", {"key":key})
+                self.logger.warn("Unknown crawler stat key", {"key": key})
 
         # simple counts
         extras['unique_spider_count'] = len(spider_set)
@@ -446,14 +445,14 @@ class RedisMonitor(object):
 
         if not self.logger.json:
             self.logger.info('Crawler Stats Dump:\n{0}'.format(
-                    json.dumps(extras, indent=4, sort_keys=True)))
+                json.dumps(extras, indent=4, sort_keys=True)))
         else:
             self.logger.info('Crawler Stats Dump', extra=extras)
 
     def _dump_queue_stats(self):
-        '''
+        """
         Dumps basic info about the queue lengths for the spider types
-        '''
+        """
         extras = {}
         keys = self.redis_conn.keys('*:*:queue')
         total_backlog = 0
@@ -477,14 +476,14 @@ class RedisMonitor(object):
 
         if not self.logger.json:
             self.logger.info('Queue Stats Dump:\n{0}'.format(
-                    json.dumps(extras, indent=4, sort_keys=True)))
+                json.dumps(extras, indent=4, sort_keys=True)))
         else:
             self.logger.info('Queue Stats Dump', extra=extras)
 
     def _report_self(self):
-        '''
+        """
         Reports the crawler uuid to redis
-        '''
+        """
         key = "stats:redis-monitor:self:{m}:{u}".format(
             m=socket.gethostname(),
             u=self.my_uuid)
@@ -492,18 +491,19 @@ class RedisMonitor(object):
         self.redis_conn.expire(key, self.settings['HEARTBEAT_TIMEOUT'])
 
     def close(self):
-        '''
+        """
         Closes the Redis Monitor and plugins
-        '''
+        """
         for plugin_key in self.plugins_dict:
             obj = self.plugins_dict[plugin_key]
             instance = obj['instance']
             instance.close()
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='Redis Monitor: Monitor the Scrapy Cluster Redis '
-        'instance.\n')
+                    'instance.\n')
 
     parser.add_argument('-s', '--settings', action='store', required=False,
                         help="The settings file to read from",
@@ -514,7 +514,7 @@ def main():
     parser.add_argument('-lf', '--log-file', action='store_const',
                         required=False, const=True, default=None,
                         help='Log the output to the file specified in '
-                        'settings.py. Otherwise logs to stdout')
+                             'settings.py. Otherwise logs to stdout')
     parser.add_argument('-lj', '--log-json', action='store_const',
                         required=False, const=True, default=None,
                         help="Log the data in JSON format")
@@ -524,11 +524,12 @@ def main():
 
     try:
         redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
-                        json=args['log_json'])
+                            json=args['log_json'])
         redis_monitor.run()
     except KeyboardInterrupt:
         redis_monitor.logger.info("Closing Redis Monitor")
         redis_monitor.close()
+
 
 if __name__ == "__main__":
     sys.exit(main())

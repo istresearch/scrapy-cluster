@@ -8,18 +8,18 @@ class StopMonitor(KafkaBaseMonitor):
     regex = "stop:*:*"
 
     def setup(self, settings):
-        '''
+        """
         Setup kafka
-        '''
+        """
         KafkaBaseMonitor.setup(self, settings)
 
     def handle(self, key, value):
-        '''
-        Processes a vaild action info request
+        """
+        Processes a valid action info request
 
         @param key: The key that matched the request
         @param value: The value associated with the key
-        '''
+        """
         # break down key
         elements = key.split(":")
 
@@ -71,14 +71,14 @@ class StopMonitor(KafkaBaseMonitor):
             self.logger.error('Failed to send stop ack to kafka', extra=extras)
 
     def _purge_crawl(self, spiderid, appid, crawlid):
-        '''
+        """
         Wrapper for purging the crawlid from the queues
 
         @param spiderid: the spider id
         @param appid: the app id
         @param crawlid: the crawl id
         @return: The number of requests purged
-        '''
+        """
         # purge three times to try to make sure everything is cleaned
         total = self._mini_purge(spiderid, appid, crawlid)
         total = total + self._mini_purge(spiderid, appid, crawlid)
@@ -87,14 +87,14 @@ class StopMonitor(KafkaBaseMonitor):
         return total
 
     def _mini_purge(self, spiderid, appid, crawlid):
-        '''
+        """
         Actually purges the crawlid from the queue
 
         @param spiderid: the spider id
         @param appid: the app id
         @param crawlid: the crawl id
         @return: The number of requests purged
-        '''
+        """
         total_purged = 0
 
         match_string = '{sid}:*:queue'.format(sid=spiderid)

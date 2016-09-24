@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 
 import unittest
 from unittest import TestCase
@@ -21,6 +21,7 @@ import copy
 from kafka.common import OffsetOutOfRangeError
 from jsonschema import Draft4Validator
 import tldextract
+
 
 class TestPlugins(TestCase):
 
@@ -93,9 +94,9 @@ class TestPlugins(TestCase):
         handler.redis_conn.set = MagicMock(side_effect=AssertionError("added"))
 
         valid = {
-            "uuid":"abaksdjb",
-            "appid":"testapp",
-            "stats":"all",
+            "uuid": "abaksdjb",
+            "appid": "testapp",
+            "stats": "all",
         }
 
         try:

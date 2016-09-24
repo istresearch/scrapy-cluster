@@ -1,6 +1,6 @@
-'''
+"""
 Offline utility tests
-'''
+"""
 from __future__ import print_function
 from unittest import TestCase
 from scutils.settings_wrapper import SettingsWrapper

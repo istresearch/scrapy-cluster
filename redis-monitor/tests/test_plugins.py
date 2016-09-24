@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from builtins import object
 
 from unittest import TestCase
@@ -65,7 +65,6 @@ class RegexFixer(object):
 
 
 class TestInfoPlugin(TestCase, RegexFixer):
-
     def setUp(self):
         self.plugin = InfoMonitor()
         self.plugin.redis_conn = MagicMock()
@@ -102,8 +101,8 @@ class TestInfoPlugin(TestCase, RegexFixer):
         self.plugin.redis_conn.get = MagicMock(return_value=10)
         self.plugin.redis_conn.scan_iter = MagicMock(return_value=['theKey:bingo.com'])
         self.plugin._get_bin = MagicMock(return_value={-200: [{
-                                         'appid': "testapp", "priority": 10,
-                                         'crawlid': 'crawlIDHERE'}]})
+            'appid': "testapp", "priority": 10,
+            'crawlid': 'crawlIDHERE'}]})
 
         result = self.plugin._build_crawlid_info(master, dict)
 
@@ -137,10 +136,10 @@ class TestInfoPlugin(TestCase, RegexFixer):
         dict['appid'] = elements[2]
 
         self.plugin.redis_conn.scan_iter = MagicMock(return_value=[
-                                                     'theKey:bingo.com'])
+            'theKey:bingo.com'])
         self.plugin._get_bin = MagicMock(return_value={-200: [{
-                                         'appid': "testapp", "priority": 20,
-                                         'crawlid': 'cool', 'expires': 10}]})
+            'appid': "testapp", "priority": 20,
+            'crawlid': 'cool', 'expires': 10}]})
 
         result = self.plugin._build_appid_info(master, dict)
 
@@ -159,7 +158,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
                             'low_priority': 20,
                             'high_priority': 20,
                             'total': 1
-                    }},
+                        }},
                     'distinct_domains': 1,
                     'total': 1,
                     'expires': 10
@@ -208,7 +207,7 @@ class TestExpirePlugin(TestCase, RegexFixer):
         # if the stop monitor passes then this is just testing whether
         # the handler acts on the key only if it has expired
         self.plugin._purge_crawl = MagicMock(side_effect=Exception(
-                                             "throw once"))
+            "throw once"))
 
         self.plugin._get_current_time = MagicMock(return_value=5)
 
@@ -224,12 +223,13 @@ class TestExpirePlugin(TestCase, RegexFixer):
         except BaseException as e:
             self.assertEquals("throw once", str(e))
 
+
 class TestStatsPlugin(TestCase, RegexFixer):
     def setUp(self):
         self.plugin = StatsMonitor()
         self.plugin.redis_conn = MagicMock()
         self.plugin.logger = MagicMock()
-        self.plugin._get_key_value = MagicMock(return_value = 5)
+        self.plugin._get_key_value = MagicMock(return_value=5)
 
     def test_stats_regex(self):
         regex = self.fix_re(self.plugin.regex)
@@ -288,7 +288,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
                 'total_spider_count': 4,
                 'other': {'count': 1, '200': {'3600': 5}, '403': {'lifetime': 5}},
                 'link': {'count': 3, '200': {'lifetime': 5, '86400': 5, '3600': 5}, '504': {'86400': 5}
-                }
+                         }
             }
         }
         self.assertEquals(result, good)
@@ -297,19 +297,19 @@ class TestStatsPlugin(TestCase, RegexFixer):
         # tests stats on three different machines, with different spiders
         # contributing to the same or different stats
         self.plugin.redis_conn.keys = MagicMock(return_value=[
-                                                'stats:crawler:host1:link:200:3600',
-                                                'stats:crawler:host2:link:200:lifetime',
-                                                'stats:crawler:host1:link:504:86400',
-                                                'stats:crawler:host2:other:403:lifetime',
-                                                'stats:crawler:host3:link:200:86400',
-                                                'stats:crawler:host1:other:200:3600',
-                                                ])
+            'stats:crawler:host1:link:200:3600',
+            'stats:crawler:host2:link:200:lifetime',
+            'stats:crawler:host1:link:504:86400',
+            'stats:crawler:host2:other:403:lifetime',
+            'stats:crawler:host3:link:200:86400',
+            'stats:crawler:host1:other:200:3600',
+        ])
         result = self.plugin.get_machine_stats()
         good = {
             'machines': {
                 'count': 3,
-                'host1': {'200': {'3600': 10},'504': {'86400': 5}},
-                'host2': {'200': {'lifetime': 5},'403': {'lifetime': 5}},
+                'host1': {'200': {'3600': 10}, '504': {'86400': 5}},
+                'host2': {'200': {'lifetime': 5}, '403': {'lifetime': 5}},
                 'host3': {'200': {'86400': 5}}
             }
         }
@@ -319,12 +319,12 @@ class TestStatsPlugin(TestCase, RegexFixer):
         # tests stats on three different machines, with different spiders
         # contributing to the same or different stats
         self.plugin.redis_conn.keys = MagicMock(return_value=[
-                                                'link:istresearch.com:queue',
-                                                'link:yellowpages.com:queue',
-                                                'link:cnn.com:queue',
-                                                'wandering:dmoz.org:queue',
-                                                'wandering:craigslist.org:queue',
-                                                ])
+            'link:istresearch.com:queue',
+            'link:yellowpages.com:queue',
+            'link:cnn.com:queue',
+            'wandering:dmoz.org:queue',
+            'wandering:craigslist.org:queue',
+        ])
         results = [5, 10, 11, 1, 3]
 
         def ret_val(*args):
@@ -359,13 +359,13 @@ class TestStatsPlugin(TestCase, RegexFixer):
 
     def test_stats_get_plugin(self):
         self.plugin.redis_conn.keys = MagicMock(return_value=[
-                                                'stats:main:total:3600',
-                                                'stats:main:total:lifetime',
-                                                'stats:main:pluginX:86400',
-                                                'stats:main:pluginX:lifetime',
-                                                'stats:main:fail:3600',
-                                                'stats:main:fail:68000'
-                                                ])
+            'stats:main:total:3600',
+            'stats:main:total:lifetime',
+            'stats:main:pluginX:86400',
+            'stats:main:pluginX:lifetime',
+            'stats:main:fail:3600',
+            'stats:main:fail:68000'
+        ])
         result = self.plugin._get_plugin_stats('main')
         good = {
             "plugins": {
@@ -375,6 +375,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
             "fail": {"68000": 5, "3600": 5}
         }
         self.assertEquals(result, good)
+
 
 class TestZookeeperPlugin(TestCase, RegexFixer):
     def setUp(self):

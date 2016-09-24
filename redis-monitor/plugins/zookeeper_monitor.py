@@ -11,9 +11,9 @@ class ZookeeperMonitor(KafkaBaseMonitor):
     regex = "zk:*:*:*"
 
     def setup(self, settings):
-        '''
+        """
         Setup kafka
-        '''
+        """
         KafkaBaseMonitor.setup(self, settings)
 
         self.zoo_client = KazooClient(hosts=settings['ZOOKEEPER_HOSTS'])
@@ -24,12 +24,12 @@ class ZookeeperMonitor(KafkaBaseMonitor):
             self.zoo_client.ensure_path(self.path)
 
     def handle(self, key, value):
-        '''
-        Processes a vaild zookeeper request
+        """
+        Processes a valid zookeeper request
 
         @param key: The key that matched the request
         @param value: The value associated with the key
-        '''
+        """
         # break down key
         elements = key.split(":")
         dict = {}

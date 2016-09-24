@@ -16,10 +16,9 @@ from scutils.log_factory import LogFactory
 
 
 class LoggingBeforePipeline(object):
-
-    '''
+    """
     Logs the crawl, currently the 1st priority of the pipeline
-    '''
+    """
 
     def __init__(self, logger):
         self.logger = logger
@@ -71,9 +70,9 @@ class LoggingBeforePipeline(object):
 
 
 class KafkaPipeline(object):
-    '''
+    """
     Pushes a serialized item to appropriate Kafka topics.
-    '''
+    """
 
     def __init__(self, producer, topic_prefix, logger, appids,
                  use_base64):
@@ -108,16 +107,16 @@ class KafkaPipeline(object):
 
         try:
             producer = KafkaProducer(bootstrap_servers=settings['KAFKA_HOSTS'],
-                                 retries=3,
-                                 linger_ms=settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
-                                 buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'])
+                                     retries=3,
+                                     linger_ms=settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
+                                     buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'])
         except Exception as e:
-                logger.error("Unable to connect to Kafka in Pipeline"\
-                    ", raising exit flag.")
-                # this is critical so we choose to exit.
-                # exiting because this is a different thread from the crawlers
-                # and we want to ensure we can connect to Kafka when we boot
-                sys.exit(1)
+            logger.error("Unable to connect to Kafka in Pipeline" \
+                         ", raising exit flag.")
+            # this is critical so we choose to exit.
+            # exiting because this is a different thread from the crawlers
+            # and we want to ensure we can connect to Kafka when we boot
+            sys.exit(1)
         topic_prefix = settings['KAFKA_TOPIC_PREFIX']
         use_base64 = settings['KAFKA_BASE_64_ENCODE']
 
@@ -129,9 +128,9 @@ class KafkaPipeline(object):
         return cls.from_settings(crawler.settings)
 
     def _get_time(self):
-        '''
+        """
         Returns an ISO formatted string of the current time
-        '''
+        """
         return dt.datetime.utcnow().isoformat()
 
     def process_item(self, item, spider):
@@ -153,7 +152,7 @@ class KafkaPipeline(object):
 
             if self.appid_topics:
                 appid_topic = "{prefix}.crawled_{appid}".format(
-                        prefix=prefix, appid=datum["appid"])
+                    prefix=prefix, appid=datum["appid"])
                 self.producer.send(appid_topic, message)
 
             item['success'] = True
@@ -170,10 +169,9 @@ class KafkaPipeline(object):
 
 
 class LoggingAfterPipeline(object):
-
-    '''
+    """
     Logs the crawl for successfully pushing to Kafka
-    '''
+    """
 
     def __init__(self, logger):
         self.logger = logger
@@ -226,4 +224,3 @@ class LoggingAfterPipeline(object):
                 self.logger.error('Failed to send page to Kafka',
                                   extra=item_copy)
             return item
-

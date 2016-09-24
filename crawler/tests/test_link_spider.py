@@ -1,6 +1,6 @@
-'''
+"""
 Offline tests
-'''
+"""
 from unittest import TestCase
 from mock import MagicMock
 from crawling.spiders.link_spider import LinkSpider
@@ -10,7 +10,6 @@ from crawling.items import RawResponseItem
 
 
 class TestLinkSpider(TestCase):
-
     def setUp(self):
         self.spider = LinkSpider()
         self.spider._logger = MagicMock()
@@ -35,7 +34,7 @@ class TestLinkSpider(TestCase):
         return item
 
     def evaluate(self, meta_object,
-                text, expected_raw, expected_requests):
+                 text, expected_raw, expected_requests):
         request = Request(url='http://www.drudgereport.com',
                           meta=meta_object)
         response = HtmlResponse('drudge.url', body=text, request=request,
@@ -46,9 +45,9 @@ class TestLinkSpider(TestCase):
 
         for x in self.spider.parse(response):
             if isinstance(x, RawResponseItem):
-                raw_item_count = raw_item_count + 1
+                raw_item_count += 1
             elif isinstance(x, Request):
-                request_count = request_count + 1
+                request_count += 1
 
         self.assertEqual(raw_item_count, expected_raw)
         self.assertEqual(request_count, expected_requests)

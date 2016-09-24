@@ -14,11 +14,10 @@ _collect_string_content = etree.XPath("string()")
 
 
 class CustomParser(LxmlParserLinkExtractor):
-
     def _extract_links(self, selector, response_url, response_encoding, base_url):
-        '''
+        """
         Pretty much the same function, just added 'ignore' to to_native_str()
-        '''
+        """
         links = []
         # hacky way to get the underlying lxml parsed document
         for el, attr, attr_val in self._iter_links(selector.root):
@@ -26,7 +25,7 @@ class CustomParser(LxmlParserLinkExtractor):
             try:
                 attr_val = urljoin(base_url, attr_val)
             except ValueError:
-                continue # skipping bogus links
+                continue  # skipping bogus links
             else:
                 url = self.process_attr(attr_val)
                 if url is None:
@@ -41,6 +40,7 @@ class CustomParser(LxmlParserLinkExtractor):
             links.append(link)
         return self._deduplicate_if_needed(links)
 
+
 class CustomLxmlLinkExtractor(LxmlLinkExtractor):
     def __init__(self, allow=(), deny=(), allow_domains=(), deny_domains=(),
                  restrict_xpaths=(),
@@ -48,9 +48,9 @@ class CustomLxmlLinkExtractor(LxmlLinkExtractor):
                  unique=True, process_value=None, deny_extensions=None,
                  restrict_css=()):
         super(CustomLxmlLinkExtractor, self).__init__(allow=allow, deny=deny,
-                allow_domains=allow_domains, deny_domains=deny_domains,
-                restrict_xpaths=restrict_xpaths, restrict_css=restrict_css,
-                canonicalize=canonicalize, deny_extensions=deny_extensions)
+                                                      allow_domains=allow_domains, deny_domains=deny_domains,
+                                                      restrict_xpaths=restrict_xpaths, restrict_css=restrict_css,
+                                                      canonicalize=canonicalize, deny_extensions=deny_extensions)
         tag_func = lambda x: x in tags
         attr_func = lambda x: x in attrs
 

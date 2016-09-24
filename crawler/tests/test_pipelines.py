@@ -10,7 +10,6 @@ from scrapy import Item
 
 
 class ItemMixin(object):
-
     def _get_item(self):
         item = RawResponseItem()
         item['appid'] = 'app'
@@ -29,7 +28,6 @@ class ItemMixin(object):
 
 
 class TestLoggingBeforePipeline(TestCase, ItemMixin):
-
     def setUp(self):
         self.pipe = LoggingBeforePipeline(MagicMock())
         self.pipe.logger.name = "crawler"
@@ -50,6 +48,7 @@ class TestLoggingBeforePipeline(TestCase, ItemMixin):
         # test unknown item
         class WeirdItem(Item):
             pass
+
         item2 = WeirdItem()
 
         self.pipe.logger.warn = MagicMock(side_effect=Exception("warn"))
@@ -61,7 +60,6 @@ class TestLoggingBeforePipeline(TestCase, ItemMixin):
 
 
 class TestLoggingAfterPipeline(TestCase, ItemMixin):
-
     def setUp(self):
         self.pipe = LoggingAfterPipeline(MagicMock())
         self.pipe.logger.name = "crawler"
@@ -90,8 +88,8 @@ class TestLoggingAfterPipeline(TestCase, ItemMixin):
         except Exception as e:
             self.assertEqual(str(e), "error")
 
-class TestKafkaPipeline(TestCase, ItemMixin):
 
+class TestKafkaPipeline(TestCase, ItemMixin):
     def setUp(self):
         self.pipe = KafkaPipeline(MagicMock(), 'prefix', MagicMock(), False, False)
         self.pipe.producer.send = MagicMock()
@@ -105,7 +103,10 @@ class TestKafkaPipeline(TestCase, ItemMixin):
 
         # test normal send, no appid topics
         self.pipe.process_item(item, spider)
-        expected = '{"appid":"app","attrs":{},"body":"text","crawlid":"crawlid","links":[],"request_headers":{},"response_headers":{},"response_url":"http:\\/\\/dumb.com","status_code":200,"status_msg":"OK","timestamp":"the time","url":"http:\\/\\/dumb.com"}'
+        expected = '{"appid":"app","attrs":{},"body":"text","crawlid":"crawlid",' \
+                   '"links":[],"request_headers":{},"response_headers":{},' \
+                   '"response_url":"http:\\/\\/dumb.com","status_code":200,' \
+                   '"status_msg":"OK","timestamp":"the time","url":"http:\\/\\/dumb.com"}'
         self.pipe.producer.send.assert_called_once_with('prefix.crawled_firehose',
                                                         expected)
         self.pipe.producer.send.reset_mock()
@@ -115,7 +116,7 @@ class TestKafkaPipeline(TestCase, ItemMixin):
         self.pipe.appid_topics = True
         self.pipe.process_item(item, spider)
         self.pipe.producer.send.assert_called_with('prefix.crawled_app',
-                                                    expected)
+                                                   expected)
         self.pipe.producer.send.reset_mock()
 
         # test base64 encode
@@ -123,7 +124,10 @@ class TestKafkaPipeline(TestCase, ItemMixin):
         self.pipe.appid_topics = False
         self.pipe.use_base64 = True
         self.pipe.process_item(item, spider)
-        expected = '{"appid":"app","attrs":{},"body":"dGV4dA==","crawlid":"crawlid","links":[],"request_headers":{},"response_headers":{},"response_url":"http:\\/\\/dumb.com","status_code":200,"status_msg":"OK","timestamp":"the time","url":"http:\\/\\/dumb.com"}'
+        expected = '{"appid":"app","attrs":{},"body":"dGV4dA==","crawlid":"crawlid",' \
+                   '"links":[],"request_headers":{},"response_headers":{},' \
+                   '"response_url":"http:\\/\\/dumb.com","status_code":200,' \
+                   '"status_msg":"OK","timestamp":"the time","url":"http:\\/\\/dumb.com"}'
         self.pipe.producer.send.assert_called_once_with('prefix.crawled_firehose',
                                                         expected)
 
@@ -136,4 +140,3 @@ class TestKafkaPipeline(TestCase, ItemMixin):
         self.pipe.producer.send = MagicMock(side_effect=Exception('bad kafka'))
         ret_val = self.pipe.process_item(item, spider)
         self.assertEquals(copy, ret_val)
-
