@@ -139,6 +139,7 @@ SPIDER_MIDDLEWARES = {
     # disable built-in DepthMiddleware, since we do our own
     # depth management per crawl request
     'scrapy.spidermiddlewares.depth.DepthMiddleware': None,
+    'crawling.meta_passthrough_middleware.MetaPassthroughMiddleware': 100
 }
 
 DOWNLOADER_MIDDLEWARES = {

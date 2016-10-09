@@ -94,6 +94,11 @@ log_retry_middleware.py
 
 Logs and collects statistics about the Spider receiving 504 timeout status codes. This allows you to see in the Scrapy Cluster logs when your Spiders are having trouble connecting to the desired web pages.
 
+meta_passthrough_middleware.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Ensures the minimum amount of metadata information from the response is passed through to subsequent requests for the distribtued scheduler to work.
+
 pipelines.py
 ^^^^^^^^^^^^
 

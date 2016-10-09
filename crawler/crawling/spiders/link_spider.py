@@ -63,10 +63,6 @@ class LinkSpider(RedisSpider):
                 item["links"].append({"url": link.url, "text": link.text, })
                 req = Request(link.url, callback=self.parse)
 
-                # pass along all known meta fields
-                for key in list(response.meta.keys()):
-                    req.meta[key] = response.meta[key]
-
                 req.meta['priority'] = response.meta['priority'] - 10
                 req.meta['curdepth'] = response.meta['curdepth'] + 1
 

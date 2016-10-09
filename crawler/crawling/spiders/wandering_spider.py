@@ -72,10 +72,6 @@ class WanderingSpider(RedisSpider):
             link = random.choice(links)
             req = Request(link.url, callback=self.parse)
 
-            # pass along all known meta fields
-            for key in list(response.meta.keys()):
-                req.meta[key] = response.meta[key]
-
             # increment our step counter for this crawl job
             req.meta['step'] = step + 1
 
