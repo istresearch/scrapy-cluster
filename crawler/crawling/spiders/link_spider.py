@@ -21,7 +21,6 @@ class LinkSpider(RedisSpider):
 
     def parse(self, response):
         self._logger.debug("crawled url {}".format(response.request.url))
-        self._increment_status_code_stat(response)
         cur_depth = 0
         if 'curdepth' in response.meta:
             cur_depth = response.meta['curdepth']
@@ -62,10 +61,6 @@ class LinkSpider(RedisSpider):
                 # link that was discovered
                 item["links"].append({"url": link.url, "text": link.text, })
                 req = Request(link.url, callback=self.parse)
-
-                # pass along all known meta fields
-                for key in list(response.meta.keys()):
-                    req.meta[key] = response.meta[key]
 
                 req.meta['priority'] = response.meta['priority'] - 10
                 req.meta['curdepth'] = response.meta['curdepth'] + 1

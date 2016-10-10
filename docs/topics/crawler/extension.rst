@@ -51,8 +51,6 @@ Additional Info
 
 All Spiders that inherit from the base spider class ``RedisSpider`` will have access to a Scrapy Cluster logger found at ``self._logger``. This is not the same as the Scrapy logger, but can be used in conjunction with it. The following extra functions are provided to the spider as well.
 
-* **_increment_status_code_stat(response)** - Allows the cluster to collect response status code metrics from your spider. Call this method at some point when you are processing your response from Scrapy.
-
 * **reconstruct_headers(response)** - A patch that fixes malformed header responses seen in some websites. This error surfaces when you go to debug or look at the headers sent to Kafka, and you find some of the headers present in the spider are non-existent in the item sent to Kafka. Returns a ``dict``.
 
 Example
@@ -93,7 +91,6 @@ Below is the spider class, and can be found in ``crawling/spiders/wandering_spid
             # debug output for receiving the url
             self._logger.debug("crawled url {}".format(response.request.url))
             # collect stats
-            self._increment_status_code_stat(response)
 
             # step counter for how many pages we have hit
             step = 0
@@ -138,10 +135,6 @@ Below is the spider class, and can be found in ``crawling/spiders/wandering_spid
                 self._logger.debug("Attempting to find links")
                 link = random.choice(links)
                 req = Request(link.url, callback=self.parse)
-
-                # pass along all known meta fields
-                for key in response.meta.keys():
-                    req.meta[key] = response.meta[key]
 
                 # increment our step counter for this crawl job
                 req.meta['step'] = step + 1

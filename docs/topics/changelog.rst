@@ -49,6 +49,8 @@ Crawler Changes
 
 - Improved memory management in scheduler for domain based queues
 
+- Added two new spider middlewares for stats collection and meta field passthrough
+
 Scrapy Cluster 1.1
 ------------------
 
