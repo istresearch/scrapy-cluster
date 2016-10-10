@@ -124,6 +124,11 @@ This class is a Scrapy Downloader Middleware that catches 504 timeout exceptions
 
 The url is thrown back into the cluster queue at a lower priority so the cluster can try all other higher priority urls before the one that failed. After a certain amount of retries, the url is given up on and discarded from the queue.
 
+redis\_stats\_middleware.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A Spider middleware that allows the spider to record Scrapy Cluster statistics about crawl response codes within Redis. This middleware grabs the response code from the Response object and increments a :ref:`StatsCollector <stats_collector>` counter.
+
 settings.py
 ^^^^^^^^^^^
 

@@ -25,8 +25,6 @@ class WanderingSpider(RedisSpider):
     def parse(self, response):
         # debug output for receiving the url
         self._logger.debug("crawled url {}".format(response.request.url))
-        # collect stats
-        self._increment_status_code_stat(response)
 
         # step counter for how many pages we have hit
         step = 0
