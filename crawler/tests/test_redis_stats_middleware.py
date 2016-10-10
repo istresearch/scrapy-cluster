@@ -100,6 +100,7 @@ class TestRedisStatsMiddleware(TestCase):
             'lifetime'
         ]
         self.rsm.settings['STATS_RESPONSE_CODES'] = [200, 400, 404]
+        self.rsm.settings['STATS_STATUS_CODES'] = True
 
         fake_stats = MagicMock()
         fake_stats.increment = MagicMock()
