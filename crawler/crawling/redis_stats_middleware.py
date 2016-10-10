@@ -1,10 +1,11 @@
-from scrapy.http import Request
 from scutils.log_factory import LogFactory
 from scutils.stats_collector import StatsCollector
-from scrapy import signals
 import socket
 import time
 import redis
+import sys
+from redis.exceptions import ConnectionError
+
 
 class RedisStatsMiddleware(object):
 
@@ -49,9 +50,6 @@ class RedisStatsMiddleware(object):
             self.logger.error("Failed to connect to Redis in Stats Middleware")
             # plugin is essential to functionality
             sys.exit(1)
-
-        # known spiders
-        known_spiders = {}
 
     @classmethod
     def from_settings(cls, settings):

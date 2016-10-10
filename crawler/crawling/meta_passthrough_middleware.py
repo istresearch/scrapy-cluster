@@ -1,6 +1,7 @@
 from scrapy.http import Request
 from scutils.log_factory import LogFactory
 
+
 class MetaPassthroughMiddleware(object):
 
     def __init__(self, settings):
