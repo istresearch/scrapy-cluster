@@ -4,6 +4,7 @@ import logging
 import redis
 import socket
 import time
+import sys
 from scrapy.utils.response import response_status_message
 
 from scrapy.xlib.tx import ResponseFailed
@@ -11,9 +12,11 @@ from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
         ConnectionRefusedError, ConnectionDone, ConnectError, \
         ConnectionLost, TCPTimedOutError
+from redis.exceptions import ConnectionError
 
 from scutils.stats_collector import StatsCollector
 from scutils.log_factory import LogFactory
+
 
 class LogRetryMiddleware(object):
 
@@ -48,7 +51,6 @@ class LogRetryMiddleware(object):
                                          bytes=my_bytes,
                                          backups=my_backups)
 
-        #self.logger.setLevel(logging.DEBUG)
         self.retry_http_codes = set(int(x) for x in
                                     settings.getlist('RETRY_HTTP_CODES'))
 
@@ -60,6 +62,15 @@ class LogRetryMiddleware(object):
             self.redis_conn = redis.Redis(host=self.settings.get('REDIS_HOST'),
                                           port=self.settings.get('REDIS_PORT'),
                                           db=settings.get('REDIS_DB'))
+
+            try:
+                self.redis_conn.info()
+                self.logger.debug("Connected to Redis in LogRetryMiddleware")
+            except ConnectionError:
+                self.logger.error("Failed to connect to Redis in LogRetryMiddleware")
+                # plugin is essential to functionality
+                sys.exit(1)
+
             self._setup_stats_status_codes()
 
     @classmethod
