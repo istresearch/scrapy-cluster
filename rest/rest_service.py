@@ -14,7 +14,7 @@ import socket
 import redis
 import logging
 import json
-import Queue
+import threading
 
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.common import KafkaError
@@ -23,6 +23,7 @@ from kafka.common import KafkaUnavailableError
 from kafka.common import NodeNotReadyError
 from kafka.common import NoBrokersAvailable
 from redis.exceptions import ConnectionError
+from kafka.conn import ConnectionStates
 
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
@@ -54,6 +55,8 @@ class RestService(object):
         self.kafka_connected = False
         self.redis_connected = False
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
+        self.uuids = {}
+        self.uuids_lock = threading.Lock()
 
     def setup(self, level=None, log_file=None, json=None):
         """
@@ -109,6 +112,52 @@ class RestService(object):
         self._kafka_thread = Thread(target=self._setup_kafka)
         self._kafka_thread.setDaemon(True)
         self._kafka_thread.start()
+
+    def _spawn_kafka_consumer_thread(self):
+        """Spawns a kafka continuous consumer thread"""
+        self.logger.debug("Spawn kafka consumer thread""")
+        self._consumer_thread = Thread(target=self._consumer_loop)
+        self._consumer_thread.setDaemon(True)
+        self._consumer_thread.start()
+
+    def _consumer_loop(self):
+        self.logger.debug("running main consumer thread")
+        while not self.closed:
+            if self.kafka_connected:
+                self._process_messages()
+            time.sleep(self.settings['KAFKA_CONSUMER_SLEEP_TIME'])
+
+    def _process_messages(self):
+        try:
+            for message in self.consumer:
+                try:
+                    if message is None:
+                        self.logger.debug("no message")
+                        break
+                    loaded_dict = json.loads(message.value)
+                    self.logger.debug("got valid kafka message")
+
+                    if 'uuid' in loaded_dict and loaded_dict['uuid'] in self.uuids:
+                        self.logger.debug("Found Kafka message from request")
+                        with self.uuids_lock:
+                            self.uuids[loaded_dict['uuid']] = loaded_dict
+                except ValueError:
+                    extras = {}
+                    if message is not None:
+                            extras["data"] = message.value
+                    self.logger.warning('Unparseable JSON Received from kafka',
+                                                extra=extras)
+            # check for kafka disconnection
+            for node_id in self.consumer._client._conns:
+                conn = self.consumer._client._conns[node_id]
+                if conn.state == ConnectionStates.DISCONNECTED or \
+                    conn.state == ConnectionStates.DISCONNECTING:
+                    self._spawn_kafka_connection_thread()
+                    break
+        except OffsetOutOfRangeError:
+            # consumer has no idea where they are
+            self.consumer.seek_to_end()
+            self.logger.error("Kafka offset out of range error")
 
     def _heartbeat_loop(self):
         """A main run loop thread to do work"""
@@ -183,6 +232,7 @@ class RestService(object):
         if not self.closed:
             self.kafka_connected = True
             self.logger.info("Connected successfully to Kafka")
+            self._spawn_kafka_consumer_thread()
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
     def _create_consumer(self):
@@ -207,7 +257,6 @@ class RestService(object):
                 self.logger.error('Missing setting named ' + str(e),
                                    {'ex': traceback.format_exc()})
             except:
-                print "HERE"
                 self.logger.error("Couldn't initialize kafka consumer for topic",
                                    {'ex': traceback.format_exc()})
                 raise
@@ -292,6 +341,7 @@ class RestService(object):
         self._close_thread(self._redis_thread, "Redis setup")
         self._close_thread(self._heartbeat_thread, "Heartbeat")
         self._close_thread(self._kafka_thread, "Kafka setup")
+        self._close_thread(self._consumer_thread, "Consumer")
 
         # close kafka
         if self.consumer is not None:
@@ -412,6 +462,7 @@ class RestService(object):
         # proof of concept to write things to kafka
         if self.kafka_connected:
             json_item = request.get_json()
+            self.wait_for_response = False
             @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
             def _feed(json_item):
                 try:
@@ -420,10 +471,14 @@ class RestService(object):
                     self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
                                        json_item)
                     self.producer.flush()
+
+                    if 'uuid' in json_item:
+                        self.wait_for_response = True
+                        with self.uuids_lock:
+                            self.uuids[json_item['uuid']] = None
                     return True
 
                 except Exception as e:
-                    print e, e.message
                     self.logger.error("Lost connection to Kafka")
                     self._spawn_kafka_connection_thread()
                     return False
@@ -431,19 +486,29 @@ class RestService(object):
             result = _feed(json_item)
 
             if result:
-                return self._create_ret_object(self.SUCCESS)
+                true_response = None
+                if self.wait_for_response:
+                    self.logger.debug("expecting kafka response for request")
+                    the_time = time.time()
+                    found_item = False
+                    while int(time.time() - the_time) < self.settings['WAIT_FOR_RESPONSE_TIME']:
+                        if self.uuids[json_item['uuid']] is not None:
+                            found_item = True
+                            true_response = self.uuids[json_item['uuid']]
+                            with self.uuids_lock:
+                                del self.uuids[json_item['uuid']]
+                            break
+                    if found_item:
+                        self.logger.debug("Got successful reponse back from kafka")
+                    else:
+                        self.logger.warn("Did not get response within timeout "
+                                         "from kafka. If the request is still "
+                                         "running, use the `/poll` API")
+                        true_response = {"poll_id": json_item['uuid']}
+                else:
+                    self.logger.debug("Not expecting response from kafka")
 
-        # try:
-        #     self.logger.debug("Sending json to kafka at " +
-        #                       str(self.settings['KAFKA_PRODUCER_TOPIC']))
-        #     self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
-        #                        json_item)
-        #     self.producer.flush()
-        #     return self._create_ret_object(self.SUCCESS)
-        # except Exception as e:
-        #     print e, e.message
-        #     self.logger.error("Lost connection to Kafka")
-        #     self._spawn_kafka_connection_thread()
+                return self._create_ret_object(self.SUCCESS, true_response)
 
         return self._create_ret_object(self.FAILURE, None, True,
                                        "Unable to connect to Kafka"), 500
