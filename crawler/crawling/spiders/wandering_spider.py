@@ -25,8 +25,6 @@ class WanderingSpider(RedisSpider):
     def parse(self, response):
         # debug output for receiving the url
         self._logger.debug("crawled url {}".format(response.request.url))
-        # collect stats
-        self._increment_status_code_stat(response)
 
         # step counter for how many pages we have hit
         step = 0
@@ -71,10 +69,6 @@ class WanderingSpider(RedisSpider):
             self._logger.debug("Attempting to find links")
             link = random.choice(links)
             req = Request(link.url, callback=self.parse)
-
-            # pass along all known meta fields
-            for key in list(response.meta.keys()):
-                req.meta[key] = response.meta[key]
 
             # increment our step counter for this crawl job
             req.meta['step'] = step + 1

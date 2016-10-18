@@ -358,8 +358,6 @@ class DistributedScheduler(object):
     def open(self, spider):
         self.spider = spider
         self.spider.set_logger(self.logger)
-        self.spider.set_redis(self.redis_conn)
-        self.spider.setup_stats()
         self.create_queues()
         self.setup_zookeeper()
         self.dupefilter = RFPDupeFilter(self.redis_conn,

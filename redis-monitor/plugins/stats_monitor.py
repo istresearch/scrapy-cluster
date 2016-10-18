@@ -116,7 +116,14 @@ class StatsMonitor(KafkaBaseMonitor):
                 if main not in the_dict:
                     the_dict[main] = {}
                 the_dict[main][end] = self._get_key_value(key, end == 'lifetime')
-
+            elif main == 'self':
+                if 'nodes' not in the_dict:
+                    # main is self, end is machine, true_tail is uuid
+                    the_dict['nodes'] = {}
+                    true_tail = elements[4]
+                    if end not in the_dict['nodes']:
+                        the_dict['nodes'][end] = []
+                    the_dict['nodes'][end].append(true_tail)
             else:
                 if 'plugins' not in the_dict:
                     the_dict['plugins'] = {}
@@ -194,6 +201,7 @@ class StatsMonitor(KafkaBaseMonitor):
         self.logger.debug("Gathering machine stats")
         the_dict = {}
         keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
+
         for key in keys:
             # break down key
             elements = key.split(":")
