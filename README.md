@@ -35,7 +35,7 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 
 ## Scrapy Cluster test environment
 
-To set up a pre-canned Scrapy Cluster test environment, make sure you have the latest **Virtualbox** + **Vagrant >= 1.7.4** installed.  Vagrant will automatically mount the base **scrapy-cluster** directory to the **/vagrant** directory, so any code changes you make will be visible inside the VM.
+To set up a pre-canned Scrapy Cluster test environment, make sure you have the latest **Virtualbox** + **Vagrant >= 1.7.4** installed.  Vagrant will automatically mount the base **scrapy-cluster** directory to the **/vagrant** directory, so any code changes you make will be visible inside the VM. Please note that at time of writing this will not work on a [Windows](http://docs.ansible.com/ansible/intro_installation.html#control-machine-requirements) machine.
 
 ### Steps to launch the test environment:
 1.  `vagrant up` in base **scrapy-cluster** directory.
