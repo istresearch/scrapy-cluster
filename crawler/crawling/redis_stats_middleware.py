@@ -52,8 +52,8 @@ class RedisStatsMiddleware(object):
             sys.exit(1)
 
     @classmethod
-    def from_settings(cls, settings):
-        return cls(settings)
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings)
 
     def _get_hostname(self):
         '''
