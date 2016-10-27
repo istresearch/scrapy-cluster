@@ -31,8 +31,8 @@ class MetaPassthroughMiddleware(object):
                                          backups=my_backups)
 
     @classmethod
-    def from_settings(cls, settings):
-        return cls(settings)
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings)
 
     def process_spider_output(self, response, result, spider):
         '''
