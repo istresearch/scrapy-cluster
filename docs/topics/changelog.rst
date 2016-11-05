@@ -51,6 +51,11 @@ Crawler Changes
 
 - Added two new spider middlewares for stats collection and meta field passthrough
 
+Rest Service
+^^^^^^^^^^^^
+
+- New component that allows for restful integration with Scrapy Cluster
+
 Scrapy Cluster 1.1
 ------------------
 

@@ -47,11 +47,14 @@ class RestService(object):
     consumer = None
     producer = None
     closed = False
+    _consumer_thread = None
+    _kafka_thread = None
+    _heartbeat_thread = None
+    _redis_thread = None
 
     def __init__(self, settings_name):
         """
         @param settings_name: the local settings file name
-        @param unit_test: whether running unit tests or not
         """
         self.settings_name = settings_name
         self.wrapper = SettingsWrapper()
@@ -63,6 +66,7 @@ class RestService(object):
         self.uuids = {}
         self.uuids_lock = threading.Lock()
         self.validator = self._extend_with_default(Draft4Validator)
+        self.schemas = {}
 
     def setup(self, level=None, log_file=None, json=None):
         """
@@ -96,7 +100,7 @@ class RestService(object):
         self._heartbeat_thread.setDaemon(True)
         self._heartbeat_thread.start()
 
-        self.start_time = time.time()
+        self.start_time = self.get_time()
 
         # disable flask logger
         if self.settings['FLASK_LOGGING_ENABLED'] == False:
@@ -105,9 +109,12 @@ class RestService(object):
 
         self._load_schemas()
 
+    def get_time(self):
+        """Returns the current time"""
+        return time.time()
+
     def _load_schemas(self):
         """Loads any schemas for JSON validation"""
-        self.schemas = {}
         for filename in os.listdir(self.settings['SCHEMA_DIR']):
             if filename[-4:] == 'json':
                 name = filename[:-5]
@@ -160,6 +167,7 @@ class RestService(object):
         self._consumer_thread.start()
 
     def _consumer_loop(self):
+        """The main consumer loop"""
         self.logger.debug("running main consumer thread")
         while not self.closed:
             if self.kafka_connected:
@@ -167,6 +175,7 @@ class RestService(object):
             time.sleep(self.settings['KAFKA_CONSUMER_SLEEP_TIME'])
 
     def _process_messages(self):
+        """Processes messages received from kafka"""
         try:
             for message in self.consumer:
                 try:
@@ -185,6 +194,8 @@ class RestService(object):
                             else:
                                 self.logger.debug("Got poll result")
                                 self._send_result_to_redis(loaded_dict)
+                        else:
+                            self.logger.debug("Got message not intended for this process")
                 except ValueError:
                     extras = {}
                     if message is not None:
@@ -201,7 +212,9 @@ class RestService(object):
 
     def _send_result_to_redis(self, result):
         """Sends the result of a poll to redis to be used potentially by
-        another process"""
+        another process
+
+        @param result: the result retrieved from kafka"""
         if self.redis_connected:
             self.logger.debug("Sending result to redis")
             try:
@@ -210,6 +223,8 @@ class RestService(object):
             except ConnectionError:
                 self.logger.error("Lost connection to Redis")
                 self._spawn_redis_connection_thread()
+        else:
+            self.logger.warning("Unable to send result to redis, not connected")
 
     def _check_kafka_disconnect(self):
         """Checks the kafka connection is still valid"""
@@ -224,8 +239,8 @@ class RestService(object):
         """A main run loop thread to do work"""
         self.logger.debug("running main heartbeat thread")
         while not self.closed:
-            self._report_self()
             time.sleep(self.settings['SLEEP_TIME'])
+            self._report_self()
 
     def _report_self(self):
         """
@@ -237,11 +252,13 @@ class RestService(object):
                 key = "stats:rest:self:{m}:{u}".format(
                     m=socket.gethostname(),
                     u=self.my_uuid)
-                self.redis_conn.set(key, time.time())
+                self.redis_conn.set(key, self.get_time())
                 self.redis_conn.expire(key, self.settings['HEARTBEAT_TIMEOUT'])
             except ConnectionError:
                 self.logger.error("Lost connection to Redis")
                 self._spawn_redis_connection_thread()
+        else:
+            self.logger.warn("Cannot report self to redis, not connected")
 
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
@@ -286,7 +303,6 @@ class RestService(object):
         self.consumer = self._create_consumer()
         if not self.closed:
             self.logger.debug("Kafka Conumer created")
-
         self.producer = self._create_producer()
         if not self.closed:
             self.logger.debug("Kafka Producer created")
@@ -348,7 +364,7 @@ class RestService(object):
         """Main flask run loop"""
         self.logger.info("Running main flask method on port " +
                          str(self.settings['FLASK_PORT']))
-        self.app.run(port=self.settings['FLASK_PORT'])
+        self.app.run(host='0.0.0.0', port=self.settings['FLASK_PORT'])
 
     def _create_ret_object(self, status=SUCCESS, data=None, error=False,
                            error_message=None, error_cause=None):
@@ -534,7 +550,7 @@ class RestService(object):
         data = {
             "kafka_connected": self.kafka_connected,
             "redis_connected": self.redis_connected,
-            "uptime_sec": int(time.time() - self.start_time),
+            "uptime_sec": int(self.get_time() - self.start_time),
             "my_id": self.my_uuid,
             "node_health": self._calculate_health()
         }
@@ -574,9 +590,9 @@ class RestService(object):
                 true_response = None
                 if self.wait_for_response:
                     self.logger.debug("expecting kafka response for request")
-                    the_time = time.time()
+                    the_time = self.get_time()
                     found_item = False
-                    while not found_item and int(time.time() - the_time) < self.settings['WAIT_FOR_RESPONSE_TIME']:
+                    while not found_item and int(self.get_time() - the_time) < self.settings['WAIT_FOR_RESPONSE_TIME']:
                         if self.uuids[json_item['uuid']] is not None:
                             found_item = True
                             true_response = self.uuids[json_item['uuid']]
