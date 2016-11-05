@@ -6,7 +6,7 @@ set -e
 sudo docker build --rm=true --file docker/kafka-monitor/$dockerfile_name --tag=istresearch/scrapy-cluster:kafka-monitor-test .
 sudo docker build --rm=true --file docker/redis-monitor/$dockerfile_name --tag=istresearch/scrapy-cluster:redis-monitor-test .
 sudo docker build --rm=true --file docker/crawler/$dockerfile_name --tag=istresearch/scrapy-cluster:crawler-test .
-sudo docker build --rm=true --file docker/crawler/$dockerfile_name --tag=istresearch/scrapy-cluster:rest-test .
+sudo docker build --rm=true --file docker/rest/$dockerfile_name --tag=istresearch/scrapy-cluster:rest-test .
 
 # run docker compose up for docker tests
 sudo docker-compose -f travis/docker-compose.test.yml up -d
@@ -30,7 +30,7 @@ if [ "$TRAVIS_BRANCH" = "dev" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$T
     sudo docker build --rm=true --file docker/kafka-monitor/$dockerfile_name --tag=istresearch/scrapy-cluster:kafka-monitor-$docker_tag_suffix .
     sudo docker build --rm=true --file docker/redis-monitor/$dockerfile_name --tag=istresearch/scrapy-cluster:redis-monitor-$docker_tag_suffix .
     sudo docker build --rm=true --file docker/crawler/$dockerfile_name --tag=istresearch/scrapy-cluster:crawler-$docker_tag_suffix .
-    sudo docker build --rm=true --file docker/crawler/$dockerfile_name --tag=istresearch/scrapy-cluster:rest-$docker_tag_suffix .
+    sudo docker build --rm=true --file docker/rest/$dockerfile_name --tag=istresearch/scrapy-cluster:rest-$docker_tag_suffix .
 
     # remove 'test' images
     sudo docker rmi istresearch/scrapy-cluster:kafka-monitor-test
