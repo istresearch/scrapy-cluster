@@ -1,6 +1,6 @@
 # Flask configuration
 FLASK_LOGGING_ENABLED = True
-FLASK_PORT = 5000
+FLASK_PORT = 5343 # Hex representation of 'SC'
 
 # Redis host information
 REDIS_HOST = 'localhost'

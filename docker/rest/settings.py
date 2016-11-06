@@ -8,7 +8,7 @@ def str2bool(v):
 
 # Flask configuration
 FLASK_LOGGING_ENABLED = os.getenv('FLASK_LOGGING_ENABLED', True)
-FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
+FLASK_PORT = int(os.getenv('FLASK_PORT', 5343))
 
 # Redis host information
 REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
