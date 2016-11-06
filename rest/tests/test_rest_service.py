@@ -417,6 +417,26 @@ class TestRestService(TestCase):
             self.assertEquals(data, d)
             self.assertEquals(results[1], 400)
 
+        # no json
+        data = '["a list", ashdasd ,\\ !]'
+        with self.rest_service.app.test_request_context(data=data):
+            self.rest_service.logger.error.reset_mock()
+            results = override.test_json()
+            self.assertTrue(override.logger.error.called)
+            self.assertEquals(override.logger.error.call_args[0][0],
+                              'The payload must be valid JSON.')
+
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u'The payload must be valid JSON.'
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 400)
+
         # good json
         data = '["a list", "2", "3"]'
         with self.rest_service.app.test_request_context(data=data,
