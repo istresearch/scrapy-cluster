@@ -3,16 +3,44 @@ Offline tests
 '''
 from unittest import TestCase
 from mock import MagicMock
-from mock import call
 from mock import mock_open
 from rest_service import RestService
+from rest_service import (log_call, error_catch, validate_json,
+                          validate_schema)
 import mock
-import socket
-import time
+import json
+import flask
 
 from kafka.common import OffsetOutOfRangeError
 from kafka.conn import ConnectionStates
 from redis.exceptions import ConnectionError
+
+class Override(RestService):
+
+    @log_call("test logger")
+    def test_log_call(self):
+        pass
+
+    @error_catch
+    def test_error1(self):
+        raise Exception()
+        pass
+
+    @error_catch
+    def test_error2(self):
+        return "test data"
+
+    @error_catch
+    def test_error3(self):
+        return "test data", 109
+
+    @validate_json
+    def test_json(self):
+        return 'data'
+
+    @validate_schema('key')
+    def test_schema(self):
+        return 'data'
 
 
 class TestRestService(TestCase):
@@ -299,27 +327,366 @@ class TestRestService(TestCase):
         self.rest_service.kafka_connected = True
         self.assertEquals(self.rest_service._calculate_health(), "GREEN")
 
+    def test_feed_to_kafka(self):
+        self.rest_service.producer = MagicMock()
+
+        # test good
+        self.assertTrue(self.rest_service._feed_to_kafka({}))
+
+        # test bad
+        self.rest_service._spawn_kafka_connection_thread = MagicMock()
+        self.rest_service.logger.error = MagicMock()
+        self.rest_service.producer.send = MagicMock(side_effect=Exception)
+        self.assertFalse(self.rest_service._feed_to_kafka({}))
+        self.assertTrue(self.rest_service.logger.error.called)
+        self.assertTrue(self.rest_service._spawn_kafka_connection_thread.called)
+
     # Route decorators --------
 
     def test_log_call(self):
-        pass
+        override = Override('settings.py')
+        override.logger = MagicMock()
+        override.logger.info = MagicMock()
+        with self.rest_service.app.test_request_context():
+            override.test_log_call()
+
+        self.assertTrue(override.logger.info.called)
+        self.assertEquals(override.logger.info.call_args[0][0], "test logger")
 
     def test_error_catch(self):
-        pass
+        override = Override('settings.py')
+        override.logger = MagicMock()
+
+        # test uncaught exception thrown
+        with self.rest_service.app.test_request_context():
+            override.logger.error = MagicMock()
+            results = override.test_error1()
+            self.assertTrue(override.logger.error.called)
+            self.assertEquals(override.logger.error.call_args[0][0],
+                              "Uncaught Exception Thrown")
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u'An error occurred while processing your request.'
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 500)
+
+        # test normal response
+        with self.rest_service.app.test_request_context():
+            override.logger.error.reset_mock()
+            results = override.test_error2()
+            self.assertFalse(override.logger.error.called)
+            data = json.loads(results[0].data)
+            self.assertEquals(data, 'test data')
+            self.assertEquals(results[1], 200)
+
+        # test normal response with alternate response code
+        with self.rest_service.app.test_request_context():
+            override.logger.error.reset_mock()
+            results = override.test_error3()
+            self.assertFalse(override.logger.error.called)
+            data = json.loads(results[0].data)
+            self.assertEquals(data, 'test data')
+            self.assertEquals(results[1], 109)
 
     def test_validate_json(self):
-        pass
+        override = Override('settings.py')
+        override.logger = MagicMock()
+
+        # bad json
+        data = '["a list", ashdasd ,\\ !]'
+        with self.rest_service.app.test_request_context(data=data,
+                                                        content_type='application/json'):
+            results = override.test_json()
+            self.assertTrue(override.logger.error.called)
+            self.assertEquals(override.logger.error.call_args[0][0],
+                              'The payload must be valid JSON.')
+
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u'The payload must be valid JSON.'
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 400)
+
+        # good json
+        data = '["a list", "2", "3"]'
+        with self.rest_service.app.test_request_context(data=data,
+                                                        content_type='application/json'):
+            override.logger.reset_mock()
+            results = override.test_json()
+            self.assertFalse(override.logger.error.called)
+            self.assertEquals(results, 'data')
 
     def test_validate_schema(self):
-        pass
+        override = Override('settings.py')
+        override.logger = MagicMock()
+        override.logger.error = MagicMock()
+
+        override.schemas['key'] = {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                }
+            },
+            "required": [
+                "value"
+            ],
+            "additionalProperties": False
+        }
+
+        # valid schema
+        data = '{"value": "data here"}'
+        with self.rest_service.app.test_request_context(data=data,
+                                                        content_type='application/json'):
+            results = override.test_schema()
+            self.assertFalse(override.logger.error.called)
+            self.assertEquals(results, 'data')
+
+        # invalid schema
+        data = '{"otherkey": "bad data"}'
+        with self.rest_service.app.test_request_context(data=data,
+                                                        content_type='application/json'):
+            results = override.test_schema()
+            self.assertTrue(override.logger.error.called)
+            self.assertEquals(override.logger.error.call_args[0][0],
+                              "Invalid Schema")
+
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u"JSON did not validate against schema.",
+                    u'cause': u"Additional properties are not allowed (u'otherkey' was unexpected)"
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 400)
 
     # Routes ------------------
 
     def test_index(self):
-        pass
+        with self.rest_service.app.test_request_context():
+            self.rest_service.get_time = MagicMock(return_value=5)
+            self.rest_service.my_uuid = 'a908'
+            results = self.rest_service.index()
+            d = {
+                "kafka_connected": False,
+                "redis_connected": False,
+                "uptime_sec": 5,
+                "my_id": 'a908',
+                "node_health": 'RED'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
 
     def test_feed(self):
-        pass
+        # test not connected
+        self.rest_service.kafka_connected = False
+        self.rest_service.logger.warn = MagicMock()
 
-    def test_pull(self):
-        pass
+        with self.rest_service.app.test_request_context(data='{}',
+                                                        content_type='application/json'):
+            results = self.rest_service.feed()
+            self.assertTrue(self.rest_service.logger.warn.called)
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u"Unable to connect to Kafka",
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 500)
+
+        # connected
+        self.rest_service.kafka_connected = True
+        # test failed to send to kafka
+        self.rest_service._feed_to_kafka = MagicMock(return_value=False)
+        with self.rest_service.app.test_request_context(data='{}',
+                                                        content_type='application/json'):
+            self.rest_service.logger.warn.reset_mock()
+            results = self.rest_service.feed()
+            self.assertTrue(self.rest_service.logger.warn.called)
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u"Unable to connect to Kafka",
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 500)
+
+        # test no uuid
+        self.rest_service._feed_to_kafka = MagicMock(return_value=True)
+        with self.rest_service.app.test_request_context(data='{}',
+                                                        content_type='application/json'):
+            results = self.rest_service.feed()
+            d = {
+                u'data': None,
+                u'error': None,
+                u'status': u'SUCCESS'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 200)
+
+        # test with uuid, got response
+        time_list = [0, 1, 2, 3, 4, 5]
+        def fancy_get_time():
+            r = time_list.pop(0)
+            # fake multithreaded response from kafka
+            if r > 4:
+                self.rest_service.uuids['key'] = 'data'
+            return r
+
+        with self.rest_service.app.test_request_context(data='{"uuid":"key"}',
+                                                        content_type='application/json'):
+            self.rest_service.get_time = MagicMock(side_effect=fancy_get_time)
+            results = self.rest_service.feed()
+            d = {
+                u'data': 'data',
+                u'error': None,
+                u'status': u'SUCCESS'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 200)
+            self.assertFalse(self.rest_service.uuids.has_key('key'))
+
+        # test with uuid, no response
+        time_list = [0, 1, 2, 3, 4, 5, 6]
+        def fancy_get_time2():
+            return time_list.pop(0)
+
+        with self.rest_service.app.test_request_context(data='{"uuid":"key"}',
+                                                        content_type='application/json'):
+            self.rest_service.get_time = MagicMock(side_effect=fancy_get_time2)
+            results = self.rest_service.feed()
+            d = {
+                u'data': {'poll_id': "key"},
+                u'error': None,
+                u'status': u'SUCCESS'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 200)
+            self.assertTrue(self.rest_service.uuids.has_key('key'))
+            self.assertEquals(self.rest_service.uuids['key'], 'poll')
+
+    def test_poll(self):
+        orig = self.rest_service.validator
+        self.rest_service.validator = MagicMock()
+        self.rest_service.schemas['poll'] = MagicMock()
+
+        # test not connected
+        self.rest_service.redis_connected = False
+        self.rest_service.logger.warn = MagicMock()
+
+        with self.rest_service.app.test_request_context(data='{}',
+                                                        content_type='application/json'):
+            results = self.rest_service.poll()
+            self.assertTrue(self.rest_service.logger.warn.called)
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u"Unable to connect to Redis",
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 500)
+
+        # test connected found poll key
+        self.rest_service.redis_conn = MagicMock()
+        self.rest_service.redis_conn.get = MagicMock(return_value='["data"]')
+        self.rest_service.redis_connected = True
+        with self.rest_service.app.test_request_context(data='{"poll_id":"key"}',
+                                                        content_type='application/json'):
+            results = self.rest_service.poll()
+            d = {
+                u'data': ['data'],
+                u'error': None,
+                u'status': u'SUCCESS'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 200)
+
+        # test connected didnt find poll key
+        self.rest_service.redis_conn.get = MagicMock(return_value=None)
+        self.rest_service.redis_connected = True
+        with self.rest_service.app.test_request_context(data='{"poll_id":"key"}',
+                                                        content_type='application/json'):
+            results = self.rest_service.poll()
+            d = {
+                u'data': None,
+                u'error': {
+                    "message": "Could not find matching poll_id"
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 404)
+
+        # test connection error
+        self.rest_service._spawn_redis_connection_thread = MagicMock()
+        self.rest_service.logger.error = MagicMock()
+        with self.rest_service.app.test_request_context(data='{"poll_id":"key"}',
+                                                        content_type='application/json'):
+            self.rest_service.redis_conn.get = MagicMock(side_effect=ConnectionError)
+            results = self.rest_service.poll()
+            self.assertTrue(self.rest_service.logger.error.called)
+            self.assertEquals(self.rest_service.logger.error.call_args[0][0], "Lost connection to Redis")
+            self.assertTrue(self.rest_service._spawn_redis_connection_thread.called)
+
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u"Unable to connect to Redis",
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 500)
+
+        # test value error
+        self.rest_service.logger.warning = MagicMock()
+        with self.rest_service.app.test_request_context(data='{"poll_id":"key"}',
+                                                        content_type='application/json'):
+            self.rest_service.redis_conn.get = MagicMock(side_effect=ValueError)
+            results = self.rest_service.poll()
+            self.assertTrue(self.rest_service.logger.warning.called)
+            self.assertEquals(self.rest_service.logger.warning.call_args[0][0], "Unparseable JSON Received from redis")
+
+            d = {
+                u'data': None,
+                u'error': {
+                    u'message': u"Unparseable JSON Received from redis",
+                },
+                u'status': u'FAILURE'
+            }
+            data = json.loads(results[0].data)
+            self.assertEquals(data, d)
+            self.assertEquals(results[1], 500)
+
+        self.rest_service.validator = orig
+

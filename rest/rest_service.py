@@ -33,6 +33,87 @@ from scutils.method_timer import MethodTimer
 from jsonschema import ValidationError
 from jsonschema import Draft4Validator, validators
 
+# Route Decorators --------------------
+
+def log_call(call_name):
+    """Log the API call to the logger."""
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kw):
+            instance = args[0]
+            instance.logger.info(call_name, {"content": request.get_json()})
+            return f(*args, **kw)
+        return wrapper
+    return decorator
+
+
+def error_catch(f):
+    """Handle unexpected errors within the rest function."""
+    @wraps(f)
+    def wrapper(*args, **kw):
+        instance = args[0]
+        try:
+            result = f(*args, **kw)
+            if isinstance(result, tuple):
+                return jsonify(result[0]), result[1]
+            else:
+                return jsonify(result), 200
+        except Exception as e:
+            ret_dict = instance._create_ret_object(instance.FAILURE, None,
+                                                   True,
+                                                   instance.UNKNOWN_ERROR)
+            log_dict = deepcopy(ret_dict)
+            log_dict['error']['cause'] = e.message
+            log_dict['error']['exception'] = str(e)
+            log_dict['error']['ex'] = traceback.format_exc()
+            instance.logger.error("Uncaught Exception Thrown", log_dict)
+            return jsonify(ret_dict), 500
+    return wrapper
+
+
+def validate_json(f):
+    """Validate that the call is JSON."""
+    @wraps(f)
+    def wrapper(*args, **kw):
+        instance = args[0]
+        try:
+            if request.get_json() is None:
+                ret_dict = instance._create_ret_object(instance.FAILURE,
+                                                       None, True,
+                                                       instance.MUST_JSON)
+                instance.logger.error(instance.MUST_JSON)
+                return jsonify(ret_dict), 400
+        except BadRequest:
+            ret_dict = instance._create_ret_object(instance.FAILURE, None,
+                                                   True,
+                                                   instance.MUST_JSON)
+            instance.logger.error(instance.MUST_JSON)
+            return jsonify(ret_dict), 400
+        instance.logger.debug("JSON is valid")
+        return f(*args, **kw)
+    return wrapper
+
+
+def validate_schema(schema_name):
+    """Validate the JSON against a required schema_name."""
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kw):
+            instance = args[0]
+            try:
+                instance.validator(instance.schemas[schema_name]).validate(request.get_json())
+            except ValidationError, e:
+                ret_dict = instance._create_ret_object(instance.FAILURE,
+                                                       None, True,
+                                                       instance.BAD_SCHEMA,
+                                                       e.message)
+                instance.logger.error("Invalid Schema", ret_dict)
+                return jsonify(ret_dict), 400
+            instance.logger.debug("Schema is valid")
+            return f(*args, **kw)
+        return wrapper
+    return decorator
+
 
 class RestService(object):
 
@@ -47,6 +128,7 @@ class RestService(object):
     consumer = None
     producer = None
     closed = False
+    start_time = 0
     _consumer_thread = None
     _kafka_thread = None
     _heartbeat_thread = None
@@ -442,83 +524,29 @@ class RestService(object):
         else:
             return "RED"
 
-    # Route decorators -----------------
+    def _feed_to_kafka(self, json_item):
+        """Sends a request to Kafka
 
-    def log_call(call_name):
-        """Log the API call to the logger."""
-        def decorator(f):
-            @wraps(f)
-            def wrapper(*args, **kw):
-                instance = args[0]
-                instance.logger.info(call_name, {"content": request.get_json()})
-                return f(*args, **kw)
-            return wrapper
-        return decorator
-
-    def error_catch(f):
-        """Handle unexpected errors within the rest function."""
-        @wraps(f)
-        def wrapper(*args, **kw):
-            instance = args[0]
+        :param json_item: The json item to send
+        :returns: A boolean indicating whther the data was sent successfully or not
+        """
+        @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
+        def _feed(json_item):
             try:
-                result = f(*args, **kw)
-                if isinstance(result, tuple):
-                    return jsonify(result[0]), result[1]
-                else:
-                    return jsonify(result), 200
+                self.logger.debug("Sending json to kafka at " +
+                                  str(self.settings['KAFKA_PRODUCER_TOPIC']))
+                self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
+                                   json_item)
+                self.producer.flush()
+
+                return True
+
             except Exception as e:
-                ret_dict = instance._create_ret_object(instance.FAILURE, None,
-                                                       True,
-                                                       instance.UNKNOWN_ERROR)
-                log_dict = deepcopy(ret_dict)
-                log_dict['error']['cause'] = e.message
-                log_dict['error']['exception'] = str(e)
-                log_dict['error']['ex'] = traceback.format_exc()
-                instance.logger.error("Uncaught Exception Thrown", log_dict)
-                return jsonify(ret_dict), 500
-        return wrapper
+                self.logger.error("Lost connection to Kafka")
+                self._spawn_kafka_connection_thread()
+                return False
 
-    def validate_json(f):
-        """Validate that the call is JSON."""
-        @wraps(f)
-        def wrapper(*args, **kw):
-            instance = args[0]
-            try:
-                if request.get_json() is None:
-                    ret_dict = instance._create_ret_object(instance.FAILURE,
-                                                           None, True,
-                                                           instance.MUST_JSON)
-                    instance.logger.error(instance.MUST_JSON)
-                    return jsonify(ret_dict), 400
-            except BadRequest:
-                ret_dict = instance._create_ret_object(instance.FAILURE, None,
-                                                       True,
-                                                       instance.MUST_JSON)
-                instance.logger.error(instance.MUST_JSON)
-                return jsonify(ret_dict), 400
-            instance.logger.debug("JSON is valid")
-            return f(*args, **kw)
-        return wrapper
-
-    def validate_schema(schema_name):
-        """Validate the JSON against a required schema_name."""
-        def decorator(f):
-            @wraps(f)
-            def wrapper(*args, **kw):
-                instance = args[0]
-                try:
-                    instance.validator(instance.schemas[schema_name]).validate(request.get_json())
-                except ValidationError, e:
-                    ret_dict = instance._create_ret_object(instance.FAILURE,
-                                                           None, True,
-                                                           instance.BAD_SCHEMA,
-                                                           e.message)
-                    instance.logger.error("Invalid Schema", ret_dict)
-                    return jsonify(ret_dict), 400
-                instance.logger.debug("Schema is valid")
-                return f(*args, **kw)
-            return wrapper
-        return decorator
+        return _feed(json_item)
 
     # Routes --------------------
 
@@ -554,6 +582,7 @@ class RestService(object):
             "my_id": self.my_uuid,
             "node_health": self._calculate_health()
         }
+
         return data
 
     @validate_json
@@ -564,27 +593,12 @@ class RestService(object):
         if self.kafka_connected:
             json_item = request.get_json()
             self.wait_for_response = False
-            @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
-            def _feed(json_item):
-                try:
-                    self.logger.debug("Sending json to kafka at " +
-                                      str(self.settings['KAFKA_PRODUCER_TOPIC']))
-                    self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
-                                       json_item)
-                    self.producer.flush()
+            result = self._feed_to_kafka(json_item)
 
-                    if 'uuid' in json_item:
-                        self.wait_for_response = True
-                        with self.uuids_lock:
-                            self.uuids[json_item['uuid']] = None
-                    return True
-
-                except Exception as e:
-                    self.logger.error("Lost connection to Kafka")
-                    self._spawn_kafka_connection_thread()
-                    return False
-
-            result = _feed(json_item)
+            if 'uuid' in json_item:
+                    self.wait_for_response = True
+                    with self.uuids_lock:
+                        self.uuids[json_item['uuid']] = None
 
             if result:
                 true_response = None
@@ -592,7 +606,7 @@ class RestService(object):
                     self.logger.debug("expecting kafka response for request")
                     the_time = self.get_time()
                     found_item = False
-                    while not found_item and int(self.get_time() - the_time) < self.settings['WAIT_FOR_RESPONSE_TIME']:
+                    while not found_item and int(self.get_time() - the_time) <= self.settings['WAIT_FOR_RESPONSE_TIME']:
                         if self.uuids[json_item['uuid']] is not None:
                             found_item = True
                             true_response = self.uuids[json_item['uuid']]
@@ -620,6 +634,7 @@ class RestService(object):
 
                 return self._create_ret_object(self.SUCCESS, true_response)
 
+        self.logger.warn("Unable to write request to Kafka, not connected")
         return self._create_ret_object(self.FAILURE, None, True,
                                        "Unable to connect to Kafka"), 500
 
@@ -632,6 +647,7 @@ class RestService(object):
         enough"""
         if self.redis_connected:
             json_item = request.get_json()
+            result = None
             try:
                 key = "rest:poll:{u}".format(u=json_item['poll_id'])
                 result = self.redis_conn.get(key)
@@ -658,6 +674,7 @@ class RestService(object):
                 return self._create_ret_object(self.FAILURE, None, True,
                                                "Unparseable JSON Received "
                                                "from redis"), 500
+        self.logger.warn("Unable to poll redis, not connected")
         return self._create_ret_object(self.FAILURE, None, True,
                                        "Unable to connect to Redis"), 500
 
