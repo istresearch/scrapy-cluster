@@ -18,6 +18,7 @@ This documentation provides everything you need to know about the `Scrapy <http:
     topics/kafka-monitor/index
     topics/crawler/index
     topics/redis-monitor/index
+    topics/rest/index
     topics/utils/index
     topics/advanced/index
     topics/faq

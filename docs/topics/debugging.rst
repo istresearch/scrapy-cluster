@@ -19,6 +19,8 @@ For all three components, you may set the Scrapy Cluster log level for the compo
 
     * **Crawler** - use the ``localsettings.py`` file to set ``SC_LOG_LEVEL="DEBUG"``. Note this is **different** so as to not interfere with normal Scrapy log levels.
 
+    * **Rest** - use the ``--log-level DEBUG`` flag when executing either the main command, or in your ``localsettings.py`` set ``LOG_LEVEL="DEBUG"``
+
 You can alter the Log Factory settings to log your data in JSON, to write your Scrapy Cluster logs to a file, or to write only important ``CRITICAL`` log messages to your desired output. JSON based logs will show all of the extra data passed into the log message, and can be useful for debugging python dictionaries without contaminating your log message itself.
 
 .. note:: Command line arguments take precedence over ``localsettings.py``, which take precedence over the default settings. This is useful if you need quick command line changes to your logging output, but want to keep production settings the same.
@@ -50,7 +52,10 @@ If you are modifying a single component, you can run its individual offline test
     # crawler
     nosetests -v --with-coverage --cover-erase --cover-package=crawling/
 
-This runs the individual component's offline tests. You can do this in the Kafka Monitor, Crawler, Redis Monitor, and the Utilities folders.
+    # rest
+    nosetests -v --with-coverage --cover-erase --cover-package=../rest/
+
+This runs the individual component's offline tests. You can do this in the Kafka Monitor, Crawler, Redis Monitor, Rest, and the Utilities folders.
 
 Online Testing
 ^^^^^^^^^^^^^^
@@ -128,6 +133,19 @@ To add further debug lines within the Redis Monitor, you can use the following v
 
 * Cannot connect to Redis/Kafka, look into your network configuration.
 * Lots of errors when writing to a Kafka topic - Kafka is in an unhappy state and should be looked at.
+
+Rest
+^^^^
+
+To add further debug lines within the Rest, you can use the following variables within the classes.
+
+* **Core**: ``self.logger``
+
+**Typical Issues**
+
+* Cannot connect to Redis/Kafka, look into your network configuration.
+* Improperly formatted requests - please ensure your request matches either the Kafka Monitor or Rest service API
+* All Redis Monitor requests come back as a ``poll_id`` - Ensure you have the Kafka Monitor and Redis Monitor properly set up and running.
 
 Utilities
 ^^^^^^^^^
