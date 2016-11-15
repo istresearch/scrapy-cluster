@@ -6,6 +6,7 @@ The Rest service is designed to act as a gateway into your Scrapy Cluster in ord
 .. figure:: ../img/RestService.png
    :alt: Rest Service Diagram
    :align:   center
+   :width: 400px
 
 The Rest service is one of the newer components to Scrapy Cluster, and provides the ability for a service to provide arbitrary JSON to be passed to the cluster, and to request information for longer jobs that traditionally time out during the execution of a call.
 

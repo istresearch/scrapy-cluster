@@ -1,7 +1,7 @@
 Quick Start
 ===========
 
-First, create a ``localsettings.py`` to track your overridden custom settings. You can override any setting you find within the Redis Monitor's ``settings.py``, and a typical file may look like the following:
+First, create a ``localsettings.py`` to track your overridden custom settings. You can override any setting you find within the Rest service's ``settings.py``, and a typical file may look like the following:
 
 ::
 
@@ -20,7 +20,7 @@ The main mode of operation for the Rest service is to generate a Restful endpoin
 Typical Usage
 -------------
 
-Typical usage of the Rest service is done in conjunction with both the Kafka Monitor and Redis Monitor. The Rest service is a gateway for interacting with both of those components, and provides little functionality when use by itself.
+Typical usage of the Rest service is done in conjunction with both the Kafka Monitor and Redis Monitor. The Rest service is a gateway for interacting with both of those components, and provides little functionality when used by itself.
 
 .. warning:: This guide assumes you have both a running Kafka Monitor and Redis Monitor already. Please see the Kafka Monitor :doc:`../kafka-monitor/quickstart`  or the Redis Monitor :doc:`../redis-monitor/quickstart` for more information.
 
@@ -36,7 +36,7 @@ Run the rest service
 
 **Terminal 2:**
 
-Curl the basic endpoint of the cluster.
+Curl the basic endpoint of the component.
 
 ::
 
@@ -61,7 +61,7 @@ Feed a request
 
     $ curl scdev:5343/feed -H "Content-Type: application/json" -d '{"uuid":"abc123", "appid":"stuff"}'
 
-The request provided is outlined at :doc:`../kafka-monitor/api`, when using the ``feed`` endpoint you need to ensure your request conforms to specification outlined on that page.
+The request provided is outlined at the Kafka Monitor's :doc:`../kafka-monitor/api`, when using the ``feed`` endpoint you need to ensure your request conforms to specification outlined on that page.
 
 You should see a log message come through Terminal 1 stating the message was received and the data transmitted back.
 

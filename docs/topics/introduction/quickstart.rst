@@ -342,7 +342,7 @@ Add the following fields to override the defaults
 Your First Crawl
 ----------------
 
-At this point you should have a Vagrant or Cluster setup that has been tested and appears to be operational. We can choose to start up either a bare bones cluster, or a fully operational cluster.
+At this point you should have a Scrapy Cluster setup that has been tested and appears to be operational. We can choose to start up either a bare bones cluster, or a fully operational cluster.
 
 .. note:: You can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.
 

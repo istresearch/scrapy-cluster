@@ -126,7 +126,7 @@ The maximum size of a single message to be consumed by the Kafka Consumer. Defau
 
 Default: ``1``
 
-The length of time to sleep by the consumer before automatically reconnecting to a downed Kafka node.
+The length of time to sleep by the main thread before checking for new Kafka messages
 
 **KAFKA_PRODUCER_TOPIC**
 
@@ -138,13 +138,13 @@ The topic that the Kafka Monitor is litening for requests on.
 
 Default: ``25``
 
-INSERT DESCRIPTION HERE
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
 
 **KAFKA_PRODUCER_BUFFER_BYTES**
 
 Default: ``4 * 1024 * 1024``
 
-INSERT DESCRIPTION HERE
+The size of the TCP send buffer when transmitting data to Kafka
 
 Logging
 -------
