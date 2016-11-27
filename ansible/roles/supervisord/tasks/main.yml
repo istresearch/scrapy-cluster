@@ -1,12 +1,12 @@
 ---
 - name: ensure supervisord is installed
-  pip: 
+  pip:
     name=supervisor
     state=present
   tags: supervisord
 
 - name: ensure directories are created
-  file: 
+  file:
     state=directory
     dest={{ item }}
     mode=0755
@@ -28,6 +28,11 @@
     owner=root
     group=root
     mode=0755
+  tags: supervisord
+  when: ansible_os_family == "RedHat"
+
+- name: ensure CentOS daemon is restarted
+  shell: systemctl daemon-reload
   tags: supervisord
   when: ansible_os_family == "RedHat"
 
