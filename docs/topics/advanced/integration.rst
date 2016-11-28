@@ -34,6 +34,14 @@ You should alter a couple of settings used within each of the main components of
 
 * ``SC_LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
 
+**Rest**
+
+* ``LOG_STDOUT = False`` - Forces the Crawler logs to be written to a file on the machine
+
+* ``LOG_JSON = True`` - Flips logging output from human readable to JSON.
+
+* ``LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
+
 .. note:: Depending on your machine's ``/var/log`` folder permissions, you may need to create the ``scrapy-cluster`` directory manually and ensure your Scrapy Cluster processes have permission to write to the directory.
 
 You should now be able to ``tail -f`` any of your logs and see the JSON objects flowing by.
@@ -89,7 +97,7 @@ We will use Logstash to automatically store and manage Scrapy Cluster's logs via
   }
 
 
-Save this file as ``logs-template.json`` in your logstash templates directory, here we will assume it is located at ``/etc/logstash.d/templates/``.
+Save this file as ``logs-template.json`` in your logstash templates directory, here we will assume it is located at ``/etc/logstash/templates/``.
 
 Now we need to configure Logstash to use the template, and read from our logs. For this we will use a simple file input and elasticsearch output available via Logstash.
 
