@@ -9,30 +9,26 @@
       "dynamic_templates" : [ {
         "message_field" : {
           "mapping" : {
-            "index" : "not_analyzed",
             "omit_norms" : true,
-            "include_in_parent": true,
-            "type" : "string"
+            "type" : "keyword"
           },
-          "match_mapping_type" : "string",
+          "match_mapping_type" : "keyword",
           "match" : "message"
         }
       }, {
-        "string_fields" : {
+        "keyword_fields" : {
           "mapping" : {
-            "index" : "not_analyzed",
             "omit_norms" : true,
-            "include_in_parent": true,
-            "type" : "string"
+            "type" : "keyword"
           },
-          "match_mapping_type" : "string",
+          "match_mapping_type" : "keyword",
           "match" : "*"
         }
       } ],
       "properties" : {
         "@version" : {
           "index" : "not_analyzed",
-          "type" : "string"
+          "type" : "keyword"
         }
       },
       "_all" : {
