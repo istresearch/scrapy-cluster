@@ -36,7 +36,7 @@ You should alter a couple of settings used within each of the main components of
 
 **Rest**
 
-* ``LOG_STDOUT = False`` - Forces the Crawler logs to be written to a file on the machine
+* ``LOG_STDOUT = False`` - Forces the Rest service logs to be written to a file on the machine
 
 * ``LOG_JSON = True`` - Flips logging output from human readable to JSON.
 
