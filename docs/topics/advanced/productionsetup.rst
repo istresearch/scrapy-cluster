@@ -22,6 +22,8 @@ As a friendly reminder, the following processes should be monitored:
 
 - Redis Monitor
 
+- Rest service
+
 Spider Complexity
 -----------------
 

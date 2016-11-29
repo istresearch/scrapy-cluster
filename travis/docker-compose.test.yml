@@ -22,6 +22,12 @@ services:
       - redis
       - zookeeper
     restart: always
+  rest:
+    image: istresearch/scrapy-cluster:rest-test
+    depends_on:
+      - kafka
+      - redis
+    restart: always
   redis:
     image: redis
     ports:

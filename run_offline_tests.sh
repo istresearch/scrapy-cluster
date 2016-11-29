@@ -23,6 +23,12 @@ if [ $? -eq 1 ]; then
     echo "crawler tests failed"
     exit 1
 fi
+cd ../rest
+nosetests -v --with-coverage --cover-erase --cover-package=../rest/
+if [ $? -eq 1 ]; then
+    echo "rest tests failed"
+    exit 1
+fi
 cd ../
-coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage
+coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage rest/.coverage
 

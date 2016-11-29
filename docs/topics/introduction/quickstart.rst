@@ -75,7 +75,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     (sc) vagrant@scdev:/vagrant$ ./run_offline_tests.sh
-    # There should be 4 core pieces, each of them saying all tests passed like so
+    # There should be 5 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
     ...
@@ -88,7 +88,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     (sc) vagrant@scdev:/vagrant$ ./run_online_tests.sh
-    # There should be 4 major blocks here, ensuring your cluster is setup correctly.
+    # There should be 5 major blocks here, ensuring your cluster is setup correctly.
     ...
     ----------------------------------------------------------------------
     Ran 2 tests in 0.105s
@@ -145,6 +145,12 @@ At time of writing, there is no Docker container to interface and run all of the
 
     $ docker exec -it scrapycluster_crawler_1 bash
 
+  Rest
+
+  ::
+
+    $ docker exec -it scrapycluster_rest_1 bash
+
 5) Run the unit and integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
 
 ::
@@ -192,7 +198,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     $ ./run_offline_tests.sh
-    # There should be 4 core pieces, each of them saying all tests passed like so
+    # There should be 5 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
     ...
@@ -304,10 +310,39 @@ This test spins up a spider using the internal Scrapy API, directs it to a real 
 
 .. warning:: If your integration test fails, please ensure the port(s) are open on the machine your Kafka cluster, your Redis host, and your Zookeeper hosts. Ensure that the machines the crawlers are set up on can access the desired hosts, and that your machine can successfully access the internet.
 
+11) If you would like, you can set up the rest service as well
+
+::
+
+    $ cd ../rest/
+    $ vi localsettings.py
+
+Add the following fields to override the defaults
+
+::
+
+    # Here, 'scdev' is the host with Kafka and Redis
+    REDIS_HOST = 'scdev'
+    KAFKA_HOSTS = 'scdev:9092'
+
+12) Run the online integration tests to see if the rest service works.
+
+::
+
+  $ python tests/online.py -v
+  test_status (__main__.TestRestService) ...  * Running on http://0.0.0.0:62976/ (Press CTRL+C to quit)
+  127.0.0.1 - - [11/Nov/2016 17:09:17] "GET / HTTP/1.1" 200 -
+  ok
+
+  ----------------------------------------------------------------------
+  Ran 1 test in 15.034s
+
+    OK
+
 Your First Crawl
 ----------------
 
-At this point you should have a Vagrant or Cluster setup that has been tested and appears to be operational. We can choose to start up either a bare bones cluster, or a fully operational cluster.
+At this point you should have a Scrapy Cluster setup that has been tested and appears to be operational. We can choose to start up either a bare bones cluster, or a fully operational cluster.
 
 .. note:: You can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.
 
@@ -336,35 +371,43 @@ At this point you should have a Vagrant or Cluster setup that has been tested an
 
 -  The Kafka Monitor (1+):
 
-   ::
+    ::
 
-       python kafka_monitor.py run
+        python kafka_monitor.py run
 
 -  The Redis Monitor (1+):
 
-   ::
+    ::
 
-       python redis_monitor.py
+        python redis_monitor.py
 
 -  A crawler (1+):
 
-   ::
+    ::
 
-       scrapy runspider crawling/spiders/link_spider.py
+        scrapy runspider crawling/spiders/link_spider.py
+
+- The rest service (1+):
+
+    ::
+
+        python rest_service.py
 
 -  The dump utility located in Kafka Monitor to see your crawl results
 
-   ::
+    ::
 
-       python kafkadump.py dump -t demo.crawled_firehose
+        python kafkadump.py dump -t demo.crawled_firehose
 
 -  The dump utility located in Kafka Monitor to see your action results
 
-   ::
+    ::
 
        python kafkadump.py dump -t demo.outbound_firehose
 
 Which ever setup you chose, every process within should stay running for the remainder that your cluster is in an operational state.
+
+.. note:: If you chose to set the Rest service up, this section may also be performed via the :doc:`../rest/index` endpoint. You just need to ensure the JSON identified in the following section is properly fed into the :ref:`feed <feed_endpoint>` rest endpoint.
 
 1) We now need to feed the cluster a crawl request. This is done via the same Kafka Monitor python script, but with different command line arguements.
 

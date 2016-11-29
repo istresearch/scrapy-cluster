@@ -39,6 +39,19 @@ services:
       - redis
       - zookeeper
     restart: always
+  rest:
+    image: istresearch/scrapy-cluster:rest-dev
+    volumes:
+      - logs:/usr/src/app/logs
+    depends_on:
+      - kafka
+      - redis
+    restart: always
+    ports:
+      - "5343:5343"
+    environment:
+      - LOG_STDOUT=False
+      - LOG_JSON=True
   redis:
     image: redis
     ports:
@@ -62,13 +75,13 @@ services:
       - zookeeper
     restart: always
   elasticsearch:
-    image: elasticsearch:latest
-    command: elasticsearch -Des.network.host=0.0.0.0
+    image: elasticsearch:5.0
+    command: elasticsearch -E network.host=0.0.0.0 -E discovery.zen.minimum_master_nodes=1
     ports:
       - "9200:9200"
       - "9300:9300"
   logstash:
-    image: logstash:latest
+    image: logstash:5.0
     command: logstash -f /etc/logstash/conf.d/logstash.conf
     volumes:
       - ./scrapy-cluster-logstash-docker.conf:/etc/logstash/conf.d/logstash.conf
@@ -79,7 +92,7 @@ services:
     links:
       - elasticsearch
   kibana:
-    image: kibana:latest
+    image: kibana:5.0
     ports:
       - "5601:5601"
     links:

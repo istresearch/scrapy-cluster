@@ -42,3 +42,9 @@ if [ $? -eq 1 ]; then
     echo "crawler tests failed"
     exit 1
 fi
+cd ../rest
+python tests/online.py -v
+if [ $? -eq 1 ]; then
+    echo "rest tests failed"
+    exit 1
+fi

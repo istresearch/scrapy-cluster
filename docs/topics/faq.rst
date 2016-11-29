@@ -96,6 +96,13 @@ Redis Monitor
 
     Please see the plugin documentation :ref:`here <rm_extension>` for adding new plugins to the Redis Monitor. If you would like to contribute to core Redis Monitor development please consider looking at our guide for :ref:`pull_requests`.
 
+Rest
+----
+
+**My rest endpoint reports RED or YELLOW, how do I fix this?**
+
+    A red or yellow status indicates the service cannot connect to one or more components. There should be error logs indicating a failure or loss of connection to a particular component.
+
 Utilities
 ---------
 

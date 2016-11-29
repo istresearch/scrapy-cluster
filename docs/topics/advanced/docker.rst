@@ -10,6 +10,7 @@ A container could either contain:
 * A single spider
 * A single kafka monitor
 * A single redis monitor
+* A single rest service
 
 Thanks to the ability to scale each component independently of each other, we utilize `Docker Compose <https://docs.docker.com/compose/>`_ to allow for scaling of Scrapy Cluster and management of the containers. You can use this in conjunction with things like `Docker Swarm <https://docs.docker.com/swarm/>`_, `Apache Mesos <http://mesos.apache.org/>`_, `Kubernetes <http://kubernetes.io/>`_, `Amazon EC2 Container Service <https://aws.amazon.com/ecs/>`_, or any other container manager of your choice.
 
@@ -27,6 +28,8 @@ Kafka Monitor: ``istresearch/scrapy-cluster:kafka-monitor-{release/build}``
 Redis Monitor: ``istresearch/scrapy-cluster:redis-monitor-{release/build}``
 
 Crawler: ``istresearch/scrapy-cluster:crawler-{release/build}``
+
+Rest: ``istresearch/scrapy-cluster:rest-{release/build}``
 
 For example ``istresearch/scrapy-cluster:redis-monitor-1.2`` would be the official stable 1.2 release of the Redis Monitor, but ``istresearch/scrapy-cluster:redis-monitor-dev`` would be tied to the latest ``dev`` branch release. Typically numeric releases will be paired with the ``master`` branch, while ``-dev`` releases will be paired with the ``dev`` branch.
 
@@ -92,7 +95,7 @@ This will rebuild your containers and bring everything online.
 Compose ELK Stack
 -----------------
 
-You can use Docker Compose to configure both Scrapy Cluster and an associated ELK stack to view your log data from the 3 core components.
+You can use Docker Compose to configure both Scrapy Cluster and an associated ELK stack to view your log data from the 4 core components.
 
 The docker compose file is located in ``elk/docker-compose.elk.yml``, and contains all of the necessary ingredients to bring up
 
@@ -103,6 +106,8 @@ The docker compose file is located in ``elk/docker-compose.elk.yml``, and contai
   * Redis Monitor
 
   * Crawler
+
+  * Rest
 
 * Infrastructure
 
@@ -150,9 +155,11 @@ You can ensure everything started up via:
                           redis ...                                       cp
   elk_redis_monitor_1     python                  Up
                           redis_monit ...
+  elk_rest_1              python rest_service.py  Up                      0.0.0.0:5343->5343/tcp
   elk_zookeeper_1         /bin/sh -c              Up                      0.0.0.0:2181->2181/tc
                           /usr/sbin/sshd  ...                             p, 22/tcp, 2888/tcp,
                                                                           3888/tcp
+
 
 From here, please continue to the :ref:`Kibana <elk_kibana>` portion of the :doc:`ELK <integration>` integration guide.
 
