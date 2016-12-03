@@ -513,6 +513,18 @@ class DistributedScheduler(object):
                 # need better url validation here
                 req = Request('http://' + item['url'])
 
+            try:
+                if 'callback' in item and item['callback'] is not None:
+                    req.callback = getattr(self.spider, item['callback'])
+            except AttributeError:
+                self.logger.warn("Unable to find callback method")
+
+            try:
+                if 'errback' in item and item['errback'] is not None:
+                    req.errback = getattr(self.spider, item['errback'])
+            except AttributeError:
+                self.logger.warn("Unable to find errback method")
+
             if 'meta' in item:
                 item = item['meta']
 
