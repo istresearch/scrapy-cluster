@@ -59,8 +59,10 @@ class LinkSpider(RedisSpider):
 
             for link in link_extractor.extract_links(response):
                 # link that was discovered
-                item["links"].append({"url": link.url, "text": link.text, })
-                req = Request(link.url, callback=self.parse)
+                the_url = link.url
+                the_url = the_url.replace('\n', '')
+                item["links"].append({"url": the_url, "text": link.text, })
+                req = Request(the_url, callback=self.parse)
 
                 req.meta['priority'] = response.meta['priority'] - 10
                 req.meta['curdepth'] = response.meta['curdepth'] + 1
