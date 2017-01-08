@@ -233,7 +233,7 @@ class DistributedScheduler(object):
                     # the object, use [1] to get the time
                     self.queue_dict[key] = [RedisThrottledQueue(self.redis_conn,
                     q, self.window, self.hits, self.moderated, throttle_key,
-                    throttle_key), time.time()]
+                    throttle_key, True), time.time()]
                 # use custom window and hits
                 else:
                     window = self.domain_config[the_domain]['window']
@@ -245,7 +245,7 @@ class DistributedScheduler(object):
 
                     self.queue_dict[key] = [RedisThrottledQueue(self.redis_conn,
                     q, window, hits, self.moderated, throttle_key,
-                    throttle_key), time.time()]
+                    throttle_key, True), time.time()]
 
     def expire_queues(self):
         '''
@@ -477,9 +477,6 @@ class DistributedScheduler(object):
                     self.queue_dict[key][1] = time.time()
                     return item
 
-            # we want the spiders to get slightly out of sync
-            # with each other for better performance
-            time.sleep(random.random())
             count = count + 1
 
         return None

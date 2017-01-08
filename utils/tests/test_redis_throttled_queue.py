@@ -49,3 +49,21 @@ class TestModeratedRedisThrottledQueue(TestCase):
         # mock exception raised even with good moderation
         self.queue.test_hits = MagicMock(side_effect=WatchError)
         self.assertFalse(self.queue.allowed())
+
+class TestModeratedElasticRedisThrottledQueue(TestCase):
+
+    def setUp(self):
+        self.queue = RedisThrottledQueue(MagicMock(), MagicMock(), 4, 2, True,
+                                         elastic=True)
+
+    def test_moderated(self):
+        # test elastic kick in hasnt happened yet
+        self.queue.is_moderated = MagicMock(return_value=True)
+        self.queue.elastic_kick_in = 0
+        self.assertFalse(self.queue.allowed())
+
+        # kick in overrides, even though we were moderated
+        self.queue.elastic_kick_in = self.queue.limit
+        self.queue.check_elastic = MagicMock(return_value=True)
+        self.queue.test_hits = MagicMock(return_value=True)
+        self.assertTrue(self.queue.allowed())

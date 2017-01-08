@@ -13,7 +13,7 @@ In Scrapy Cluster's use case, it means that when a Spider process says "Give me 
 
 In practice, the Redlock algorithm has many safeguards in place to do true concurrent process locking on keys, but as explained above, Scrapy Cluster does not need all of those extra features. Because those features significantly slow down the ``pop()`` mechanism, the ``RedisThrottledQueue`` was born.
 
-.. class:: RedisThrottledQueue(redisConn, myQueue, throttleWindow, throttleLimit, moderate=False, windowName=None, modName=None)
+.. class:: RedisThrottledQueue(redisConn, myQueue, throttleWindow, throttleLimit, moderate=False, windowName=None, modName=None, elastic=False, elastic_buffer=0)
 
     :param redisConn: The Redis connection
     :param myQueue: The RedisQueue class instance
@@ -22,6 +22,8 @@ In practice, the Redlock algorithm has many safeguards in place to do true concu
     :param int moderation: Queue pop requests are moderated to be evenly distributed throughout the window
     :param str windowName: Use a custom rolling window Redis key name
     :param str modName: Use a custom moderation key name in Redis
+    :param elastic: When moderated and falling behind, break moderation to catch up to desired limit
+    :param elastic_buffer: The threshold number for how close we should get to the limit when using the elastic catch up
 
     .. method:: push(*args)
 
@@ -66,6 +68,8 @@ If you would like to throttle your Redis queue, you need to pass the queue in as
 
 The throttle merely acts as a wrapper around your queue, returning items only when allowed. You can use the same methods the original ``RedisQueue`` provides, like ``push()``, ``pop()``, ``clear()``, and ``__len__``.
 
+.. note:: Due to the distributed nature of the throttled queue, when using the ``elastic=True`` argument the queue must successfully pop the number of ``limit`` items before the elastic catch up will take effect.
+
 Example
 -------
 
@@ -81,6 +85,7 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
         import argparse
         import redis
         import time
+        import random
 
         import sys
         from os import path
@@ -104,6 +109,9 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
                             help="The number of pops allowed in the given window")
         parser.add_argument('-q', '--queue', action='store', default='testqueue',
                             help="The Redis queue name")
+        parser.add_argument('-e', '--elastic', action='store_const', const=True,
+                            default=False, help="Test variable elastic catch up"
+                            " with moderation")
 
         args = vars(parser.parse_args())
 
@@ -113,11 +121,12 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
         port = args['redis_port']
         mod = args['moderate']
         queue = args['queue']
+        elastic = args['elastic']
 
         conn = redis.Redis(host=host, port=port)
 
         q = RedisPriorityQueue(conn, queue)
-        t = RedisThrottledQueue(conn, q, window, num, mod)
+        t = RedisThrottledQueue(conn, q, window, num, mod, elastic=elastic)
 
         def push_items(amount):
             for i in range(0, amount):
@@ -135,6 +144,9 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
                 if item:
                     print "My item", item, "My time:", time.time() - ti
                     count += 1
+
+                if elastic:
+                    time.sleep(int(random.random() * (t.moderation * 3)))
 
         try:
             read_items()

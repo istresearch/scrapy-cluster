@@ -22,6 +22,8 @@ Date: ??/??/????
 
 - `Docker <https://hub.docker.com/r/istresearch/scrapy-cluster/>`_ support
 
+- Improved RedisThrottledQueue implementation to allow for rubber band catch up while under moderation
+
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 

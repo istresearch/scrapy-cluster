@@ -17,9 +17,13 @@ class RedisThrottledQueue(object):
     moderate_key = None     # the last time the moderated queue was pulled
     window_append = ":throttle_window"  # appended to end of window queue key
     time_append = ":throttle_time"  # appended to end to time key
+    elastic = False # use elastic catch up
+    elastic_buffer = 0 # tolerance
+    elastic_kick_in = 0 # counter to get to limit before elastic kicks in
 
     def __init__(self, redisConn, myQueue, throttleWindow, throttleLimit,
-                        moderate=False, windowName=None, modName=None):
+                        moderate=False, windowName=None, modName=None,
+                        elastic=False, elastic_buffer=0):
         '''
         For best performance, all instances of a throttled queue should have
             the same settings
@@ -35,6 +39,10 @@ class RedisThrottledQueue(object):
             a more consistent outbound flow.
         @param windowName: Use a different rolling window key name
         @param modName: Use a different moderate time key name
+        @param elastic: When moderated and falling behind, break moderation to
+            catch up to desired limit
+        @param elastic_buffer: The threshold number for how close we should get
+            to the limit when using the elastic catch up
         '''
         self.redis_conn = redisConn
         self.queue = myQueue
@@ -55,6 +63,9 @@ class RedisThrottledQueue(object):
                 self.moderate_key = self.queue.key + self.time_append
             else:
                 self.moderate_key = modName + self.time_append
+
+            self.elastic = elastic
+            self.elastic_buffer = elastic_buffer
 
     def __len__(self):
         '''
@@ -86,6 +97,8 @@ class RedisThrottledQueue(object):
         otherwise None
         '''
         if self.allowed():
+            if self.elastic_kick_in < self.limit:
+                self.elastic_kick_in += 1
             return self.queue.pop(*args)
         else:
             return None
@@ -116,7 +129,8 @@ class RedisThrottledQueue(object):
                     # successfully incremented the counter
 
                     curr_time = time.time()
-                    if self.is_moderated(curr_time, pipe):
+                    if self.is_moderated(curr_time, pipe) and not \
+                            self.check_elastic():
                         return False
 
                     # passed the moderation limit, now check time window
@@ -124,9 +138,9 @@ class RedisThrottledQueue(object):
                     if self.test_hits():
                         # this is a valid transaction, set the new time
                         pipe.multi()
-                        pipe.set(self.moderate_key, str(curr_time))
-                        # expire it if it hasnt been touched in a while
-                        pipe.expire(self.moderate_key, int(self.window * 2))
+                        pipe.set(name=self.moderate_key,
+                                 value=str(curr_time),
+                                 ex=int(self.window * 2))
                         pipe.execute()
                         return True
 
@@ -140,6 +154,19 @@ class RedisThrottledQueue(object):
         else:
             return self.test_hits()
 
+        return False
+
+    def check_elastic(self):
+        '''
+        Checks if we need to break moderation in order to maintain our desired
+        throttle limit
+
+        @return: True if we need to break moderation
+        '''
+        if self.elastic and self.elastic_kick_in == self.limit:
+            value = self.redis_conn.zcard(self.window_key)
+            if self.limit - value > self.elastic_buffer:
+                return True
         return False
 
     def is_moderated(self, curr_time, pipe):
