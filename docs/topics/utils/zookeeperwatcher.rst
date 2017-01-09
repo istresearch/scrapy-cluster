@@ -168,7 +168,7 @@ In this example, we will create a fully functional file watcher that allows us t
         pass
     zoo_watcher.close()
 
-This file allows us to test out the different capabilities of the Zookeeper Watcher. Now, save this file as ``example_watcher.py`` and then in a new terminal use the ``file_pusher.py`` to push a sample settings file like shown below.
+This file allows us to test out the different capabilities of the Zookeeper Watcher. Now, save this file as ``example_zw.py`` or use the one located at ``utils/examples/example_zw.py`` and then in a new terminal use the ``file_pusher.py`` to push a sample settings file like shown below.
 
 **settings.txt**
 
@@ -187,7 +187,7 @@ Run the file watcher.
 
 ::
 
-    $ python example_watcher.py -z scdev -f /tmp/myconfig --poll
+    $ python example_zw.py -z scdev -f /tmp/myconfig --poll
     Valid File? True
     Contents: My configuration string here. Typically YAML or JSON
 
@@ -212,7 +212,7 @@ Now, lets try it in event mode. Stop your initial process and restart it with th
 
 ::
 
-    $ python example_watcher.py -z scdev -f /tmp/myconfig --event
+    $ python example_zw.py -z scdev -f /tmp/myconfig --event
     Your file contents: NEW My configuration string here. Typically YAML or JSON
 
     The valid state is now True
@@ -265,7 +265,7 @@ So now we have two configuration files located at ``/tmp/``, and one pointer fil
 
 ::
 
-    $ python example_watcher.py -z scdev -f /tmp_pointers/pointer1 --event -p
+    $ python example_zw.py -z scdev -f /tmp_pointers/pointer1 --event -p
     Your file contents: EVENT TRIGGER My configuration string here. Typically YAML or JSON
 
     The valid state is now True

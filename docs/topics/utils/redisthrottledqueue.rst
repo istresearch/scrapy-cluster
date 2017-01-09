@@ -73,7 +73,7 @@ The throttle merely acts as a wrapper around your queue, returning items only wh
 Example
 -------
 
-The Redis Throttled Queue really shines when multiple processes are trying to pop from the queue. There is a small test script under ``utils/tests/test_throttled_queue.py`` that allows you to tinker with all of the different settings the throttled queue provides. The script is shown below for convenience.
+The Redis Throttled Queue really shines when multiple processes are trying to pop from the queue. There is a small test script under ``utils/examples/example_rtq.py`` that allows you to tinker with all of the different settings the throttled queue provides. The script is shown below for convenience.
 
 ::
 
@@ -170,7 +170,7 @@ Spinning up two instances with exactly the same settings will give you similar r
 
 ::
 
-    $ python test_throttled_queue.py -r scdev -w 30 -n 15 -m
+    $ python example_rtq.py -r scdev -w 30 -n 15 -m
     Adding 30 items for testing
     Kill when satisfied ^C
     My item item-29 My time: 0.00285792350769
@@ -197,7 +197,7 @@ Spinning up two instances with exactly the same settings will give you similar r
 ::
 
     # this script was started slightly after process 1
-    $ python test_throttled_queue.py -r scdev -w 30 -n 15 -m
+    $ python example_rtq.py -r scdev -w 30 -n 15 -m
     Adding 30 items for testing
     Kill when satisfied ^C
     My item item-28 My time: 2.95087885857
@@ -223,7 +223,7 @@ If we did not pass the ``-m`` for moderated flag, your process output may look l
 
 ::
 
-    $ python test_throttled_queue.py -r scdev -w 10 -n 10
+    $ python example_rtq.py -r scdev -w 10 -n 10
     Adding 20 items for testing
     Kill when satisfied ^C
     My item item-19 My time: 0.00159978866577
@@ -249,7 +249,7 @@ If we did not pass the ``-m`` for moderated flag, your process output may look l
 
 ::
 
-    $ python test_throttled_queue.py -r scdev -w 10 -n 10
+    $ python example_rtq.py -r scdev -w 10 -n 10
     Adding 20 items for testing
     Kill when satisfied ^C
     My item item-19 My time: 9.12855100632
@@ -267,5 +267,5 @@ If we did not pass the ``-m`` for moderated flag, your process output may look l
 
 Notice that when unmoderated, Process 1 pops all available items in about one hundredth of a second. By the time we switched terminals, Process 2 doesn't have any items to pop and re-adds the 20 items to the queue. In the next 10 second increments, you can see each process receiving items when it is able to successfully pop from the same Redis Queue.
 
-Feel free to mess with the arguments to ``test_throttled_queue.py``, and figure out what kind of pop throttling works best for your use case.
+Feel free to mess with the arguments to ``example_rtq.py``, and figure out what kind of pop throttling works best for your use case.
 

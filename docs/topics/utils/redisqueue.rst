@@ -182,13 +182,13 @@ In this example lets create a simple script that changes what type of Queue we u
     print "Pop 2 " + queue.pop()
     print "Pop 3 " + queue.pop()
 
-Save the file as ``example_queue.py``, and now lets run the different tests.
+Save the file as ``example_rq.py`` or use the one located at ``utils/examples/example_rq.py``, and now lets run the different tests.
 
 As a queue:
 
 ::
 
-    $ python example_queue.py -q
+    $ python example_rq.py -q
     Using RedisQueue
     Pop 1 item1
     Pop 2 item2
@@ -198,7 +198,7 @@ As a stack:
 
 ::
 
-    $ python example_queue.py -s
+    $ python example_rq.py -s
     Using RedisStack
     Pop 1 item3
     Pop 2 item2
@@ -208,7 +208,7 @@ As a priority queue:
 
 ::
 
-    $ python example_queue.py -p
+    $ python example_rq.py -p
     Using RedisPriorityQueue
     Pop 1 item2
     Pop 2 item1

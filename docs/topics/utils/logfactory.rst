@@ -129,7 +129,7 @@ Scrapy Cluster's many components use arguments from the command line to set comm
 Example
 -------
 
-Add the following python code to a new file:
+Add the following python code to a new file, or use the script located at ``utils/examples/example_lf.py``:
 
 ::
 
@@ -156,12 +156,12 @@ Add the following python code to a new file:
     sum = 2 + 2
     logger.info("Info output closing.", extra={"sum":sum})
 
-Now, lets save that file as ``log_example.py`` and run the following commands:
+Let's assume you now have a file named ``example_lf.py``, run the following commands:
 
 ::
 
-    $ python log_example.py --help
-    usage: log_example.py [-h] [-ll {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-lf]
+    $ python example_lf.py --help
+    usage: example_lf.py [-h] [-ll {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-lf]
                           [-lj]
 
     Example logger.
@@ -175,7 +175,7 @@ Now, lets save that file as ``log_example.py`` and run the following commands:
 
 ::
 
-    $ python log_example.py --log-level DEBUG
+    $ python example_lf.py --log-level DEBUG
     # Should write all log messages above
     2015-11-17 16:49:06,957 [scrapy-cluster] DEBUG: Logging to stdout
     2015-11-17 16:49:06,958 [scrapy-cluster] DEBUG: debug output 1
@@ -187,7 +187,7 @@ Now, lets save that file as ``log_example.py`` and run the following commands:
 
 ::
 
-    $ python log_example.py --log-level INFO --log-json
+    $ python example_lf.py --log-level INFO --log-json
     # Should log json object of "INFO" level or higher
     {"message": "warn output", "logger": "scrapy-cluster", "timestamp": "2015-11-17T21:52:28.407833Z", "key": "value", "level": "WARNING"}
     {"message": "critical fault, closing", "logger": "scrapy-cluster", "timestamp": "2015-11-17T21:52:28.408323Z", "level": "CRITICAL"}
@@ -197,7 +197,7 @@ Notice that the extra dictionary object we passed into the two logs above is now
 
 ::
 
-    $ python log_example.py --log-level CRITICAL --log-json --log-file
+    $ python example_lf.py --log-level CRITICAL --log-json --log-file
     # Should log only one critical message to our file located at logs/
     $ tail logs/main.log
     {"message": "critical fault, closing", "logger": "scrapy-cluster", "timestamp": "2015-11-17T21:56:28.318056Z", "level": "CRITICAL"}
