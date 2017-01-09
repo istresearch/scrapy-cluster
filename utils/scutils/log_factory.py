@@ -43,7 +43,7 @@ class LogObject(object):
                  dir='logs', file='main.log', bytes=25000000, backups=5,
                  level='INFO',
                  format='%(asctime)s [%(name)s] %(levelname)s: %(message)s',
-                 propagate=False):
+                 propagate=False, include_extra=False):
         '''
         @param stdout: Flag to write logs to stdout or file
         @param json: Flag to write json logs with objects or just the messages
@@ -55,6 +55,7 @@ class LogObject(object):
         @param level: The logging level string
         @param format: The log format
         @param propagate: Allow the log to propagate to other ancestor loggers
+        @param include_extra: When not logging json, include the 'extra' param
 
         '''
         # set up logger
@@ -64,6 +65,7 @@ class LogObject(object):
         self.json = json
         self.log_level = level
         self.format_string = format
+        self.include_extra = include_extra
 
         if stdout:
             # set up to std out
@@ -198,15 +200,23 @@ class LogObject(object):
         @param message: The message to write
         @param extra: The object to pull defaults from
         '''
-        if extra['level'] == 'INFO':
+        level = extra['level']
+        if self.include_extra:
+            del extra['timestamp']
+            del extra['level']
+            del extra['logger']
+            if len(extra) > 0:
+                message += " " + str(extra)
+
+        if level == 'INFO':
             self.logger.info(message)
-        elif extra['level'] == 'DEBUG':
+        elif level == 'DEBUG':
             self.logger.debug(message)
-        elif extra['level'] == 'WARNING':
+        elif level == 'WARNING':
             self.logger.warning(message)
-        elif extra['level'] == 'ERROR':
+        elif level == 'ERROR':
             self.logger.error(message)
-        elif extra['level'] == 'CRITICAL':
+        elif level == 'CRITICAL':
             self.logger.critical(message)
         else:
             self.logger.debug(message)

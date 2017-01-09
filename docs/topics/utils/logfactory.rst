@@ -19,7 +19,7 @@ This single log instance allows you to:
 
 It is designed to be easy to use throughout your application, giving you a standard and flexible way to write your log data.
 
-.. method:: LogFactory.get_instance(json=False, stdout=True, name='scrapy-cluster',dir='logs', file='main.log', bytes=25000000, backups=5, level='INFO', format='%(asctime)s [%(name)s] %(levelname)s: %(message)s', propagate=False)
+.. method:: LogFactory.get_instance(json=False, stdout=True, name='scrapy-cluster',dir='logs', file='main.log', bytes=25000000, backups=5, level='INFO', format='%(asctime)s [%(name)s] %(levelname)s: %(message)s', propagate=False, include_extra=False)
 
     :param stdout: Flag to write logs to stdout or file
     :param json: Flag to write json logs with objects or just the messages
@@ -31,6 +31,7 @@ It is designed to be easy to use throughout your application, giving you a stand
     :param level: The logging level string ['DEBUG', 'INFO', 'WARNING', 'ERROR' 'CRITICAL']
     :param format: The log format
     :param propagate: Allow the log to propagate to other ancestor loggers
+    :param include_extra: When not logging json, include the 'extra' param in the output
     :return: The log instance to use
 
 
@@ -145,9 +146,12 @@ Add the following python code to a new file, or use the script located at ``util
     parser.add_argument('-lj', '--log-json', action='store_const',
                         required=False, const=True, default=False,
                         help="Log the data in JSON format")
+    parser.add_argument('-ie', '--include-extra', action='store_const', const=True,
+                            default=False, help="Print the 'extra' dict if not logging"
+                            " to json")
     args = vars(parser.parse_args())
     logger = LogFactory.get_instance(level=args['log_level'], stdout=args['log_file'],
-                        json=args['log_json'])
+                        json=args['log_json'], include_extra=args['include_extra'])
     logger.debug("debug output 1")
     logger.warn("warn output", extra={"key":"value"})
     logger.debug("debug output 2")
@@ -201,6 +205,15 @@ Notice that the extra dictionary object we passed into the two logs above is now
     # Should log only one critical message to our file located at logs/
     $ tail logs/main.log
     {"message": "critical fault, closing", "logger": "scrapy-cluster", "timestamp": "2015-11-17T21:56:28.318056Z", "level": "CRITICAL"}
+
+You can also use the ``include_extra`` flag when instantiating the logger to print the dictionary even if you are not logging via json.
+
+::
+
+    $ python example_lf.py -ie
+    2017-01-08 22:10:45,491 [scrapy-cluster] WARNING: warn output {'key': 'value'}
+    2017-01-08 22:10:45,492 [scrapy-cluster] CRITICAL: critical fault, closing
+    2017-01-08 22:10:45,492 [scrapy-cluster] INFO: Info output closing. {'sum': 4}
 
 ----
 

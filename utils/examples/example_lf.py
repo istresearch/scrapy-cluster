@@ -10,9 +10,12 @@ parser.add_argument('-lf', '--log-file', action='store_const',
 parser.add_argument('-lj', '--log-json', action='store_const',
                     required=False, const=True, default=False,
                     help="Log the data in JSON format")
+parser.add_argument('-ie', '--include-extra', action='store_const', const=True,
+                        default=False, help="Print the 'extra' dict if not logging"
+                        " to json")
 args = vars(parser.parse_args())
 logger = LogFactory.get_instance(level=args['log_level'], stdout=args['log_file'],
-                    json=args['log_json'])
+                    json=args['log_json'], include_extra=args['include_extra'])
 logger.debug("debug output 1")
 logger.warn("warn output", extra={"key":"value"})
 logger.debug("debug output 2")

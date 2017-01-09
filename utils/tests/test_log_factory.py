@@ -77,6 +77,24 @@ class TestLogFactory(TestCase):
             ('test', 'CRITICAL', 'critical message'),
         )
 
+    def test_include_extra_log(self):
+        self.logger.log_level = 'INFO'
+        self.logger.include_extra = True
+        with LogCapture() as l:
+            self.logger.info('info message', {"test": 1})
+
+        l.check(
+            ('test', 'INFO', "info message {'test': 1}"),
+        )
+
+        # don't output an empty dict
+        with LogCapture() as l:
+            self.logger.info('info message2', {})
+
+        l.check(
+            ('test', 'INFO', "info message2"),
+        )
+
 class TestLogJSONFile(TestCase):
     def setUp(self):
         self.logger = LogObject(name='test', json=True,
