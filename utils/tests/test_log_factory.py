@@ -107,8 +107,6 @@ class TestLogJSONFile(TestCase):
         self.logger.info("Test log")
         with open(self.test_file + '.log', 'r') as f:
             read_data = f.read()
-            print('read_data ')
-            print(read_data )
             the_dict = json.loads(read_data)
             six.assertCountEqual(self, the_dict, {
                 "message": "Test log",
