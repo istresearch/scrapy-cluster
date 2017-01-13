@@ -107,6 +107,8 @@ class TestLogJSONFile(TestCase):
         self.logger.info("Test log")
         with open(self.test_file + '.log', 'r') as f:
             read_data = f.read()
+            print('read_data ')
+            print(read_data )
             the_dict = json.loads(read_data)
             six.assertCountEqual(self, the_dict, {
                 "message": "Test log",
@@ -131,8 +133,7 @@ class TestLogCallbacks(TestCase):
     def setUp(self):
         self.logger = LogObject(name='test', json=True,
                                 dir='.', level='INFO', stdout=False,
-                                file='test.log')
-        self.test_file = './test'
+                                )
 
     def test_log_callbacks_integration(self):
         def add_1(log_obj, log_message=None, log_extra=None):
