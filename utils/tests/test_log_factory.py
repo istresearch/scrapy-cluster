@@ -306,3 +306,7 @@ class TestLogCallbacks(TestCase):
         self.logger.log_level = 'CRITICAL'
         self.logger.fire_callbacks('CRITICAL')
         self.assertEqual(6, self.logger.x)
+
+    def tearDown(self):
+        os.remove('main.log')
+        os.remove('main.lock')
