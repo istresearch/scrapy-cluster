@@ -1,0 +1,50 @@
+<div class="jumbotron text-center">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+					<h3 class="panel-title">Spiders</h3>
+				</div>
+				<div class="panel-body">
+					<p style="font-size:70%;">Total number of spiders: {{ message }} <br/></p>
+					<p style="font-size:70%;">Total unique spiders: <br/></p>
+					<p style="font-size:70%;">Total number of machines: <br/></p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+					<h3 class="panel-title">Crawl Queue</h3>
+				</div>
+				<div class="panel-body">
+					<p style="font-size:70%;">Status: {{ message }} <br/></p>
+					<p style="font-size:70%;">Queue backlog: <br/></p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+					<h3 class="panel-title">Kafka</h3>
+				</div>
+				<div class="panel-body">
+					<p style="font-size:70%;">Status: {{ message }} <br/></p>
+					<p style="font-size:70%;">Total number of requests: <br/></p>
+					<p style="font-size:70%;">Total failed requests: <br/></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<h1 style="text-align:left; font-size:100%;">Submit a job to Scrapy-Cluster</h1>
+		<div class="input-group input-group-lg">
+  			<span class="input-group-addon" id="basic-addon1">URL:</span>
+  			<input type="text" class="form-control" placeholder=""  aria-describedby="basic-addon1">
+			<span class="input-group-addon" id="basic-addon2">AppID:</span>
+  			<input type="text" class="form-control" placeholder=""  aria-describedby="basic-addon2">
+			<span class="input-group-addon" id="basic-addon3">Expires:</span>
+  			<input type="text" class="form-control" placeholder=""  aria-describedby="basic-addon3">
+		</div>
+	</div>
+</div>
