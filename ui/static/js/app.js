@@ -48,7 +48,11 @@ myApp.controller('tabsController', ['$scope', function($scope) {
       return "";
     }
   }
-}]).controller('mainController', function($scope) {
+}]).controller('mainController', function($scope, $http) {
+    $http.get('http://0.0.0.0:5343/').
+    then(function(response) {
+        $scope.greeting = response.data;
+    });
     $scope.message = 'Overview!';
 }).controller('kafkaController', function($scope) {
     $scope.message = 'Kafka...';
