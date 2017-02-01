@@ -16,10 +16,26 @@ parser.add_argument('-ie', '--include-extra', action='store_const', const=True,
 args = vars(parser.parse_args())
 logger = LogFactory.get_instance(level=args['log_level'], stdout=args['log_file'],
                     json=args['log_json'], include_extra=args['include_extra'])
+
+my_var = 1
+
+def the_callback(log_message, log_extras):
+    global my_var
+    my_var += 5
+
+def the_callback_2(log_message, log_extras):
+    global my_var
+    my_var *= 2
+
+logger.register_callback('DEBUG', the_callback)
+logger.register_callback('WARN', the_callback_2, {'key':"value"})
+
 logger.debug("debug output 1")
-logger.warn("warn output", extra={"key":"value"})
+logger.warn("warn output", extra={"key":"value", "key2":"value2"})
+logger.warn("warn output 2")
 logger.debug("debug output 2")
 logger.critical("critical fault, closing")
 logger.debug("debug output 3")
 sum = 2 + 2
 logger.info("Info output closing.", extra={"sum":sum})
+logger.error("Final var value", extra={"value": my_var})
