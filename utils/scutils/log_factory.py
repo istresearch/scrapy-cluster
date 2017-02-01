@@ -86,7 +86,7 @@ class LogCallbackMixin:
             if unmatched_criteria:
                 continue
             else:
-                cb(self, log_message, log_extra)
+                cb(log_message, log_extra)
 
 class LogObject(object, LogCallbackMixin):
     '''

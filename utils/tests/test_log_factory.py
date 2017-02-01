@@ -132,16 +132,17 @@ class TestLogCallbacks(TestCase):
         self.logger = LogObject(name='test', json=True,
                                 dir='.', level='INFO', stdout=False,
                                 )
+        self.logger.x = 1
 
     def test_log_callbacks_integration(self):
-        def add_1(log_obj, log_message=None, log_extra=None):
-            log_obj.x += 1
+        def add_1(log_message=None, log_extra=None):
+            self.logger.x += 1
 
-        def negate(log_obj, log_message=None, log_extra=None):
-            log_obj.x *= -1
+        def negate(log_message=None, log_extra=None):
+            self.logger.x *= -1
 
-        def multiply_5(log_obj, log_message=None, log_extra=None):
-            log_obj.x *= 5
+        def multiply_5(log_message=None, log_extra=None):
+            self.logger.x *= 5
 
         self.logger.register_callback('<=INFO', add_1, {'key': 'val1'})
         self.logger.register_callback('<=INFO', negate, {'key': 'val2'})
@@ -227,14 +228,14 @@ class TestLogCallbacks(TestCase):
         self.assertEqual([add_1, add_4], callbacks)
 
     def test_fire_callbacks_basic_1(self):
-        def add_1(log_obj, log_message=None, log_extra=None):
-            log_obj.x += 1
+        def add_1(log_message=None, log_extra=None):
+            self.logger.x += 1
 
-        def negate(log_obj, log_message=None, log_extra=None):
-            log_obj.x *= -1
+        def negate(log_message=None, log_extra=None):
+            self.logger.x *= -1
 
-        def multiply_5(log_obj, log_message=None, log_extra=None):
-            log_obj.x *= 5
+        def multiply_5(log_message=None, log_extra=None):
+            self.logger.x *= 5
 
         self.logger.register_callback('<=INFO', add_1)
         self.logger.register_callback('INFO', negate)
@@ -267,14 +268,14 @@ class TestLogCallbacks(TestCase):
         self.assertEqual(0, self.logger.x)
 
     def test_fire_callbacks_basic_2(self):
-        def add_1(log_obj, log_message=None, log_extra=None):
-            log_obj.x += 1
+        def add_1(log_message=None, log_extra=None):
+            self.logger.x += 1
 
-        def negate(log_obj, log_message=None, log_extra=None):
-            log_obj.x *= -1
+        def negate(log_message=None, log_extra=None):
+            self.logger.x *= -1
 
-        def multiply_5(log_obj, log_message=None, log_extra=None):
-            log_obj.x *= 5
+        def multiply_5(log_message=None, log_extra=None):
+            self.logger.x *= 5
 
         self.logger.register_callback('>DEBUG', add_1)
         self.logger.register_callback('=WARNING', negate)
