@@ -308,6 +308,18 @@ class TestLogCallbacks(TestCase):
         self.logger.fire_callbacks('CRITICAL')
         self.assertEqual(6, self.logger.x)
 
+    def test_preserve_data(self):
+        message = "THIS IS A TEST"
+        extras = {"key": "value", 'a': [1, 2, 3]}
+
+        def cb(log_message=None, log_extra=None):
+            self.assertEquals(log_message, message)
+            self.assertEquals(log_extra, extras)
+
+        self.logger.register_callback('>DEBUG', cb)
+        self.logger.log_level = 'INFO'
+        self.logger.info(message, extras)
+
     def tearDown(self):
         os.remove('main.log')
         os.remove('main.lock')
