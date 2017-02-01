@@ -49,10 +49,15 @@ myApp.controller('tabsController', ['$scope', function($scope) {
     }
   }
 }]).controller('mainController', function($scope, $http) {
-    $http.get('http://0.0.0.0:5343/').
-    then(function(response) {
-        $scope.greeting = response.data;
-    });
+     $scope.loadstatus=function(){
+         $http.get('http://192.168.33.99:5343/')
+         .success(function(response){
+              $scope.data=response;
+         })
+         .error(function(){
+              alert("An unexpected error occurred!");
+         });
+     }
     $scope.message = 'Overview!';
 }).controller('kafkaController', function($scope) {
     $scope.message = 'Kafka...';

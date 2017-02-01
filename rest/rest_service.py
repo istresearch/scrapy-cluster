@@ -1,6 +1,7 @@
 import argparse
 from functools import wraps
 from flask import (Flask, jsonify, request)
+from flask_cors import CORS
 from werkzeug.exceptions import BadRequest
 from copy import deepcopy
 import sys
@@ -142,6 +143,7 @@ class RestService(object):
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.app = Flask(__name__)
+        CORS(self.app)
         self.kafka_connected = False
         self.redis_connected = False
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
