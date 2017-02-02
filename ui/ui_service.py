@@ -1,6 +1,7 @@
 import argparse
 from functools import wraps
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, render_template
+from flask_triangle import Triangle
 import time
 import logging
 
@@ -35,6 +36,7 @@ class UIService(object):
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.app = Flask(__name__)
+        Triangle(self.app)
 
     def setup(self, level=None, log_file=None, json=None):
         """

@@ -15,3 +15,5 @@ LOG_LEVEL = 'INFO'
 # internal configuration
 SLEEP_TIME = 5
 WAIT_FOR_RESPONSE_TIME = 5
+
+# Angular settings are dir /static

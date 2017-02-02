@@ -1,10 +1,10 @@
 'use strict';
 
-var myApp = angular.module('myApp', [
+var uiApp = angular.module('uiApp', [
  'ngRoute',
 ]);
 
-myApp.config(['$routeProvider',
+uiApp.config(['$routeProvider',
      function($routeProvider) {
         $routeProvider.
         when('/', {
@@ -28,7 +28,7 @@ myApp.config(['$routeProvider',
 		});
     }]);
 
-myApp.controller('tabsController', ['$scope', function($scope) {
+uiApp.controller('tabsController', ['$scope', function($scope) {
   $scope.tabs = [
       { link : '#/', label : 'Overview' },
       { link : '#/kafka', label : 'Kafka' },
@@ -48,9 +48,9 @@ myApp.controller('tabsController', ['$scope', function($scope) {
       return "";
     }
   }
-}]).controller('mainController', function($scope, $http) {
+}]).controller('mainController', function($scope, $http, REST_CONFIG) {
      $scope.loadstatus=function(){
-         $http.get('http://192.168.33.99:5343/')
+         $http.get(REST_CONFIG.url)
          .success(function(response){
               $scope.data=response;
          })
@@ -64,7 +64,6 @@ myApp.controller('tabsController', ['$scope', function($scope) {
 
     // calling our submit function.
     $scope.submitForm = function() {
-
     var reqObj = {
             url : $scope.request.url,
             appid : "uiservice",
@@ -76,7 +75,7 @@ myApp.controller('tabsController', ['$scope', function($scope) {
     // Posting data to php file
     $http({
       method  : 'POST',
-      url     : 'http://192.168.33.99:5343/feed',
+      url     : REST_CONFIG.url + '/feed',
       data    : angular.toJson(reqObj), //forms user object
       headers : {'Content-Type': 'application/json'}
      })
