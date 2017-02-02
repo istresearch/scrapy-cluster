@@ -21,3 +21,4 @@ six==1.10.0
 testfixtures==4.11.0
 ujson==1.35
 Werkzeug==0.11.11
+Flask-Cors==3.0.2
