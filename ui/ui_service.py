@@ -77,7 +77,7 @@ class UIService(object):
         """
         Cleans up anything from the process
         """
-        self.logger.info("Closing Rest Service")
+        self.logger.info("Closing UI Service")
         self.closed = True
 
     # Routes --------------------

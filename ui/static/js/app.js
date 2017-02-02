@@ -1,4 +1,4 @@
-'use strict';   // See note about 'use strict'; below
+'use strict';
 
 var myApp = angular.module('myApp', [
  'ngRoute',
@@ -58,7 +58,37 @@ myApp.controller('tabsController', ['$scope', function($scope) {
               alert("An unexpected error occurred!");
          });
      }
-    $scope.message = 'Overview!';
+
+    // create a blank object to handle form data.
+    $scope.request = {};
+
+    // calling our submit function.
+    $scope.submitForm = function() {
+
+    var reqObj = {
+            url : $scope.request.url,
+            appid : "uiservice",
+            crawlid : $scope.request.crawlid,
+            maxdepth : $scope.request.maxdepth,
+            priority : $scope.request.priority,
+    };
+
+    // Posting data to php file
+    $http({
+      method  : 'POST',
+      url     : 'http://192.168.33.99:5343/feed',
+      data    : angular.toJson(reqObj), //forms user object
+      headers : {'Content-Type': 'application/json'}
+     })
+     .success(function(data) {
+        if (data.errors) {
+          $scope.error = data.errors;
+        } else {
+          $scope.message = data.message;
+        }
+      });
+    };
+
 }).controller('kafkaController', function($scope) {
     $scope.message = 'Kafka...';
 }).controller('redisController', function($scope) {

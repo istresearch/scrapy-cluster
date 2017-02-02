@@ -1,12 +1,3 @@
-.btn-lg,
-.input-lg,
-.input-group-lg>.form-control,
-.input-group-lg>.input-group-addon,
-.input-group-lg>.input-group-btn>.btn
-{
-  line-height: 1.33;
-  height: 50px;
-}
 .navbar-brand
 {
   font-family: 'Lato', sans-serif;
@@ -17,11 +8,4 @@
 .btn
 {
   margin: 60px;
-}
-.body-content
-{
-	max-width:1200px;
-	margin-left:auto;
-	margin-right:auto;
-	font-family:Arial;
 }
