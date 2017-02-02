@@ -1,6 +1,6 @@
 import argparse
 from functools import wraps
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file
 from flask_triangle import Triangle
 import time
 import logging

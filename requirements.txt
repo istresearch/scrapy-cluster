@@ -40,3 +40,5 @@ ujson==1.35
 w3lib==1.16.0
 wheel==0.29.0
 zope.interface==4.2.0
+Flask-Cors==3.0.2
+Flask-Triangle==0.5.4
