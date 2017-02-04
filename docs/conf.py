@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Scrapy Cluster'
-copyright = u'2016, IST Research'
+copyright = u'2017, IST Research'
 author = u'IST Research'
 
 # The version info for the project you're documenting, acts as replacement for
