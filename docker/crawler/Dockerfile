@@ -21,13 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # move codebase over
 COPY crawler /usr/src/app
 
-# scutils dev version install (not in pip yet)
-COPY utils /tmp/utils
-RUN pip uninstall scutils -y
-WORKDIR /tmp/utils
-RUN python setup.py install
-WORKDIR /usr/src/app
-
 # override settings via localsettings.py
 COPY docker/crawler/settings.py /usr/src/app/crawling/localsettings.py
 

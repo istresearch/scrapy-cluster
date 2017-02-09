@@ -30,7 +30,7 @@ queuelib==1.4.2
 redis==2.10.5
 retrying==1.3.3
 Scrapy==1.2.0
-scutils==1.1
+scutils==1.2.0dev7
 service-identity==16.0.0
 six==1.10.0
 testfixtures==4.10.0

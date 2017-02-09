@@ -23,18 +23,11 @@ RUN mkdir -p /usr/src/app \
  && pip install --no-cache-dir pip setuptools \
 # Installing pip packages from requirements.txt
  && pip install --no-cache-dir -r requirements.txt \
- && cd /tmp/utils \
-# Removing release version of scutils package
- && pip uninstall scutils -y \
-# Installing development version of scutils package
- && python setup.py install \
- && cd /usr/src/app \
 # Removing build dependencies leaving image layer clean and neat
  && apk del build-dependencies
 
 # move codebase over
 COPY rest /usr/src/app
-
 
 WORKDIR /usr/src/app
 
