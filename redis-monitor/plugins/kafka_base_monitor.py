@@ -51,6 +51,19 @@ class KafkaBaseMonitor(BaseMonitor):
                                {'ex': traceback.format_exc()})
             raise
 
+    def _kafka_success(self, response):
+        '''
+        Callback for successful send
+        '''
+        self.logger.debug("Sent message to Kafka")
+
+    def _kafka_failure(self, response):
+        '''
+        Callback for failed send
+        '''
+        self.logger.error("Failed to send message to Kafka")
+        self._spawn_kafka_connection_thread()
+
     def _send_to_kafka(self, master):
         '''
         Sends the message back to Kafka
@@ -65,8 +78,12 @@ class KafkaBaseMonitor(BaseMonitor):
         try:
             # dont want logger in outbound kafka message
             if self.use_appid_topics:
-                self.producer.send(appid_topic, master)
-            self.producer.send(firehose_topic, master)
+                f1 = self.producer.send(appid_topic, master)
+                f1.add_callback(self._kafka_success)
+                f1.add_errback(self._kafka_failure)
+            f2 = self.producer.send(firehose_topic, master)
+            f2.add_callback(self._kafka_success)
+            f2.add_errback(self._kafka_failure)
 
             return True
         except Exception as ex:

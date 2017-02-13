@@ -132,7 +132,6 @@ SCHEDULER = "crawling.distributed_scheduler.DistributedScheduler"
 ITEM_PIPELINES = {
     'crawling.pipelines.KafkaPipeline': 100,
     'crawling.pipelines.LoggingBeforePipeline': 1,
-    'crawling.pipelines.LoggingAfterPipeline': 101,
 }
 
 SPIDER_MIDDLEWARES = {
