@@ -1,8 +1,6 @@
 from link_spider import LinkSpider
-from crawling.items import KeywordsItem
 
 import scrapy
-from bs4 import BeautifulSoup
 
 import re, json
 from collections import Counter
@@ -25,7 +23,14 @@ class KeywordSpider(LinkSpider):
         return super(KeywordSpider, self).parse(response)
 
     def _report_keywords(self, response):
-        text = BeautifulSoup(response.body).get_text().lower()
+        text = ' '.join(response.xpath("//body//text()").extract())
+        # [RMW -- 2/14/2017] This is a far from perfect use of response.xpath,
+        # but it shows us how we can use response to extract text, from which
+        # we can extract keywords.
+        # response is this type:
+        # https://doc.scrapy.org/en/latest/topics/request-response.html#textresponse-objects
+        # The return value of response.xpath is this type:
+        # https://doc.scrapy.org/en/latest/topics/selectors.html#selectorlist-objects
         words = self._words_regex.findall(text)
         counts = Counter(w for w in words if w in self._mm_keywords)
         result = {response.request.url: counts}
