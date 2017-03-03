@@ -55,6 +55,18 @@ Default: ``False``
 
 `Base64 <https://en.wikipedia.org/wiki/Base64>`_ encode the raw crawl body from the crawlers. This is useful when crawling malformed utf8 encoded pages, where json encoding throws an error. If an error occurs when encoding the crawl object in the item pipeline, there will be an error thrown and the result will be dropped.
 
+**KAFKA_PRODUCER_BATCH_LINGER_MS**
+
+Default: ``25``
+
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
+
+**KAFKA_PRODUCER_BUFFER_BYTES**
+
+Default: ``4 * 1024 * 1024``
+
+The size of the TCP send buffer when transmitting data to Kafka
+
 .. _zk_crawler_settings:
 
 Zookeeper

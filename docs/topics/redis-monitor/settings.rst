@@ -88,6 +88,18 @@ Default: ``False``
 
 Flag to send data to both the firehose and Application ID specific Kafka topics. If set to ``True``, results will be sent to both the ``demo.outbound_firehose`` **and** ``demo.outbound_<appid>`` Kafka topics, where ``<appid>`` is the Application ID used to submit the request. This is useful if you have many applications utilizing your cluster but only would like to listen to results for your specific application.
 
+**KAFKA_PRODUCER_BATCH_LINGER_MS**
+
+Default: ``25``
+
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
+
+**KAFKA_PRODUCER_BUFFER_BYTES**
+
+Default: ``4 * 1024 * 1024``
+
+The size of the TCP send buffer when transmitting data to Kafka
+
 Zookeeper
 ---------
 

@@ -62,7 +62,6 @@ class KafkaBaseMonitor(BaseMonitor):
         Callback for failed send
         '''
         self.logger.error("Failed to send message to Kafka")
-        self._spawn_kafka_connection_thread()
 
     def _send_to_kafka(self, master):
         '''

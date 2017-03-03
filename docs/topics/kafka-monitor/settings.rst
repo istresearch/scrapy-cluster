@@ -51,11 +51,47 @@ Default: ``5``
 
 How long to wait (in seconds) before timing out when trying to feed a JSON string into the ``KAFKA_INCOMING_TOPIC``
 
-**KAFKA_CONN_TIMEOUT**
+**KAFKA_CONSUMER_AUTO_OFFSET_RESET**
 
-Default: ``5``
+Default: ``'earliest'``
 
-How long to wait (in seconds) before timing out when trying to connect to the Kafka cluster.
+When the Kafka Consumer encounters and unexpected error, move the consumer offset to the 'latest' new message, or the 'earliest' available.
+
+**KAFKA_CONSUMER_TIMEOUT**
+
+Default: ``50``
+
+Time in ms spent to wait for a new message during a ``feed`` call that expects a response from the Redis Monitor
+
+**KAFKA_CONSUMER_COMMIT_INTERVAL_MS**
+
+Default: ``5000``
+
+How often to commit Kafka Consumer offsets to the Kafka Cluster
+
+**KAFKA_CONSUMER_AUTO_COMMIT_ENABLE**
+
+Default: ``True``
+
+Automatically commit Kafka Consumer offsets.
+
+**KAFKA_CONSUMER_FETCH_MESSAGE_MAX_BYTES**
+
+Default: ``10 * 1024 * 1024``
+
+The maximum size of a single message to be consumed by the Kafka Consumer. Defaults to 10 MB
+
+**KAFKA_PRODUCER_BATCH_LINGER_MS**
+
+Default: ``25``
+
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
+
+**KAFKA_PRODUCER_BUFFER_BYTES**
+
+Default: ``4 * 1024 * 1024``
+
+The size of the TCP send buffer when transmitting data to Kafka
 
 Plugins
 -------

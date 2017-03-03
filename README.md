@@ -10,7 +10,7 @@ The input to the system is a set of Kafka topics and the output is a set of Kafk
 
 ## Dependencies
 
-Please see `requirements.txt` for Pip package dependencies across the different sub projects.
+Please see the ``requirements.txt`` within each sub project for Pip package dependencies.
 
 Other important components required to run the cluster
 

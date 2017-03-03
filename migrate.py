@@ -39,7 +39,7 @@ def main():
                         choices=[1.1, 1.2], type=float)
     parser.add_argument('-v', '--verbosity', action='store',
                         required=False, default=0,
-                        help="Inceases output text verbosity",
+                        help="Increases output text verbosity",
                         choices=[0, 1, 2], type=int)
     parser.add_argument('-y', '--yes', action='store_const',
                         required=False, default=False, const=True,
@@ -169,7 +169,7 @@ def main():
                             + spider + "spider")
                         i_redis_conn.delete(queue)
                     else:
-                        vprint("Unknown error when migrating requessts {o}/{n}"
+                        vprint("Unknown error when migrating requests {o}/{n}"
                                 .format(o=old_count, n=new_count))
                         result = query_yes_no("Continue?") if not args['yes'] else True
                         if result:
