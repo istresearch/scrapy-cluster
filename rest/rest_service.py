@@ -1,7 +1,6 @@
 import argparse
 from functools import wraps
-from flask import (Flask, jsonify, request)
-from flask_cors import CORS
+from flask import (Flask, jsonify, request, current_app, make_response)
 from werkzeug.exceptions import BadRequest
 from copy import deepcopy
 import sys
@@ -9,6 +8,8 @@ import signal
 import os
 from retrying import retry
 from threading import Thread
+from datetime import timedelta
+from functools import update_wrapper
 import time
 import traceback
 import uuid
@@ -35,6 +36,38 @@ from jsonschema import ValidationError
 from jsonschema import Draft4Validator, validators
 
 # Route Decorators --------------------
+
+
+def crossdomain(origin='*', max_age=21600, attach_to_all=True, automatic_options=True):
+
+    if not isinstance(origin, basestring):
+        origin = ', '.join(origin)
+    if isinstance(max_age, timedelta):
+        max_age = max_age.total_seconds()
+
+        options_resp = current_app.make_default_options_response()
+        return options_resp.headers['allow']
+
+    def decorator(f):
+        def wrapped_function(*args, **kwargs):
+            if automatic_options and request.method == 'OPTIONS':
+                resp = current_app.make_default_options_response()
+            else:
+                resp = make_response(f(*args, **kwargs))
+            if not attach_to_all and request.method != 'OPTIONS':
+                return resp
+
+            h = resp.headers
+
+            h['Access-Control-Allow-Origin'] = origin
+            h['Access-Control-Max-Age'] = str(max_age)
+
+            return resp
+
+        f.provide_automatic_options = False
+        return update_wrapper(wrapped_function, f)
+    return decorator
+
 
 def log_call(call_name):
     """Log the API call to the logger."""
@@ -143,7 +176,6 @@ class RestService(object):
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.app = Flask(__name__)
-        CORS(self.app)
         self.kafka_connected = False
         self.redis_connected = False
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
@@ -568,12 +600,14 @@ class RestService(object):
         self.app.add_url_rule('/poll', 'poll', self.poll,
                               methods=['POST'])
 
+    @crossdomain(origin='*')
     @log_call('Non-existant route called')
     @error_catch
     def catch(self, path):
         return self._create_ret_object(self.FAILURE, None, True,
                                        self.DOES_NOT_EXIST), 404
 
+    @crossdomain(origin='*')
     @log_call('\'index\' endpoint called')
     @error_catch
     def index(self):
@@ -587,6 +621,7 @@ class RestService(object):
 
         return data
 
+    @crossdomain(origin='*')
     @validate_json
     @log_call('\'feed\' endpoint called')
     @error_catch
@@ -640,6 +675,7 @@ class RestService(object):
         return self._create_ret_object(self.FAILURE, None, True,
                                        "Unable to connect to Kafka"), 500
 
+    @crossdomain(origin='*')
     @validate_json
     @validate_schema('poll')
     @log_call('\'poll\' endpoint called')
