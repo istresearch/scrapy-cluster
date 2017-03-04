@@ -9,7 +9,6 @@ cryptography==1.5
 cssselect==0.9.2
 enum34==1.1.6
 Flask==0.11
-Flask-Cors==3.0.2
 Flask-Triangle==0.5.4
 funcsigs==1.0.2
 functools32==3.2.3.post2
