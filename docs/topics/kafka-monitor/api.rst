@@ -340,6 +340,12 @@ Response from Kafka:
         {
             "server_time": 1452102876,
             "uuid": "cdefghi",
+            "nodes": {
+                "Madisons-MacBook-Pro-2.local": [
+                    "e2be29329410",
+                    "60295fece216"
+                ]
+            },
             "plugins": {
                 "ActionHandler": {
                     "604800": 11,
@@ -592,6 +598,11 @@ Response from Kafka:
         {
             "stats": "redis-monitor",
             "uuid": "2hij1",
+            "nodes": {
+                "Madisons-MacBook-Pro-2.local": [
+                    "918145625a1e"
+                ]
+            },
             "plugins": {
                 "ExpireMonitor": {
                     "604800": 2,
@@ -655,6 +666,12 @@ Kafka Response:
 
         {
             "kafka-monitor": {
+                "nodes": {
+                    "Madisons-MacBook-Pro-2.local": [
+                        "e2be29329410",
+                        "60295fece216"
+                    ]
+                },
                 "fail": {
                     "604800": 4,
                     "lifetime": 7,
@@ -700,6 +717,11 @@ Kafka Response:
             "stats": "all",
             "uuid": "hij3",
             "redis-monitor": {
+                "nodes": {
+                    "Madisons-MacBook-Pro-2.local": [
+                        "918145625a1e"
+                    ]
+                },
                 "total": {
                     "900": 3,
                     "3600": 9,

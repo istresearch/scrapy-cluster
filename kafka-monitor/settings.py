@@ -52,3 +52,7 @@ STATS_TIMES = [
     'SECONDS_1_DAY',
     'SECONDS_1_WEEK',
 ]
+
+# main thread sleep time
+SLEEP_TIME = 0.01
+HEARTBEAT_TIMEOUT = 120

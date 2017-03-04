@@ -3,6 +3,21 @@ Settings
 
 This page covers all of the various settings contained within the Kafka Monitor. The sections are broken down by functional component.
 
+Core
+----
+
+**SLEEP_TIME**
+
+Default: ``0.01``
+
+The number of seconds the main process will sleep between checking for new crawl requests to take care of.
+
+**HEARTBEAT_TIMEOUT**
+
+Default: ``120``
+
+The amount of time the statistics key the Kafka Monitor instance lives to self identify to the rest of the cluster. Used for retrieving stats about the number of Kafka Monitor instances currently running.
+
 Redis
 -----
 

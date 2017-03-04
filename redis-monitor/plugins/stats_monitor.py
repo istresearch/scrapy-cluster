@@ -120,10 +120,10 @@ class StatsMonitor(KafkaBaseMonitor):
                 if 'nodes' not in the_dict:
                     # main is self, end is machine, true_tail is uuid
                     the_dict['nodes'] = {}
-                    true_tail = elements[4]
-                    if end not in the_dict['nodes']:
-                        the_dict['nodes'][end] = []
-                    the_dict['nodes'][end].append(true_tail)
+                true_tail = elements[4]
+                if end not in the_dict['nodes']:
+                    the_dict['nodes'][end] = []
+                the_dict['nodes'][end].append(true_tail)
             else:
                 if 'plugins' not in the_dict:
                     the_dict['plugins'] = {}
