@@ -11,5 +11,5 @@ Every Plugin used by the Redis Monitor looks for a specific set of keys within R
 
 For Scrapy Cluster, the default plugins take their results and either do data manipulation further within Redis, or send a Kafka message back out to the requesting application. The Redis Monitor's settings allow for full customization of the kinds of plugins you wish to run, and in the order they are processed.
 
-This allows the core Redis Monitor code to remain small, but allows for customization and extendability.
+This allows the core Redis Monitor code to remain small, but allows for customization and extendability. That, in combination with the ability to run multiple Redis Monitors across a number of different machines, provides fault tolerance and the ability to interact with the cluster in many different simultaneous ways.
 

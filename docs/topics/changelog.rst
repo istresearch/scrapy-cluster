@@ -24,6 +24,10 @@ Date: ??/??/????
 
 - Improved RedisThrottledQueue implementation to allow for rubber band catch up while under moderation
 
+- Added support for Centos and Ubuntu Virtual Machines
+
+
+
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -44,6 +48,8 @@ Redis Monitor Changes
 
 - Added ability to scale horizontally with multiple processes for redundancy
 
+- New limited retry ability for failed actions
+
 Crawler Changes
 ^^^^^^^^^^^^^^^
 
@@ -52,6 +58,8 @@ Crawler Changes
 - Improved memory management in scheduler for domain based queues
 
 - Added two new spider middlewares for stats collection and meta field passthrough
+
+- Removed excess pipeline middleware
 
 Rest Service
 ^^^^^^^^^^^^

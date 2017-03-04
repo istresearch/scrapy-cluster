@@ -34,6 +34,13 @@ The ``stats_handler.py`` and the ``stats_schema.json`` files create the validati
 For more information please refer to the :ref:`Stats API <stats_api>`.
 
 
+Zookeeper Handler
+^^^^^^^^^^^^^^^^^
+
+The ``zookeeper_handler.py`` and the ``zookeeper_schema.json`` files enable the ability to update the crawl domain blacklist.
+
+For more information please see the :ref:`Zookeeper API <zookeeper_api>`
+
 .. _km_extension:
 
 Extension

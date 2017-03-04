@@ -18,6 +18,8 @@ import sys
 import argparse
 import redis
 import copy
+import uuid
+import socket
 
 from redis.exceptions import ConnectionError
 
@@ -44,6 +46,7 @@ class KafkaMonitor(object):
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.unit_test = unit_test
+        self.my_uuid = str(uuid.uuid4()).split('-')[4]
 
     def _import_class(self, cl):
         '''
@@ -125,6 +128,7 @@ class KafkaMonitor(object):
         try:
             redis_conn.info()
             self.logger.debug("Connected to Redis in StatsCollector Setup")
+            self.redis_conn = redis_conn
         except ConnectionError:
             self.logger.warn("Failed to connect to Redis in StatsCollector"
                              " Setup, no stats will be collected")
@@ -256,7 +260,8 @@ class KafkaMonitor(object):
                     self._dump_stats()
                     old_time = new_time
 
-            time.sleep(.01)
+            self._report_self()
+            time.sleep(self.settings['SLEEP_TIME'])
 
     def _process_messages(self):
         try:
@@ -394,6 +399,16 @@ class KafkaMonitor(object):
         self._load_plugins()
         self._setup_stats()
         self._main_loop()
+
+    def _report_self(self):
+        '''
+        Reports the kafka monitor uuid to redis
+        '''
+        key = "stats:kafka-monitor:self:{m}:{u}".format(
+            m=socket.gethostname(),
+            u=self.my_uuid)
+        self.redis_conn.set(key, time.time())
+        self.redis_conn.expire(key, self.settings['HEARTBEAT_TIMEOUT'])
 
     def feed(self, json_item):
         '''

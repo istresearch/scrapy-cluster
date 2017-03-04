@@ -558,6 +558,19 @@ class RestService(object):
         else:
             return "RED"
 
+    def _kafka_success(self, response):
+        '''
+        Callback for successful send
+        '''
+        self.logger.debug("Sent message to Kafka")
+
+    def _kafka_failure(self, response):
+        '''
+        Callback for failed send
+        '''
+        self.logger.error("Failed to send message to Kafka")
+        self._spawn_kafka_connection_thread()
+
     def _feed_to_kafka(self, json_item):
         """Sends a request to Kafka
 
@@ -569,8 +582,11 @@ class RestService(object):
             try:
                 self.logger.debug("Sending json to kafka at " +
                                   str(self.settings['KAFKA_PRODUCER_TOPIC']))
-                self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
+                future = self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
                                    json_item)
+                future.add_callback(self._kafka_success)
+                future.add_errback(self._kafka_failure)
+
                 self.producer.flush()
 
                 return True

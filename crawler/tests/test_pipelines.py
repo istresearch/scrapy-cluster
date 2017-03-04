@@ -2,11 +2,11 @@ from builtins import object
 from unittest import TestCase
 import mock
 from mock import MagicMock
-from crawling.pipelines import (LoggingBeforePipeline, KafkaPipeline,
-                                LoggingAfterPipeline)
+from crawling.pipelines import (LoggingBeforePipeline, KafkaPipeline)
 from crawling.items import RawResponseItem
 from copy import deepcopy
 from scrapy import Item
+from kafka.errors import KafkaTimeoutError
 
 
 class ItemMixin(object):
@@ -60,36 +60,6 @@ class TestLoggingBeforePipeline(TestCase, ItemMixin):
             self.assertEqual(str(e), "warn")
 
 
-class TestLoggingAfterPipeline(TestCase, ItemMixin):
-
-    def setUp(self):
-        self.pipe = LoggingAfterPipeline(MagicMock())
-        self.pipe.logger.name = "crawler"
-
-    def test_process_item(self):
-        item = self._get_item()
-        item['success'] = True
-
-        spider = MagicMock()
-        spider.name = "link"
-
-        # test valid send to kafka
-        self.pipe.logger.info = MagicMock(side_effect=Exception("info"))
-        try:
-            self.pipe.process_item(item, spider)
-            self.assertFalse(True)
-        except Exception as e:
-            self.assertEqual(str(e), "info")
-
-        # test invalid send to kafka
-        item['success'] = False
-        self.pipe.logger.error = MagicMock(side_effect=Exception("error"))
-        try:
-            self.pipe.process_item(item, spider)
-            self.assertFalse(True)
-        except Exception as e:
-            self.assertEqual(str(e), "error")
-
 class TestKafkaPipeline(TestCase, ItemMixin):
 
     def setUp(self):
@@ -133,7 +103,7 @@ class TestKafkaPipeline(TestCase, ItemMixin):
         copy['success'] = False
         copy['exception'] = 'traceback'
 
-        self.pipe.producer.send = MagicMock(side_effect=Exception('bad kafka'))
+        # send should not crash the pipeline
+        self.pipe.producer.send = MagicMock(side_effect=KafkaTimeoutError('bad kafka'))
         ret_val = self.pipe.process_item(item, spider)
-        self.assertEquals(copy, ret_val)
 

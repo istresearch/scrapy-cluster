@@ -1,6 +1,6 @@
 # Scrapy Cluster
 
-[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=dev)](https://travis-ci.org/istresearch/scrapy-cluster) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/istresearch/scrapy-cluster/badge.svg?branch=dev)](https://coveralls.io/github/istresearch/scrapy-cluster?branch=dev) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/istresearch/scrapy-cluster/blob/master/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/istresearch/scrapy-cluster.svg)](https://hub.docker.com/r/istresearch/scrapy-cluster/)
+[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=dev)](https://travis-ci.org/istresearch/scrapy-cluster) [![Documentation](https://readthedocs.org/projects/scrapy-cluster/badge/?version=dev)](http://scrapy-cluster.readthedocs.io/en/dev/) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/istresearch/scrapy-cluster/badge.svg?branch=dev)](https://coveralls.io/github/istresearch/scrapy-cluster?branch=dev) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/istresearch/scrapy-cluster/blob/master/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/istresearch/scrapy-cluster.svg)](https://hub.docker.com/r/istresearch/scrapy-cluster/)
 
 This Scrapy project uses Redis and Kafka to create a distributed on demand scraping cluster.
 
@@ -10,7 +10,7 @@ The input to the system is a set of Kafka topics and the output is a set of Kafk
 
 ## Dependencies
 
-Please see `requirements.txt` for Pip package dependencies across the different sub projects.
+Please see the ``requirements.txt`` within each sub project for Pip package dependencies.
 
 Other important components required to run the cluster
 
