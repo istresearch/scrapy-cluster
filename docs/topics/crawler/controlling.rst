@@ -35,6 +35,8 @@ This is **not** the same as the Scrapy `Auto Throttle <http://doc.scrapy.org/en/
 
 **QUEUE_MODERATED** - Determines whether you would like cluster of spiders to hit the domain at even intervals spread throughout the ``QUEUE_WINDOW``, or execute crawls as fast as possible and then pause. If you crawl at 10 hits every 60 seconds, a moderated queue would allow your spiders to crawl at one request every 6 seconds (60 sec / 10 hits = 6 secs between every 1 hit). Turning off this setting would allow your spiders to reach their 6 hit cap as fast as possible within the 60 second window.
 
+**SCHEDULER_QUEUE_TIMEOUT** - Gives you control over how long stagnant domain queues persist within the spider before they are expired. This prevents memory build up where a spider has every domain it has ever seen in memory. Instead, only the domains that have been active within this window will stay around. If a domain expires, it can be easily recreated when a new request generated for it.
+
 .. _domain_specific_configuration:
 
 Domain Specific Configuration

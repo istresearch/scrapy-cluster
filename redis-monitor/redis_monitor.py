@@ -483,7 +483,7 @@ class RedisMonitor(object):
 
     def _report_self(self):
         '''
-        Reports the crawler uuid to redis
+        Reports the redis monitor uuid to redis
         '''
         key = "stats:redis-monitor:self:{m}:{u}".format(
             m=socket.gethostname(),

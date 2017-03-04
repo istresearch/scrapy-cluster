@@ -23,7 +23,13 @@ The Vagrant Quickstart provides you a simple Vagrant Virtual Machine in order to
 
 Lets assume our project is now in ``~/scrapy-cluster``
 
-3) Stand up the Scrapy Cluster Vagrant machine.
+3) Stand up the Scrapy Cluster Vagrant machine. By default this will start an **Ubuntu** virtual machine. If you woudl like to us **CentOS**, change the following line in the ``Vagrantfile`` in the root of the project
+
+::
+
+    node.vm.box = 'centos/7'
+
+Bring the machine up.
 
 ::
 
@@ -346,6 +352,8 @@ At this point you should have a Scrapy Cluster setup that has been tested and ap
 
 .. note:: You can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.
 
+The following commands outline what you would run in a traditional environment. If using a container based solution these commands are ran when you run the container itself.
+
 **Bare Bones:**
 
 -  The Kafka Monitor:
@@ -408,6 +416,8 @@ At this point you should have a Scrapy Cluster setup that has been tested and ap
 Which ever setup you chose, every process within should stay running for the remainder that your cluster is in an operational state.
 
 .. note:: If you chose to set the Rest service up, this section may also be performed via the :doc:`../rest/index` endpoint. You just need to ensure the JSON identified in the following section is properly fed into the :ref:`feed <feed_endpoint>` rest endpoint.
+
+*The follwing commands can be ran from the command line, whether that is on the machine itself or inside the Kafka Monitor container depends on the setup chosen above.*
 
 1) We now need to feed the cluster a crawl request. This is done via the same Kafka Monitor python script, but with different command line arguements.
 

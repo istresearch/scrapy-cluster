@@ -11,6 +11,7 @@ import base64
 from builtins import bytes, str
 
 from kafka import KafkaProducer
+from kafka.errors import KafkaTimeoutError
 from crawling.items import RawResponseItem
 from scutils.log_factory import LogFactory
 
@@ -134,6 +135,43 @@ class KafkaPipeline(object):
         '''
         return dt.datetime.utcnow().isoformat()
 
+    def _clean_item(self, item):
+        '''
+        Cleans the item to be logged
+        '''
+        item_copy = dict(item)
+        del item_copy['body']
+        del item_copy['links']
+        del item_copy['response_headers']
+        del item_copy['request_headers']
+        del item_copy['status_code']
+        del item_copy['status_msg']
+        item_copy['action'] = 'ack'
+        item_copy['logger'] = self.logger.name
+        item_copy
+
+        return item_copy
+
+    def _kafka_success(self, item, spider, response):
+        '''
+        Callback for successful send
+        '''
+        item['success'] = True
+        item = self._clean_item(item)
+        item['spiderid'] = spider.name
+        self.logger.info("Sent page to Kafka", item)
+
+
+    def _kafka_failure(self, item, spider, response):
+        '''
+        Callback for failed send
+        '''
+        item['success'] = False
+        item['exception'] = traceback.format_exc()
+        item['spiderid'] = spider.name
+        item = self._clean_item(item)
+        self.logger.error("Failed to send page to Kafka", item)
+
     def process_item(self, item, spider):
         try:
             self.logger.debug("Processing item in KafkaPipeline")
@@ -149,17 +187,19 @@ class KafkaPipeline(object):
                 message = 'json failed to parse'
 
             firehose_topic = "{prefix}.crawled_firehose".format(prefix=prefix)
-            self.producer.send(firehose_topic, message)
+            future = self.producer.send(firehose_topic, message)
+            future.add_callback(self._kafka_success, datum, spider)
+            future.add_errback(self._kafka_failure, datum, spider)
 
             if self.appid_topics:
                 appid_topic = "{prefix}.crawled_{appid}".format(
                         prefix=prefix, appid=datum["appid"])
-                self.producer.send(appid_topic, message)
+                future2 = self.producer.send(appid_topic, message)
+                future2.add_callback(self._kafka_success, datum, spider)
+                future2.add_errback(self._kafka_failure, datum, spider)
 
-            item['success'] = True
-        except Exception:
-            item['success'] = False
-            item['exception'] = traceback.format_exc()
+        except KafkaTimeoutError:
+            self.logger.warning("Caught KafkaTimeoutError exception")
 
         return item
 
@@ -167,63 +207,3 @@ class KafkaPipeline(object):
         self.logger.info("Closing Kafka Pipeline")
         self.producer.flush()
         self.producer.close(timeout=10)
-
-
-class LoggingAfterPipeline(object):
-
-    '''
-    Logs the crawl for successfully pushing to Kafka
-    '''
-
-    def __init__(self, logger):
-        self.logger = logger
-        self.logger.debug("Setup after pipeline")
-
-    @classmethod
-    def from_settings(cls, settings):
-        my_level = settings.get('SC_LOG_LEVEL', 'INFO')
-        my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
-        my_output = settings.get('SC_LOG_STDOUT', True)
-        my_json = settings.get('SC_LOG_JSON', False)
-        my_dir = settings.get('SC_LOG_DIR', 'logs')
-        my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
-        my_file = settings.get('SC_LOG_FILE', 'main.log')
-        my_backups = settings.get('SC_LOG_BACKUPS', 5)
-
-        logger = LogFactory.get_instance(json=my_json,
-                                         name=my_name,
-                                         stdout=my_output,
-                                         level=my_level,
-                                         dir=my_dir,
-                                         file=my_file,
-                                         bytes=my_bytes,
-                                         backups=my_backups)
-
-        return cls(logger)
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        return cls.from_settings(crawler.settings)
-
-    def process_item(self, item, spider):
-        self.logger.debug("Processing item in LoggingAfterPipeline")
-        if isinstance(item, RawResponseItem):
-            # make duplicate item, but remove unneeded keys
-            item_copy = dict(item)
-            del item_copy['body']
-            del item_copy['links']
-            del item_copy['response_headers']
-            del item_copy['request_headers']
-            del item_copy['status_code']
-            del item_copy['status_msg']
-            item_copy['action'] = 'ack'
-            item_copy['logger'] = self.logger.name
-            item_copy['spiderid'] = spider.name
-
-            if item['success']:
-                self.logger.info('Sent page to Kafka', extra=item_copy)
-            else:
-                self.logger.error('Failed to send page to Kafka',
-                                  extra=item_copy)
-            return item
-

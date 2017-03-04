@@ -40,6 +40,13 @@ The ``stats_monitor.py`` gives access to stats collected across all three major 
 
 For more information please see the :ref:`Stats API <stats_api>`
 
+Zookeeper Monitor
+^^^^^^^^^^^^^^^^^
+
+The ``zookeeper_monitor.py`` adds the ability to update the crawler blacklist once the request is recieved.
+
+For more information please see the :ref:`Zookeeper API <zookeeper_api>`
+
 .. _rm_extension:
 
 Extension
@@ -83,6 +90,12 @@ If you would like only default functionality, the following python code template
 
             @param key: The key that matched the request
             @param value: The value associated with the key
+            '''
+            pass
+
+        def close(self):
+            '''
+            Called when the over arching Redis Monitor is closed
             '''
             pass
 
@@ -130,9 +143,9 @@ The ``setup()`` method is passed a dictionary created from the settings loaded f
 
 The ``check_precondition()`` method is called for every potential key match, and gives the plugin the opportunity to determine whether it actually wants to process that object at the given time. For example, this is used in the ``expire_monitor.py`` file to check whether the expire timestamp value stored in the key is greater than the current time. If it is, return ``True`` and your plugin's ``handle()`` method will be called, otherwise, return ``False``.
 
-When the ``handle()`` method is called, it is passed both the key that matched your pattern, and the value stored within the key. You are free to do whatever you want with the data, but once you are done the key is removed from Redis. The key will be removed if an exception is thrown within any of the two plugin methods, or if the ``handle()`` method completes as normal. This is to prevent reprocessing of matched keys, so use the ``check_precondition()`` method to prevent a key from getting deleted too early.
+When the ``handle()`` method is called, it is passed both the key that matched your pattern, and the value stored within the key. You are free to do whatever you want with the data, but once you are done the key is removed from Redis. The key will be removed if an exception is thrown consitently when trying to process our action within any of the two plugin methods, or if the ``handle()`` method completes as normal. This is to prevent reprocessing of matched keys, so use the ``check_precondition()`` method to prevent a key from getting deleted too early.
 
-Once you are ready to add your plugin to the Redis Monitor, edit your ``localsettings.py`` file and add the following lines.
+If you need to tear down anything within your plugin, you can use the ``close()`` method to ensure proper clean up of the data inside the plugin. Once you are ready to add your plugin to the Redis Monitor, edit your ``localsettings.py`` file and add the following lines.
 
 ::
 
