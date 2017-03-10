@@ -32,6 +32,7 @@ This project tries to bring together a bunch of new concepts to Scrapy and large
 - Allows you to arbitrarily add/remove/scale your scrapers from the pool without loss of data or downtime
 - Utilizes Apache Kafka as a data bus for any application to interact with the scraping cluster (submit jobs, get info, stop jobs, view results)
 - Allows for coordinated throttling of crawls from independent spiders on separate machines, but behind the same IP Address
+- Enables completely different spiders to yield crawl requests to eachother, giving flexibilty to how the crawl job is tackled
 
 ## Scrapy Cluster test environment
 
