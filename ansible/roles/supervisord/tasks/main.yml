@@ -36,6 +36,13 @@
   tags: supervisord
   when: ansible_os_family == "RedHat"
 
+- name: Use Supervisord workaround for 16.04
+  apt:
+    pkg: upstart-sysv
+    state: latest
+  tags: supervisord
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '16.04'
+
 - name: setup Ubuntu supervisord service script
   copy:
     src=supervisord_ubuntu
@@ -52,13 +59,6 @@
     state: started
     enabled: True
     daemon_reload: yes
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '16.04'
-
-- name: Use Supervisord workaround for 16.04
-  apt:
-    pkg: upstart-sysv
-    state: latest
-  tags: supervisord
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '16.04'
 
 - name: ensure supervisord is enabled
