@@ -23,7 +23,7 @@ The Vagrant Quickstart provides you a simple Vagrant Virtual Machine in order to
 
 Lets assume our project is now in ``~/scrapy-cluster``
 
-3) Stand up the Scrapy Cluster Vagrant machine. By default this will start an **Ubuntu** virtual machine. If you woudl like to us **CentOS**, change the following line in the ``Vagrantfile`` in the root of the project
+3) Stand up the Scrapy Cluster Vagrant machine. By default this will start an **Ubuntu** virtual machine. If you would like to us **CentOS**, change the following line in the ``Vagrantfile`` in the root of the project
 
 ::
 
