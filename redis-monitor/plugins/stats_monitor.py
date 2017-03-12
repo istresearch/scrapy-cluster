@@ -46,6 +46,8 @@ class StatsMonitor(KafkaBaseMonitor):
             extras = self.get_machine_stats()
         elif stats == 'queue':
             extras = self.get_queue_stats()
+        elif stats == 'rest':
+            extras = self.get_rest_stats()
         else:
             self.logger.warn('Received invalid stats request: {s}'\
                 .format(s=stats),
@@ -73,6 +75,7 @@ class StatsMonitor(KafkaBaseMonitor):
         the_dict['kafka-monitor'] = self.get_kafka_monitor_stats()
         the_dict['redis-monitor'] = self.get_redis_monitor_stats()
         the_dict['crawler'] = self.get_crawler_stats()
+        the_dict['rest'] = self.get_rest_stats()
 
         return the_dict
 
@@ -93,6 +96,15 @@ class StatsMonitor(KafkaBaseMonitor):
         '''
         self.logger.debug("Gathering redis-monitor stats")
         return self._get_plugin_stats('redis-monitor')
+
+    def get_rest_stats(self):
+        '''
+        Gather Rest stats
+
+        @return: A dict of stats
+        '''
+        self.logger.debug("Gathering rest stats")
+        return self._get_plugin_stats('rest')
 
     def _get_plugin_stats(self, name):
         '''
