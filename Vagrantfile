@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.define 'scdev' do |node|
-    node.vm.box = 'ubuntu/xenial64'
+    node.vm.box = 'ubuntu/trusty64'
     # node.vm.box = 'centos/7'
     node.vm.hostname = 'scdev'
     node.vm.network "private_network", ip: "192.168.33.99"

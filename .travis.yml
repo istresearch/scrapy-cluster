@@ -14,11 +14,6 @@ env:
     version: 14.04
     init: /sbin/init
     run_opts: ""
-  - ubuntu: 1
-    distribution: ubuntu
-    version: 16.04
-    init: /sbin/init
-    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
   - docker: 1
     dockerfile_name: Dockerfile
     docker_tag_suffix: dev
