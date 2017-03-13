@@ -19,7 +19,15 @@ The Vagrant Quickstart provides you a simple Vagrant Virtual Machine in order to
 
 1) Ensure you have Vagrant and VirtualBox installed on your machine. For instructions on setting those up please refer to the official documentation.
 
-2) Download and unzip the latest release `here <https://github.com/istresearch/scrapy-cluster/releases>`_.
+2) Download the latest ``master`` branch release via
+
+::
+
+  git clone https://github.com/istresearch/scrapy-cluster.git
+  # or
+  git clone git@github.com:istresearch/scrapy-cluster.git
+
+You may also use the pre-packaged git `releases <https://github.com/istresearch/scrapy-cluster/releases>`_, however the latest commit on the ``master`` branch will always have to most up to date code or minor tweaks that do not deserve another release.
 
 Lets assume our project is now in ``~/scrapy-cluster``
 
