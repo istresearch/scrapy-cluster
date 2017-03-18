@@ -17,13 +17,13 @@ sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ans
 sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ${PWD}/ansible/travis.inventory ${PWD}/ansible/scrapy-cluster.yml --connection=local --become"
 
 # Install coveralls and other pip requiremnts
-sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; pip install -r ${PWD}/requirements.txt; pip uninstall scutils -y; cd ${PWD}; find . -name "*.pyc" -type f -delete; cd utils; python setup.py install;"
+sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; pip install -r ${PWD}/requirements.txt; cd ${PWD}; find . -name "*.pyc" -type f -delete;"
 
 # Run offline tests
-sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; cd utils; python setup.py install; cd ../; pip freeze; ./run_offline_tests.sh"
+sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; ./run_offline_tests.sh"
 
 # Run online tests
-sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; pip freeze; ./run_online_tests.sh"
+sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; ./run_online_tests.sh"
 
 # Stop Docker Ansible Containers
 sudo docker stop "$(cat ${container_id})"
