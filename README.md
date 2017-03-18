@@ -8,6 +8,10 @@ The goal is to distribute seed URLs among many waiting spider instances, whose r
 
 The input to the system is a set of Kafka topics and the output is a set of Kafka topics. Raw HTML and assets are crawled interactively, spidered, and output to the log. For easy local development, you can also disable the Kafka portions and work with the spider entirely via Redis, although this is not recommended due to the serialization of the crawl requests.
 
+## Update 3/18/17
+
+[Scrapy Cluster 1.2](https://github.com/istresearch/scrapy-cluster/tree/release-1.2) is soon to be released! There have been many advancements made to the project since 1.1, and we would appreciate it if you could continue to test and use this new release and all its new [features](http://scrapy-cluster.readthedocs.io/en/release-1.2/topics/changelog.html#scrapy-cluster-1-2).
+
 ## Dependencies
 
 Please see `requirements.txt` for Pip package dependencies across the different sub projects.
