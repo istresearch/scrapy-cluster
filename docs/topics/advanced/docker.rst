@@ -77,7 +77,7 @@ It is recommended you use docker compose to orchestrate your cluster with all of
 
 ::
 
-    image: istresearch/scrapy-cluster:kafka-monitor-dev
+    image: istresearch/scrapy-cluster:kafka-monitor-1.2rc1
     build:
       context: .
       dockerfile: docker/kafka-monitor/Dockerfile

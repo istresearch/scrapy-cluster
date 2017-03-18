@@ -25,7 +25,7 @@ sudo docker-compose -f travis/docker-compose.test.yml down
 
 # ---- Everything passed, now push to Dockerhub ------
 
-if [ "$TRAVIS_BRANCH" = "dev" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
+if [ "$TRAVIS_BRANCH" = "release-1.2" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_EVENT_TYPE" != "cron" ]; then
     # build 'dev' docker images for dockerhub
     sudo docker build --rm=true --file docker/kafka-monitor/$dockerfile_name --tag=istresearch/scrapy-cluster:kafka-monitor-$docker_tag_suffix .
     sudo docker build --rm=true --file docker/redis-monitor/$dockerfile_name --tag=istresearch/scrapy-cluster:redis-monitor-$docker_tag_suffix .
