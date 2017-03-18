@@ -4,10 +4,6 @@ MAINTAINER Madison Bahmer <madison.bahmer@istresearch.com>
 
 # copy crawler own requirements.txt with its dependencies
 COPY crawler/requirements.txt /usr/src/app/
-# scutils dev version install (not in pip yet)
-# due utils folder located above Dockerfile folder it can not be used
-# for Docker Hub Automated Build feature (but should, see wiki notes)
-COPY utils /tmp/utils
 
 # Combine run command to create single intermeiate image layer
 # This MANDATORY because developments dependencies are huge.
