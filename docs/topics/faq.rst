@@ -85,6 +85,10 @@ Crawler
 
     No, the crawlers will receive a notification from Zookeeper that their configuration has changed. They will then automatically update to the new desired settings, without a restart. For more information please see :ref:`here <domain_specific_configuration>`.
 
+**How do I use Scrapy** ``start_urls`` **with Scrapy Cluster?**
+
+    Don't put ``start_urls`` within your Scrapy Cluster spiders! Use the :ref:`Crawl API <crawl_api>` to feed those initial urls into your cluster. This will ensure the crawl is not duplicated by many spiders running and the same time, and that the crawl has all the meta-data it needs to be successful.
+
 Redis Monitor
 -------------
 
