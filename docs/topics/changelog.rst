@@ -26,12 +26,10 @@ Date: ??/??/????
 
 - Added support for Centos and Ubuntu Virtual Machines
 
-
-
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
 
-- Updated stats schema to accept ``queue`` statistics request.
+- Updated stats schema to accept ``queue``, ``rest`` statistics requests.
 
 - Added plugin API for managing Zookeeper domain configuration
 

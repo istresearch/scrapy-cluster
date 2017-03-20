@@ -148,3 +148,41 @@ This results in Spiders across the cluster continually polling all available dom
 If the spider polls a domain and is denied a request, it will cycle through all other known domains until it finds one that it can process. This allows for very high throughput when crawling many domains simultaneously. Domain A may only allow 10 hits per minute, domain B allows for 30 hits per minute, and domain C allows for 60 hits per minute. **In this case, all three domains can be crawled at the same time by the cluster while still respecting the domain specific rate limits.**
 
 By tuning your cluster configuration for your machine setup and desired crawl rate, you can easily scale your Scrapy Cluster to process as much data as your network can handle.
+
+Inter-spider Communication
+--------------------------
+
+By default, Scrapy Cluster spiders yield ``Request``'s to their own spider type. This means that **link** spiders will crawl other **link** spider requests, and if you have another spider running those requests will not interfere.
+
+The distributed scheduler that spider's use is actually flexible in that **you can yield ``Requests`` to other spiders within your cluster.** This is possible thanks to the ``spiderid`` that is built into every crawl request that the cluster deals with.
+
+The spider ``name`` at the top of your Spider class dictates the identifier you can use when yielding requests.
+
+::
+
+  class LinkSpider(RedisSpider):
+    name = "link"
+
+You can alse see this same name being used in the Redis Queues
+
+::
+
+  <spiderid>:<domain>:queue
+
+Thanks to the scheduler being indifferent as to what requests it is processing, Spider A can yield requests to Spider B, with both of them using different parsing, pipelines, middlewares, and anything else that is customizable for your spider. All you need to do is set the ``spiderid`` meta field within your request.
+
+::
+
+  response.meta['spiderid'] = 'othername'
+
+While this use case does not come up very often, you can imagine a couple scenarios where this might be useful:
+
+* Your cluster is doing a large crawl using the ``link`` spider, but you have special domains where you would like to switch to a different crawling approach. When Spider A (the one doing the large crawl) hits a target website, it yields a request to Spider B which does a more detailed or custom scrape of the site in question.
+
+* You are following web links from your favorite social media website and submitting them to be crawled by your cluster. On occasion, you get a "login" prompt that your spider can't handle. When that login prompt is detected, you yield to a special ``login`` spider in order to handle the extra logic of scraping that particular site.
+
+* You are scraping a shopping site, and already know all of the main pages you would like to grab. All of the links on your shopping site are actually for products, which have a different set of elements that require different middlewares or other logic to be applied. You main site spider then yields requests to the ``product`` spider.
+
+**So how is this different than using the** ``callback`` **parameter within a normal Scrapy Spider?** It's different because these Spiders may be completely different Scrapy projects, with their own settings, middleware, items, item pipelines, downloader middlewares, or anything else you need to enhance your Scrapy spider. Using a callback requires you to either combine your code, add extra logic, or not conduct special processing you would otherwise get from using two different Scrapy spiders to do very different jobs.
+
+The spiders can yield requests to each other, in a chain, or any other manner in order for your cluster to be successful.

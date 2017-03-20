@@ -53,6 +53,36 @@ All Spiders that inherit from the base spider class ``RedisSpider`` will have ac
 
 * **reconstruct_headers(response)** - A patch that fixes malformed header responses seen in some websites. This error surfaces when you go to debug or look at the headers sent to Kafka, and you find some of the headers present in the spider are non-existent in the item sent to Kafka. Returns a ``dict``.
 
+You can ``yield`` requests from your Spider just like a normal Scrapy Spider. Thanks to the built in in Scrapy Cluster ``MetaPassthroughMiddleware``, you don't have to worry about the additional overhead required for distributed crawling. If you look at both the ``WanderingSpider`` and ``LinkSpider`` examples, you will see that the only extra information passed into the request via the ``meta`` fields are related to what we actually want to do with the spider.
+
+**Don't want to use the ``RedisSpider`` base class?** That's okay, as long as your spider can adhere to the following guidelines:
+
+* Connect a signal to your crawler so it does not stop when idle.
+
+::
+
+        ...
+        self.crawler.signals.connect(self.spider_idle, signal=signals.spider_idle)
+
+    def spider_idle(self):
+        raise DontCloseSpider
+
+* Implement the logging and parse methods
+
+::
+
+    def set_logger(self, logger):
+        # would allow you to set the Scrapy Cluster logger
+        pass
+
+    def parse(self, response):
+        # your normal parse method
+        pass
+
+With that, in combination with the settings, middlewares, and pipelines already provided by Scrapy Cluster, you should be able to use a customer spider with little effort.
+
+.. _ws_example:
+
 Example
 -------
 
