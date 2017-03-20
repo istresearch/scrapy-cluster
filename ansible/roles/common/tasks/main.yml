@@ -27,28 +27,26 @@
   tags: common
   when: ansible_os_family == "RedHat"
 
-
-
 - name: Import EPEL GPG key.
   rpm_key:
     key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
     state: present
   tags: common
   when: ansible_os_family == "RedHat"
-  
+
 - name: Install 'Development tools' group of packages
   tags: common
   yum: name='@Development tools' state=installed
   when: ansible_os_family == "RedHat"
 
 - name: Install yum packages
-  yum: 
+  yum:
     name={{ item }}
     state=present
   with_items:
-    - python-lxml 
+    - python-lxml
     - openssl-devel
-    - libffi 
+    - libffi
     - libffi-devel
     - python-devel
     - libxml2-devel

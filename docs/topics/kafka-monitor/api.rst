@@ -316,6 +316,7 @@ The Stats API allows you to gather metrics, health, and general crawl statistics
     * **spider** - Gathers information about the existing spiders in your cluster
     * **machine** - Gathers information about the different spider machines in your cluster
     * **queue** - Gathers information about the various spider queues within your Redis instance
+    * **rest** - Gathers information about the Rest services in your cluster
 
 
 Stats request results typically have numeric values for dictionary keys, like ``900``, ``3600``, ``86400``, or in the special case ``lifetime``. These numbers indicate **rolling time windows** in seconds for processing throughput. So if you see a value like ``"3600":14`` you can interpret this as `in the last 3600 seconds, the kafka-monitor saw 14 requests"`. In the case of lifetime, it is the total count over the cluster's operation.
@@ -650,6 +651,38 @@ Response from Kafka:
 
 In the above response, note that the ``fail`` key is omitted because there have been no failures in processing the requests to the redis monitor. All other plugins and totals are represented in the same format as usual.
 
+**Rest**
+
+The Rest stat request returns some basic information about the number of Rest services running within your cluster.
+
+Stats Request:
+
+    ::
+
+        $ python kafka_monitor.py feed '{"appid":"testapp", "uuid":"2hij1", "stats":"rest"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+          "data": {
+            "appid": "testapp",
+            "nodes": {
+              "scdev": [
+                "c4ec35bf9c1a"
+              ]
+            },
+            "server_time": 1489343194,
+            "stats": "rest",
+            "uuid": "2hij1"
+          },
+          "error": null,
+          "status": "SUCCESS"
+        }
+
+The response above shows the number of unique nodes running on each machine. Here, we see only one Rest service is running on the host ``scdev``.
+
 **All**
 
 The All stat request is an aggregation of the **kafka-monitor**, **crawler**, and **redis-monitor** stat requests. It does not contain any new information that the API does not already provide.
@@ -762,6 +795,13 @@ Kafka Response:
                         "86400": 6,
                         "21600": 6
                     }
+                }
+            },
+            "rest": {
+                "nodes": {
+                    "Madisons-MacBook-Pro-2.local": [
+                        "c4ec35bf9c1a"
+                    ]
                 }
             },
             "appid": "testapp",

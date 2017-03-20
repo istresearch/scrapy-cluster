@@ -58,7 +58,7 @@ services:
       - "6379"
     restart: always
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: zookeeper
     ports:
       - "2181:2181"
     restart: always
@@ -75,13 +75,13 @@ services:
       - zookeeper
     restart: always
   elasticsearch:
-    image: elasticsearch:5.0
+    image: elasticsearch:5.2
     command: elasticsearch -E network.host=0.0.0.0 -E discovery.zen.minimum_master_nodes=1
     ports:
       - "9200:9200"
       - "9300:9300"
   logstash:
-    image: logstash:5.0
+    image: logstash:5.2
     command: logstash -f /etc/logstash/conf.d/logstash.conf
     volumes:
       - ./scrapy-cluster-logstash-docker.conf:/etc/logstash/conf.d/logstash.conf
@@ -92,7 +92,7 @@ services:
     links:
       - elasticsearch
   kibana:
-    image: kibana:5.0
+    image: kibana:5.2
     ports:
       - "5601:5601"
     links:

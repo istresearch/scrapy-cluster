@@ -73,11 +73,7 @@ Crawler
 
 **How do I create a Scrapy Spider that works with the cluster?**
 
-    To use everything scrapy cluster has to offer with your new Spider, you need your class to inherit from our ``RedisSpider`` base class. You will have a custom ``self._logger`` for scrapy cluster based logging and a method that will allow you to update your spider statistics you can use with your Response:
-
-    ::
-
-        self._increment_status_code_stat(response)
+    To use everything scrapy cluster has to offer with your new Spider, you need your class to inherit from our ``RedisSpider`` base class.
 
     You can also yield new Requests or items like a normal Scrapy Spider. For more information see the :ref:`crawl extension <crawl_extension>` documentation.
 
@@ -88,6 +84,10 @@ Crawler
 **Do I have to restart my Scrapy Cluster Crawlers when I push a new domain specific configuration?**
 
     No, the crawlers will receive a notification from Zookeeper that their configuration has changed. They will then automatically update to the new desired settings, without a restart. For more information please see :ref:`here <domain_specific_configuration>`.
+
+**How do I use Scrapy** ``start_urls`` **with Scrapy Cluster?**
+
+    Don't put ``start_urls`` within your Scrapy Cluster spiders! Use the :ref:`Crawl API <crawl_api>` to feed those initial urls into your cluster. This will ensure the crawl is not duplicated by many spiders running and the same time, and that the crawl has all the meta-data it needs to be successful.
 
 Redis Monitor
 -------------

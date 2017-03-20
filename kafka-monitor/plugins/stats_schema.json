@@ -15,6 +15,7 @@
                 "spider",
                 "machine",
                 "queue",
+                "rest",
                 "all"
             ],
             "default": "all"
