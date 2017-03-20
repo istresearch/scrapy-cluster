@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+    <head>
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+		<script src="http://code.angularjs.org/1.5.3/angular-route.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script src="/static/js/app.js"></script>
+		<script src="/static/angular_settings.js"></script>
+		<link rel="stylesheet" href="/static/css/style.css" />
+	    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+  		<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
+    </head>
+    <body ng-app="uiApp">
+
+	  <nav class="navbar navbar-default">
+		<div class="container">
+		  <div class="navbar-header">
+			<a class="navbar-brand" href="/"><img alt="" src="/static/img/logo.png">Scrapy Cluster</a>
+		  </div>
+		  <ul class="nav navbar-nav navbar-right">
+			<a href="http://scrapy-cluster.readthedocs.io/en/latest/" class="btn btn-primary btn-lg" role="button">Documentation</a>
+		  </ul>
+		</div>
+	  </nav>
+
+		<div class="container">
+		  <ul class="nav nav-tabs" ng-controller="tabsController">
+			<li ng-class="tabClass(tab)" ng-repeat="tab in tabs" tab="tab"><a href="{{tab.link}}" ng-click="setSelectedTab(tab)">{{tab.label}}</a></li>
+		  </ul>
+		  <div class="body-content"  ng-view></div>
+		</div>
+
+	  <footer class="text-center">
+		<p>...</p>
+	  </footer>
+
+    </body>
+</html>
