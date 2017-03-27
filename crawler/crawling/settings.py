@@ -38,6 +38,12 @@ QUEUE_MODERATED = True
 # how long we want the duplicate timeout queues to stick around in seconds
 DUPEFILTER_TIMEOUT = 600
 
+# how many pages to we want to crawl for each host
+PAGE_PER_HOST_LIMIT = None
+
+# how long we want the page per host limit to stick around in seconds
+PAGE_PER_HOST_LIMIT_TIMEOUT = 600
+
 # how often to refresh the ip address of the scheduler
 SCHEDULER_IP_REFRESH = 60
 

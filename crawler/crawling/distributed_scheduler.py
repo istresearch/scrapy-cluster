@@ -14,6 +14,7 @@ import socket
 import re
 
 from redis_dupefilter import RFPDupeFilter
+from redis_page_per_host_filter import PagePerHostFilter
 from kazoo.handlers.threading import KazooTimeoutError
 
 from scutils.zookeeper_watcher import ZookeeperWatcher
@@ -39,6 +40,7 @@ class DistributedScheduler(object):
     queue_keys = None # the list of current queues
     queue_class = None # the class to use for the queue
     dupefilter = None # the redis dupefilter
+    page_per_host_filter = None # the redis pages per host filter
     update_time = 0 # the last time the queues were updated
     update_ip_time = 0 # the last time the ip was updated
     update_interval = 0 # how often to update the queues
@@ -61,7 +63,8 @@ class DistributedScheduler(object):
     my_assignment = None  # Zookeeper path to read actual yml config
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
-                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex):
+                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex,
+                 page_per_host_limit, page_per_host_limit_timeout):
         '''
         Initialize the scheduler
         '''
@@ -79,6 +82,8 @@ class DistributedScheduler(object):
         self.item_retires = retries
         self.logger = logger
         self.ip_regex = re.compile(ip_regex)
+        self.page_per_host_limit = page_per_host_limit
+        self.page_per_host_limit_timeout = page_per_host_limit_timeout
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
@@ -307,6 +312,8 @@ class DistributedScheduler(object):
         my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
         my_file = settings.get('SC_LOG_FILE', 'main.log')
         my_backups = settings.get('SC_LOG_BACKUPS', 5)
+        page_per_host_limit = settings.get('PAGE_PER_HOST_LIMIT', None)
+        page_per_host_limit_timeout = settings.get('PAGE_PER_HOST_LIMIT_TIMEOUT', 600)
 
         logger = LogFactory.get_instance(json=my_json,
                                          name=my_name,
@@ -318,7 +325,8 @@ class DistributedScheduler(object):
                                          backups=my_backups)
 
         return cls(server, persist, up_int, timeout, retries, logger, hits,
-                   window, mod, ip_refresh, add_type, add_ip, ip_regex)
+                   window, mod, ip_refresh, add_type, add_ip, ip_regex,
+                   page_per_host_limit, page_per_host_limit_timeout)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -334,12 +342,18 @@ class DistributedScheduler(object):
         self.dupefilter = RFPDupeFilter(self.redis_conn,
                                         self.spider.name + ':dupefilter',
                                         self.rfp_timeout)
+        self.page_per_host_filter = PagePerHostFilter(
+            self.redis_conn,
+            self.spider.name + ':page_count_filter',
+            self.page_per_host_limit,
+            self.page_per_host_limit_timeout)
 
     def close(self, reason):
         self.logger.info("Closing Spider", {'spiderid':self.spider.name})
         if not self.persist:
             self.logger.warning("Clearing crawl queues")
             self.dupefilter.clear()
+            self.page_per_host_filter.clear()
             for key in self.queue_keys:
                 self.queue_dict[key].clear()
 
@@ -360,6 +374,9 @@ class DistributedScheduler(object):
         '''
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
+            return
+        if self.page_per_host_limit and self.page_per_host_filter.reached_page_limit(request):
+            self.logger.debug("Request {0} reached page limit".format(request.url))
             return
         req_dict = self.request_to_dict(request)
 

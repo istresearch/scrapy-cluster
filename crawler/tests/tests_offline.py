@@ -12,6 +12,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from crawling.redis_dupefilter import RFPDupeFilter
+from crawling.redis_page_per_host_filter import PagePerHostFilter
 from crawling.redis_retry_middleware import RedisRetryMiddleware
 from crawling.distributed_scheduler import DistributedScheduler
 from crawling.spiders.link_spider import LinkSpider
@@ -45,6 +46,24 @@ class TestRedisDupefilter(TestCase):
         self.dupe.server.sadd = MagicMock(return_value=0)
         self.assertTrue(self.dupe.request_seen(req))
 
+class TestRedisPagePerHostFilter(TestCase):
+
+    def setUp(self):
+        self.dupe = PagePerHostFilter(MagicMock(), 'key', 5, 600)
+
+    def test_dupe_filter(self):
+        req = Request('http://example.com')
+        req.meta['crawlid'] = "abc123"
+
+        self.dupe.server.expire = MagicMock()
+
+        # successfully added
+        self.dupe.server.incr = MagicMock(return_value=4)
+        self.assertFalse(self.dupe.reached_page_limit(req))
+
+        # unsuccessfully added
+        self.dupe.server.incr = MagicMock(return_value=5)
+        self.assertTrue(self.dupe.reached_page_limit(req))
 
 class TestRedisRetryMiddleware(TestCase):
 
@@ -75,7 +94,7 @@ class ThrottleMixin(object):
     def setUp(self, u, z):
         self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
                                               MagicMock(), 10, 60, False, 60,
-                                              False, False, '.*')
+                                              False, False, '.*', None, 600)
         self.scheduler.open(MagicMock())
         self.scheduler.my_ip = 'ip'
         self.scheduler.spider.name = 'link'
@@ -117,11 +136,16 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=True)
         self.assertEquals(self.scheduler.enqueue_request(self.req), None)
 
+        # test page per host limit filter
+        self.scheduler.page_per_host_filter.reached_page_limit = MagicMock(return_value=True)
+        self.assertEquals(self.scheduler.enqueue_request(self.req), None)
+
         # test request not expiring and queue seen
         self.scheduler.queue_keys = ['link:ex.com:queue']
         self.extract = MagicMock(return_value={"domain": 'ex', "suffix": 'com'})
         self.scheduler.is_blacklisted = MagicMock(return_value=False)
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=False)
+        self.scheduler.page_per_host_filter.reached_page_limit = MagicMock(return_value=False)
         self.scheduler.queue_dict['link:ex.com:queue'] = MagicMock()
         self.scheduler.queue_dict['link:ex.com:queue'].push = MagicMock(
                                                     side_effect=KeyError("1"))

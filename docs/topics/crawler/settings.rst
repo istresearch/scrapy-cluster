@@ -116,6 +116,20 @@ Default: ``600``
 
 Number of seconds to keep **crawlid** specific duplication filters around after the latest crawl with that id has been conducted. Putting this setting too low may allow crawl jobs to crawl the same page due to the duplication filter being wiped out.
 
+.. _page_per_host_filter:
+
+**PAGE_PER_HOST_LIMIT**
+
+Default: ``None``
+
+The maximum number of pages to crawl for each domain.
+
+**PAGE_PER_HOST_LIMIT_TIMEOUT**
+
+Default: ``600``
+
+Number of seconds to keep **crawlid** specific maximum crawled pages limit filters around after the latest crawl with that id has been conducted. Putting this setting too low may allow crawl jobs to crawl more pages than expected due to the pages limit filter being wiped out.
+
 **SCHEDULER_IP_REFRESH**
 
 Default: ``60``
