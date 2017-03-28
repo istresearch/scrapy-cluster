@@ -1,3 +1,6 @@
+# pyenv
+.python-version
+
 # Python binaries
 *.pyc
 
