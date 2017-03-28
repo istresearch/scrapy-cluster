@@ -1,21 +1,42 @@
 sudo: required
-dist: trusty
-addons:
-  hosts:
-  - travis-trusty
-language: python
-python: '2.7'
+
+env:
+  - distribution: centos
+    version: 7
+    init: /usr/lib/systemd/systemd
+    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+  - distribution: ubuntu
+    version: 14.04
+    init: /sbin/init
+    run_opts: ""
+
+services:
+  - docker
+
+ 
 before_install:
-- sudo apt-get update -qq
-- sudo apt-get install -qq python-apt
-install:
-- pip install ansible
+   # Pull container
+  - 'sudo docker pull ${distribution}:${version}'
+  # Customize container
+  - 'sudo docker build --rm=true --file=docker/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible docker'
+
 script:
-- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
-- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
-  --become
-- virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
-- source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
+  - container_id=$(mktemp)
+    # Run container in detached state
+  - 'sudo docker run --detach --volume="${PWD}":/root/scrapy-cluster:rw ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
+
+  # Ansible syntax check.
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --syntax-check"'
+
+  # Ansible install playbook.
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ~/scrapy-cluster/ansible/travis.inventory ~/scrapy-cluster/ansible/scrapy-cluster.yml --connection=local --become"'  
+  
+  # Run offline and online tests
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ~/sc; source ~/sc/bin/activate; pip install -r ~/scrapy-cluster/requirements.txt; cd ~/scrapy-cluster/; ./run_offline_tests.sh; ./run_online_tests.sh;"'
+  
+  # Clean up
+  - 'sudo docker stop "$(cat ${container_id})"'
+
 notifications:
   slack:
     rooms:

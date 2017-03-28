@@ -11,7 +11,7 @@
 
 - name: yum install java 
   yum: 
-    name=jdk-{{ java_version }}
+    name=java-{{ java_version }}-openjdk-devel
     state=present
   tags: java
   when: ansible_os_family == "RedHat"
