@@ -62,10 +62,10 @@ Feed an item
 
 ::
 
-    $ python kafka_monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"09876abc"}'
+    $ python kafka_monitor.py feed '{"url": "http://dmoztools.net/", "appid":"testapp", "crawlid":"09876abc"}'
     2016-01-21 23:22:23,830 [kafka-monitor] INFO: Feeding JSON into demo.incoming
     {
-        "url": "http://dmoz.org",
+        "url": "http://dmoztools.net/",
         "crawlid": "09876abc",
         "appid": "testapp"
     }
@@ -96,8 +96,8 @@ If you are still listening to the Kafka Topic in Terminal 1, the following shoul
         "response_headers": {
             <headers omitted>
         },
-        "response_url": "http://www.dmoz.org/",
-        "url": "http://www.dmoz.org/",
+        "response_url": "http://dmoztools.net/",
+        "url": "http://dmoztools.net/",
         "status_code": 200,
         "status_msg": "OK",
         "appid": "testapp",
