@@ -1,6 +1,6 @@
 # Scrapy Cluster
 
-[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=release-1.2)](https://travis-ci.org/istresearch/scrapy-cluster) [![Documentation](https://readthedocs.org/projects/scrapy-cluster/badge/?version=release-1.2)](http://scrapy-cluster.readthedocs.io/en/release-1.2/) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/istresearch/scrapy-cluster/badge.svg?branch=release-1.2)](https://coveralls.io/github/istresearch/scrapy-cluster?branch=release-1.2) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/istresearch/scrapy-cluster/blob/master/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/istresearch/scrapy-cluster.svg)](https://hub.docker.com/r/istresearch/scrapy-cluster/)
+[![Build Status](https://travis-ci.org/istresearch/scrapy-cluster.svg?branch=master)](https://travis-ci.org/istresearch/scrapy-cluster) [![Documentation](https://readthedocs.org/projects/scrapy-cluster/badge/?version=master)](http://scrapy-cluster.readthedocs.io/en/master/) [![Join the chat at https://gitter.im/istresearch/scrapy-cluster](https://badges.gitter.im/istresearch/scrapy-cluster.svg)](https://gitter.im/istresearch/scrapy-cluster?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/istresearch/scrapy-cluster/badge.svg?branch=master)](https://coveralls.io/github/istresearch/scrapy-cluster?branch=master) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/istresearch/scrapy-cluster/blob/master/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/istresearch/scrapy-cluster.svg)](https://hub.docker.com/r/istresearch/scrapy-cluster/)
 
 This Scrapy project uses Redis and Kafka to create a distributed on demand scraping cluster.
 
@@ -51,10 +51,10 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 
 ## Documentation
 
-Please check out the work in progress [Scrapy Cluster 1.2 documentation](http://scrapy-cluster.readthedocs.org/en/dev/) for more information on how everything works!
+Please check out the work in progress [Scrapy Cluster 1.2 documentation](http://scrapy-cluster.readthedocs.org/en/latest/) for more information on how everything works!
 
 ## Branches
 
-The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.1`.
+The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.2`.
 
-The `dev` branch contains bleeding edge code and is currently working towards [Scrapy Cluster 1.2](https://github.com/istresearch/scrapy-cluster/issues?utf8=%E2%9C%93&q=milestone%3A%22Scrapy+Cluster+1.2%22+). Please note that not everything may be documented, finished, tested, or finalized but we are happy to help guide those who are interested.
+The `dev` branch contains bleeding edge code and is currently working towards [Scrapy Cluster 1.3](https://github.com/istresearch/scrapy-cluster/milestone/3). Please note that not everything may be documented, finished, tested, or finalized but we are happy to help guide those who are interested.
