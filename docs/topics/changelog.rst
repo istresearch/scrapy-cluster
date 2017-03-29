@@ -8,7 +8,7 @@ This page serves to document any changes made between releases.
 Scrapy Cluster 1.2
 ------------------
 
-Date: ??/??/????
+Date: 03/29/2017
 
 - Added `Coveralls <https://coveralls.io/github/istresearch/scrapy-cluster>`_ code coverage integration
 
