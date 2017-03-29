@@ -58,7 +58,7 @@ General
 
 **How do I contact the community surrounding Scrapy Cluster?**
 
-   Feel free to reach out by joining the `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room, or for more formal issues please :ref:`raise an issue <report_issue>`.
+   Feel free to reach out by joining the `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room, send an email to scrapy-cluster-tech@istresearch.com, or for more formal issues please :ref:`raise an issue <report_issue>`.
 
 
 Kafka Monitor
