@@ -347,11 +347,11 @@ In this example we are going count the number of times a user presses the Space 
 
 This code either creates a :class:`TimeWindow` counter, or a :class:`RollingTimeWindow` counter to collect the number of space bar presses that occurs while the program is running (press ``Enter`` to exit). With these two different settings, you can view the count for a specific minute or the count from the last 60 seconds.
 
-When running this example you will get similar results to the following.
+Save the above code snippet, or use the example at ``utils/examples/example_sc.py``. When running this example you will get similar results to the following.
 
 ::
 
-    $ python window_example.py -r scdev
+    $ python example_sc.py -r scdev
     Kill this program by pressing `ENTER` when done
     The current counter value is 0
     The current counter value is 1

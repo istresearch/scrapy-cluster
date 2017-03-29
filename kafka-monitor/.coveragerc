@@ -1,0 +1,5 @@
+[report]
+omit=
+  *settings.py
+  tests/*.py
+  kafkadump.py

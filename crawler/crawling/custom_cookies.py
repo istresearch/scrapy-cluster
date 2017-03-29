@@ -1,9 +1,9 @@
-from scrapy.contrib.downloadermiddleware.cookies import CookiesMiddleware
+from scrapy.downloadermiddlewares.cookies import CookiesMiddleware
 
 
 class CustomCookiesMiddleware(CookiesMiddleware):
     '''
-    Custom Cookies Middleware to pass our required cookies along but not 
+    Custom Cookies Middleware to pass our required cookies along but not
     persist between calls
     '''
 

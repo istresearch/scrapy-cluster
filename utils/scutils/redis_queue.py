@@ -1,5 +1,8 @@
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 
@@ -9,14 +12,25 @@ class Base(object):
     Queue/Stack base class
     '''
 
-    def __init__(self, server, key):
+    def __init__(self, server, key, encoding=pickle):
         '''Initialize the redis queue.
 
         @param server: the redis connection
         @param key: the key for this queue
+        @param encoding: The encoding module to use.
+
+        Note that if you wish to use any other encoding besides pickle, it
+        is assumed you have already imported that module in your code before
+        calling this constructor.
         '''
         self.server = server
         self.key = key
+        self.encoding = encoding
+
+        if not hasattr(self.encoding, 'dumps'):
+            raise NotImplementedError("encoding does not support dumps()")
+        if not hasattr(self.encoding, 'loads'):
+            raise NotImplementedError("encoding does not support loads()")
 
     def _encode_item(self, item):
         '''
@@ -24,13 +38,16 @@ class Base(object):
 
         @requires: The object be serializable
         '''
-        return pickle.dumps(item, protocol=-1)
+        if self.encoding.__name__ == 'pickle':
+            return self.encoding.dumps(item, protocol=-1)
+        else:
+            return self.encoding.dumps(item)
 
     def _decode_item(self, encoded_item):
         '''
         Decode an item previously encoded
         '''
-        return pickle.loads(encoded_item)
+        return self.encoding.loads(encoded_item)
 
     def __len__(self):
         '''

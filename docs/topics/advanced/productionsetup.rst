@@ -18,9 +18,11 @@ As a friendly reminder, the following processes should be monitored:
 
 - Crawler(s)
 
-- Kafka Monitor
+- Kafka Monitor(s)
 
-- Redis Monitor
+- Redis Monitor(s)
+
+- Rest service(s)
 
 Spider Complexity
 -----------------
@@ -38,7 +40,7 @@ Scrapy item pipelines are not distributed, and you should not be doing processin
 Hardware
 --------
 
-Many that are new to Scrapy Cluster do not quite understand how to get the most out of it. Improperly configured core data components like Zookeeper, Kafka, and Redis, or even where you put your crawling machine can have an impact on how fast you can crawl. **The most important thing you can do is to have a massive internet pipe available to your crawler machines**, with a good enough network card(s) to keep up.
+Many that are new to Scrapy Cluster do not quite understand how to get the most out of it. Improperly configured core data components like Zookeeper, Kafka, and Redis, or even where you put your crawling machines can have an impact on how fast you can crawl. **The most important thing you can do is to have a massive internet pipe available to your crawler machines**, with a good enough network card(s) to keep up.
 
 Nothing here can substitute for a poor network connection, so no matter if you are crawling behind a proxy, through some service, or to the open internet, your rate of collection is depending on how fast you can get the data.
 
@@ -52,11 +54,13 @@ In production, we typically run everything on their own boxes, or a little overl
 
 .. note:: Scrapy Cluster has not been tested against `Redis Cluster <http://redis.io/topics/cluster-spec>`_. If you would like to run Redis as a Cluster used by Scrapy Cluster please take caution as there may be key manipulations that do not scale well across Redis instances.
 
-**Kafka Monitor** - This is a lightweight process that reads from your Kafka topic of choice. It can be sprinkled on any machine you see fit, but we would recommend on a machine that is close to either Kafka or Redis.
+**Kafka Monitors** - This is a lightweight process that reads from your Kafka topic of choice. It can be sprinkled on any number of machines you see fit, as long as you have the number of Kafka topics paritions to scale. We would recommend deployment on machines that are close to either Kafka or Redis.
 
-**Redis Monitor** - Another very lightweight process that can be sprinkled around on any machine. Prefers to be close to Redis or Kafka.
+**Redis Monitors** - Another very lightweight process that can be sprinkled around on any number of machines. Prefers to be close to Redis.
 
 **Crawlers** - As many small machines as you see fit. Your crawlers need to hit the internet, so put them on machines that have really good network cards or lots of IO. Scale these machines wider, rather than trying to stack a large number of processes on each machine.
+
+**Rests** - If you need multiple rest endpoints, put them behind a load balancer that allows the work to be spread across multiple hosts. Prefers to be close to Kafka.
 
 Crawler Configuration
 ---------------------
@@ -71,6 +75,13 @@ Crawler configuration is very important, and it can take some time to find setti
 
 * Don't set your ``QUEUE_WINDOW`` and ``QUEUE_HITS`` too high. There is a reason the defaults are ``60`` and ``10``. If you can scale horizontally, you can get your throughput to ``10 * (num machines)`` and should be able to fit your throughput needs.
 
-* Flip the :ref:`Base 64 <c_base64>` encode flag on your crawlers. You **will** run across malformed utf-8 characters that breaks ``json.dumps()``. It  will save you headaches in the long run by ensuring your html is always transmitted to Kafka.
+* Flip the :ref:`Base 64 <c_base64>` encode flag on your crawlers. You **will** run across malformed utf-8 characters that breaks ``json.dumps()``. It will save you headaches in the long run by ensuring your html is always transmitted to Kafka.
 
+Stats Collection
+----------------
 
+Stats Collection by Scrapy Cluster is meant to allow users to get a better understanding of what is happening in their cluster without adding additional components. In production, it may be redundant to have *both* Stats Collection and Elasticsearch logging, and you will want to turn off or greatly reduce the number of stats collected by the cluster.
+
+Retaining lots of different stats about every machine and every process is very memory intensive. We recommend reducing the default ``STATS_TIMES`` to eliminate ``SECONDS_1_WEEK`` and ``SECONDS_1_DAY`` at the very least in order to reduce your Redis memory footprint.
+
+The last point about Stats Collection is that it becomes inconsistent with :doc:`docker` style deployments without a defined ``hostname`` for your container. In some circumstances the stats collection needs the hostname, and when docker autogenerates hostanames for the containers this can create excess data within Redis. In this case, we recommend eliminating Stats Collection from your cluster if you plan on continuously redeploying, or bringing your docker container up and down frequently without a defined hostname.

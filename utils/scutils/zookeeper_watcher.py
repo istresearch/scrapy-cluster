@@ -1,12 +1,18 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 from kazoo.client import KazooClient, KazooState
 from kazoo.exceptions import ZookeeperError, KazooException
 from threading import Thread
 import argparse
 import sys
 from time import sleep
+import logging
+log = logging.getLogger(__name__)
 
 
-class ZookeeperWatcher():
+class ZookeeperWatcher(object):
     zoo_client = None  # The KazooClient to manage the config
     point_path = None  # Zookeeper path to pointed to file
     pointed_at_expired = None  # is True when the assignment has been set to
@@ -102,8 +108,8 @@ class ZookeeperWatcher():
                         self.zoo_client.close()
                         self.zoo_client = KazooClient(hosts=self.hosts)
                         self.zoo_client.start()
-                except Exception, e:
-                    print "ZKWatcher Exception:", e
+                except Exception as e:
+                    log.error("ZKWatcher Exception: " + e.message)
                     sleep(1)
                     continue
 
@@ -334,13 +340,13 @@ def main():
     valid = args['valid_init']
 
     def valid_file(state):
-        print "The valid state is now", state
+        print("The valid state is now", state)
 
     def change_file(conf_string):
-        print "Your file contents:", conf_string
+        print("Your file contents:", conf_string)
 
     def error_file(message):
-        print "An error was thrown:", message
+        print("An error was thrown:", message)
 
     # You can use any or all of these, polling + handlers, some handlers, etc
     if pointer:
@@ -365,8 +371,8 @@ def main():
     try:
         while True:
             if poll:
-                print "Valid File?", zoo_watcher.is_valid()
-                print "Contents:", zoo_watcher.get_file_contents()
+                print("Valid File?", zoo_watcher.is_valid())
+                print("Contents:", zoo_watcher.get_file_contents())
             sleep(sleep_time)
     except:
         pass

@@ -16,6 +16,7 @@ This documentation provides everything you need to know about the `Scrapy <http:
     topics/kafka-monitor/index
     topics/crawler/index
     topics/redis-monitor/index
+    topics/rest/index
     topics/utils/index
     topics/advanced/index
     topics/faq
@@ -88,6 +89,21 @@ Redis Monitor
 :doc:`topics/redis-monitor/settings`
     Explains all of the settings used by the Redis Monitor
 
+Rest
+^^^^
+
+:doc:`topics/rest/design`
+    Learn about the design considerations for the Rest service
+
+:doc:`topics/rest/quickstart`
+    How to use and run the Rest service
+
+:doc:`topics/rest/api`
+    The API the comes with the endpoint
+
+:doc:`topics/rest/settings`
+    Explains all of the settings used by the Rest component
+
 Utilities
 ^^^^^^^^^
 
@@ -123,6 +139,9 @@ Advanced Topics
 
 :doc:`topics/advanced/integration`
     Visualizing your cluster with the ELK stack gives you new insight into your cluster
+
+:doc:`topics/advanced/docker`
+    Use docker to provision and scale your Scrapy Cluster
 
 :doc:`topics/advanced/crawlingresponsibly`
     Responsible Crawling with Scrapy Cluster

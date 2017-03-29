@@ -1,30 +1,33 @@
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
+from scrapy.utils.python import to_unicode
 
 import redis
 import random
 import time
 import tldextract
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 import yaml
 import sys
 import uuid
 import socket
 import re
+import ujson
 
-from redis_dupefilter import RFPDupeFilter
+from crawling.redis_dupefilter import RFPDupeFilter
 from kazoo.handlers.threading import KazooTimeoutError
 
 from scutils.zookeeper_watcher import ZookeeperWatcher
 from scutils.redis_queue import RedisPriorityQueue
 from scutils.redis_throttled_queue import RedisThrottledQueue
 from scutils.log_factory import LogFactory
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 
 class DistributedScheduler(object):
@@ -59,9 +62,11 @@ class DistributedScheduler(object):
     assign_path = None  # The base assigned configuration path to read
     zoo_client = None  # The KazooClient to manage the config
     my_assignment = None  # Zookeeper path to read actual yml config
+    black_domains = [] # the domains to ignore thanks to zookeeper config
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
-                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex):
+                 hits, window, mod, ip_refresh, add_type, add_ip, ip_regex,
+                 backlog_blacklist, queue_timeout):
         '''
         Initialize the scheduler
         '''
@@ -79,6 +84,8 @@ class DistributedScheduler(object):
         self.item_retires = retries
         self.logger = logger
         self.ip_regex = re.compile(ip_regex)
+        self.backlog_blacklist = backlog_blacklist
+        self.queue_timeout = queue_timeout
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
@@ -127,14 +134,17 @@ class DistributedScheduler(object):
         '''
         self.domain_config = {}
         # vetting process to ensure correct configs
-        if loaded_config and 'domains' in loaded_config:
-            for domain in loaded_config['domains']:
-                item = loaded_config['domains'][domain]
-                # check valid
-                if 'window' in item and 'hits' in item:
-                    self.logger.debug("Added domain {dom} to loaded config"
-                                      .format(dom=domain))
-                    self.domain_config[domain] = item
+        if loaded_config:
+            if 'domains' in loaded_config:
+                for domain in loaded_config['domains']:
+                    item = loaded_config['domains'][domain]
+                    # check valid
+                    if 'window' in item and 'hits' in item:
+                        self.logger.debug("Added domain {dom} to loaded config"
+                                          .format(dom=domain))
+                        self.domain_config[domain] = item
+            if 'blacklist' in loaded_config:
+                self.black_domains = loaded_config['blacklist']
 
         self.config_flag = True
 
@@ -149,7 +159,7 @@ class DistributedScheduler(object):
                     domain=key)
             # we already have a throttled queue for this domain, update it to new settings
             if final_key in self.queue_dict:
-                self.queue_dict[final_key].window = float(self.domain_config[key]['window'])
+                self.queue_dict[final_key][0].window = float(self.domain_config[key]['window'])
                 self.logger.debug("Updated queue {q} with new config"
                                   .format(q=final_key))
                 # if scale is applied, scale back; otherwise use updated hits
@@ -157,9 +167,9 @@ class DistributedScheduler(object):
                     # round to int
                     hits = int(self.domain_config[key]['hits'] * self.fit_scale(
                                self.domain_config[key]['scale']))
-                    self.queue_dict[final_key].limit = float(hits)
+                    self.queue_dict[final_key][0].limit = float(hits)
                 else:
-                    self.queue_dict[final_key].limit = float(self.domain_config[key]['hits'])
+                    self.queue_dict[final_key][0].limit = float(self.domain_config[key]['hits'])
 
     def error_config(self, message):
         extras = {}
@@ -173,8 +183,8 @@ class DistributedScheduler(object):
             final_key = "{name}:{domain}:queue".format(
                     name=self.spider.name,
                     domain=key)
-            self.queue_dict[final_key].window = self.window
-            self.queue_dict[final_key].limit = self.hits
+            self.queue_dict[final_key][0].window = self.window
+            self.queue_dict[final_key][0].limit = self.hits
 
         self.domain_config = {}
 
@@ -215,13 +225,15 @@ class DistributedScheduler(object):
             if key not in self.queue_dict or newConf:
                 self.logger.debug("Added new Throttled Queue {q}"
                                   .format(q=key))
-                q = RedisPriorityQueue(self.redis_conn, key)
+                q = RedisPriorityQueue(self.redis_conn, key, encoding=ujson)
 
                 # use default window and hits
                 if the_domain not in self.domain_config:
-                    self.queue_dict[key] = RedisThrottledQueue(self.redis_conn,
+                    # this is now a tuple, all access needs to use [0] to get
+                    # the object, use [1] to get the time
+                    self.queue_dict[key] = [RedisThrottledQueue(self.redis_conn,
                     q, self.window, self.hits, self.moderated, throttle_key,
-                    throttle_key)
+                    throttle_key, True), time.time()]
                 # use custom window and hits
                 else:
                     window = self.domain_config[the_domain]['window']
@@ -231,9 +243,23 @@ class DistributedScheduler(object):
                     if 'scale' in self.domain_config[the_domain]:
                         hits = int(hits * self.fit_scale(self.domain_config[the_domain]['scale']))
 
-                    self.queue_dict[key] = RedisThrottledQueue(self.redis_conn,
+                    self.queue_dict[key] = [RedisThrottledQueue(self.redis_conn,
                     q, window, hits, self.moderated, throttle_key,
-                    throttle_key)
+                    throttle_key, True), time.time()]
+
+    def expire_queues(self):
+        '''
+        Expires old queue_dict keys that have not been used in a long time.
+        Prevents slow memory build up when crawling lots of different domains
+        '''
+        curr_time = time.time()
+        for key in list(self.queue_dict):
+            diff = curr_time - self.queue_dict[key][1]
+            if diff > self.queue_timeout:
+                self.logger.debug("Expiring domain queue key " + key)
+                del self.queue_dict[key]
+                if key in self.queue_keys:
+                    self.queue_keys.remove(key)
 
     def check_config(self):
         '''
@@ -254,7 +280,7 @@ class DistributedScheduler(object):
         self.old_ip = self.my_ip
         self.my_ip = '127.0.0.1'
         try:
-            obj = urllib2.urlopen(settings.get('PUBLIC_IP_URL',
+            obj = urllib.request.urlopen(settings.get('PUBLIC_IP_URL',
                                   'http://ip.42.pl/raw'))
             results = self.ip_regex.findall(obj.read())
             if len(results) > 0:
@@ -286,7 +312,8 @@ class DistributedScheduler(object):
     @classmethod
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
-                             port=settings.get('REDIS_PORT'))
+                             port=settings.get('REDIS_PORT'),
+                             db=settings.get('REDIS_DB'))
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         hits = settings.get('QUEUE_HITS', 10)
@@ -298,6 +325,9 @@ class DistributedScheduler(object):
         add_ip = settings.get('SCHEDULER_IP_ENABLED', False)
         retries = settings.get('SCHEUDLER_ITEM_RETRIES', 3)
         ip_regex = settings.get('IP_ADDR_REGEX', '.*')
+        backlog_blacklist = settings.get('SCHEDULER_BACKLOG_BLACKLIST', True)
+        queue_timeout = settings.get('SCHEDULER_QUEUE_TIMEOUT', 3600)
+
 
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
@@ -318,7 +348,8 @@ class DistributedScheduler(object):
                                          backups=my_backups)
 
         return cls(server, persist, up_int, timeout, retries, logger, hits,
-                   window, mod, ip_refresh, add_type, add_ip, ip_regex)
+                   window, mod, ip_refresh, add_type, add_ip, ip_regex,
+                   backlog_blacklist, queue_timeout)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -327,8 +358,6 @@ class DistributedScheduler(object):
     def open(self, spider):
         self.spider = spider
         self.spider.set_logger(self.logger)
-        self.spider.set_redis(self.redis_conn)
-        self.spider.setup_stats()
         self.create_queues()
         self.setup_zookeeper()
         self.dupefilter = RFPDupeFilter(self.redis_conn,
@@ -341,7 +370,7 @@ class DistributedScheduler(object):
             self.logger.warning("Clearing crawl queues")
             self.dupefilter.clear()
             for key in self.queue_keys:
-                self.queue_dict[key].clear()
+                self.queue_dict[key][0].clear()
 
     def is_blacklisted(self, appid, crawlid):
         '''
@@ -374,18 +403,25 @@ class DistributedScheduler(object):
 
             curr_time = time.time()
 
+            domain = "{d}.{s}".format(d=ex_res.domain, s=ex_res.suffix)
+
+            # allow only if we want all requests or we want
+            # everything but blacklisted domains
             # insert if crawl never expires (0) or time < expires
-            if req_dict['meta']['expires'] == 0 or \
-                    curr_time < req_dict['meta']['expires']:
+            if (self.backlog_blacklist or
+                    (not self.backlog_blacklist and
+                    domain not in self.black_domains)) and \
+                    (req_dict['meta']['expires'] == 0 or
+                    curr_time < req_dict['meta']['expires']):
                 # we may already have the queue in memory
                 if key in self.queue_keys:
-                    self.queue_dict[key].push(req_dict,
+                    self.queue_dict[key][0].push(req_dict,
                                               req_dict['meta']['priority'])
                 else:
                     # shoving into a new redis queue, negative b/c of sorted sets
                     # this will populate ourself and other schedulers when
                     # they call create_queues
-                    self.redis_conn.zadd(key, pickle.dumps(req_dict, protocol=-1),
+                    self.redis_conn.zadd(key, ujson.dumps(req_dict),
                                         -req_dict['meta']['priority'])
                 self.logger.debug("Crawlid: '{id}' Appid: '{appid}' added to queue"
                     .format(appid=req_dict['meta']['appid'],
@@ -406,7 +442,7 @@ class DistributedScheduler(object):
         '''
         req_dict = {
             # urls should be safe (safe_string_url)
-            'url': request.url.decode('ascii'),
+            'url': to_unicode(request.url),
             'method': request.method,
             'headers': dict(request.headers),
             'body': request.body,
@@ -416,8 +452,8 @@ class DistributedScheduler(object):
             'priority': request.priority,
             'dont_filter': request.dont_filter,
              #  callback/errback are assumed to be a bound instance of the spider
-            'callback': None if request.callback is None else request.callback.func_name,
-            'errback': None if request.errback is None else request.errback.func_name,
+            'callback': None if request.callback is None else request.callback.__name__,
+            'errback': None if request.errback is None else request.errback.__name__,
         }
         return req_dict
 
@@ -430,14 +466,17 @@ class DistributedScheduler(object):
 
         while count <= self.item_retries:
             for key in self.queue_keys:
+                # skip if the whole domain has been blacklisted in zookeeper
+                if key.split(':')[1] in self.black_domains:
+                    continue
                 # the throttled queue only returns an item if it is allowed
-                item = self.queue_dict[key].pop()
+                item = self.queue_dict[key][0].pop()
 
                 if item:
+                    # update timeout and return
+                    self.queue_dict[key][1] = time.time()
                     return item
-            # we want the spiders to get slightly out of sync
-            # with each other for better performance
-            time.sleep(random.random())
+
             count = count + 1
 
         return None
@@ -452,6 +491,7 @@ class DistributedScheduler(object):
         if t - self.update_time > self.update_interval:
             self.update_time = t
             self.create_queues()
+            self.expire_queues()
 
         # update the ip address every so often
         if t - self.update_ip_time > self.ip_update_interval:
@@ -470,6 +510,18 @@ class DistributedScheduler(object):
                 # need better url validation here
                 req = Request('http://' + item['url'])
 
+            try:
+                if 'callback' in item and item['callback'] is not None:
+                    req.callback = getattr(self.spider, item['callback'])
+            except AttributeError:
+                self.logger.warn("Unable to find callback method")
+
+            try:
+                if 'errback' in item and item['errback'] is not None:
+                    req.errback = getattr(self.spider, item['errback'])
+            except AttributeError:
+                self.logger.warn("Unable to find errback method")
+
             if 'meta' in item:
                 item = item['meta']
 
@@ -479,7 +531,7 @@ class DistributedScheduler(object):
             if "retry_times" not in item:
                 item['retry_times'] = 0
 
-            for key in item.keys():
+            for key in list(item.keys()):
                 req.meta[key] = item[key]
 
             # extra check to add items to request

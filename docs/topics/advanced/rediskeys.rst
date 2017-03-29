@@ -8,7 +8,7 @@ Production
 
 - **timeout:<spiderid>:<appid>:<crawlid>** - The timeout value of the crawl in the system, used by the Redis Monitor. The actual value of the key is the date in seconds since epoch that the crawl with that particular ``spiderid``, ``appid``, and ``crawlid`` will expire.
 
-- **<spiderid>:<domain>:queue** - The queue that holds all of the url requests for a spider type of a particular domain. Within this sorted set is any other data associated with the request to be crawled, which is stored as a Json object that is Pickle encoded.
+- **<spiderid>:<domain>:queue** - The queue that holds all of the url requests for a spider type of a particular domain. Within this sorted set is any other data associated with the request to be crawled, which is stored as a Json object that is ujson encoded.
 
 - **<spiderid>:dupefilter:<crawlid>** - The duplication filter for the spider type and ``crawlid``. This Redis Set stores a scrapy url hash of the urls the crawl request has already seen. This is useful for coordinating the ignoring of urls already seen by the current crawl request.
 
@@ -20,6 +20,21 @@ Production
 
 - **<spiderid>:<ip_address>:<domain>:throttle_window** - Stores the number of hits for a particular domain given the Type and IP Throttle Style. Is used by the Scrapy Scheduler to do coordinated throttling across a particular domain. Both ``<spiderid>`` and ``<ip_address>`` are dependent on the :ref:`throttle style <throttle_mechanism>`, and may not be present depending on configuration.
 
+- **rest:poll:<uuid>** - Allows a response caught by a separate Rest service to be stored within Redis to be later retrived by a ``poll`` request to another. Useful when running multiple Rest processes behind a load balancer with jobs that are longer than the initial call timeout.
+
+Redis Monitor Jobs
+^^^^^^^^^^^^^^^^^^
+
+- **zk:<action>:<domain>:<appid>** - Stores job info for the Zookeeper plugin
+
+- **stop:<spiderid>:<appid>:<crawlid>** - Used to stop a crawl via the Stop plugin
+
+- **statsrequest:<stats-type>:<appid>** - Used by the Stats plugin to fetch statistics requests
+
+- **info:<spiderid>:<appid>:<crawlid>** - Used by the Info plugin to gather information about an active crawl
+
+- **timeout:<spiderid>:<appid>:<crawlid>** - Used to stop an active crawl when the crawl time window has expired
+
 Statistics
 ^^^^^^^^^^
 
@@ -29,13 +44,21 @@ Statistics
 
 - **stats:kafka-monitor:fail:<window>** - Holds statistics on the total number of failed API validation attempts by the Kafka Monitor for requests it receives. The value here is based on the defined statistics collection time window.
 
+- **stats:kafka-monitor:self:<machine>:<id>** - Self reporting mechanism for the Kafka Monitor
+
 - **stats:redis-monitor:<plugin>:<window>** - Used to collect plugin statistics of requests that are received by the Redis Monitor. These keys hold information about the number of successful hits on that plugin in a specific time window.
 
 - **stats:redis-monitor:total:<window>** - Holds statistics on the total number of requests received by the Redis Monitor. This contains both successful and unsuccessful attempts at processing in monitored key.
 
 - **stats:redis-monitor:fail:<window>** - Holds statistics on the total number of failed attempts by the Redis Monitor for requests it receives. The value here is based on the defined statistics collection time window.
 
+- **stats:redis-monitor:self:<machine>:<id>** - Self reporting mechanism for the Redis Monitor
+
 - **stats:crawler:<hostname>:<spiderid>:<status_code>** - Holds metrics for the different response codes the crawlers have seen. This key is split by the machine, spider, and response code type to allow you to further examine your different crawler success rates.
+
+- **stats:crawler:self:<machine>:<spiderid>:<id>** - Self reporting mechanism for each individual crawler
+
+- **stats:rest:self:<machine>:<id>** - Self reporting mechanism for each individual Rest service
 
 Testing
 -------

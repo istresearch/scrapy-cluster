@@ -29,7 +29,7 @@ You are now free to add subcommands with whatever parameters you like, and when 
 Example
 -------
 
-Put the following code into ``my_script.py``.
+Put the following code into ``example_ah.py``, or use the file located at ``utils/examples/example_ah.py``
 
 ::
 
@@ -37,12 +37,12 @@ Put the following code into ``my_script.py``.
     from scutils.argparse_helper import ArgparseHelper
 
     parser = argparse.ArgumentParser(
-        description='my_script.py: Prints various family members', add_help=False)
+        description='example_ah.py: Prints various family members', add_help=False)
     parser.add_argument('-h', '--help', action=ArgparseHelper,
                         help='show this help message and exit')
     # use the default argparse setup, comment out the lines above
     #parser = argparse.ArgumentParser(
-    #    description='my_script.py: Prints various family members')
+    #    description='example_ah.py: Prints various family members')
 
     subparsers = parser.add_subparsers(help='commands', dest='command')
 
@@ -77,10 +77,10 @@ Running ``-h`` from the base command prints out nicely formatted statements for 
 
 ::
 
-    $ python my_script.py -h
-    usage: my_script.py [-h] {bro,fam} ...
+    $ python example_ah.py -h
+    usage: example_ah.py [-h] {bro,fam} ...
 
-    my_script.py: Prints various family members
+    example_ah.py: Prints various family members
 
     positional arguments:
       {bro,fam}   commands
@@ -91,19 +91,19 @@ Running ``-h`` from the base command prints out nicely formatted statements for 
       -h, --help  show this help message and exit
 
     Command 'bro'
-    usage: my_script.py bro [-h] -n NAME -b BROTHER
+    usage: example_ah.py bro [-h] -n NAME -b BROTHER
 
     Command 'fam'
-    usage: my_script.py fam [-h] -n NAME -s SISTER [-m MOM]
+    usage: example_ah.py fam [-h] -n NAME -s SISTER [-m MOM]
 
 If you comment out the first two lines, and replace them with the simpler commented out line below it, you get the default Argparse behavior like shown below.
 
 ::
 
-    $ python my_script.py -h
-    usage: my_script.py [-h] {bro,fam} ...
+    $ python example_ah.py -h
+    usage: example_ah.py [-h] {bro,fam} ...
 
-    my_script.py: Prints various family members
+    example_ah.py: Prints various family members
 
     positional arguments:
       {bro,fam}   commands
@@ -113,6 +113,6 @@ If you comment out the first two lines, and replace them with the simpler commen
     optional arguments:
       -h, --help  show this help message and exit
 
-You can see that this does not actually display to the user how to run your script sub-commands, and they have to type another ``python my_script.py bro -h`` to see the arguments they need. Of course, you can always create your own ``description`` string for your default help message, but now you have to maintain the arguments to your commands in two places (the description string and in the code) instead of one.
+You can see that this does not actually display to the user how to run your script sub-commands, and they have to type another ``python example_ah.py bro -h`` to see the arguments they need. Of course, you can always create your own ``description`` string for your default help message, but now you have to maintain the arguments to your commands in two places (the description string and in the code) instead of one.
 
 The ArgparseHelper class allows you to keep your parameter documentation in one place, while allowing users running your script to see more detail about each of your subcommands.

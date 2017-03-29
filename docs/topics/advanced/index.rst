@@ -8,6 +8,7 @@ These documents cover more advanced topics within Scrapy Cluster in no particula
 
    upgrade
    integration
+   docker
    crawlingresponsibly
    productionsetup
    dnscache
@@ -21,6 +22,9 @@ These documents cover more advanced topics within Scrapy Cluster in no particula
 
 :doc:`integration`
     Visualizing your cluster with the ELK stack gives you new insight into your cluster
+
+:doc:`docker`
+    Use docker to provision and scale your Scrapy Cluster
 
 :doc:`crawlingresponsibly`
     Responsible Crawling with Scrapy Cluster

@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "properties": {
+        "poll_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "The poll id to retrieve"
+        }
+    },
+    "required": [
+        "poll_id"
+    ],
+    "additionalProperties": false
+}

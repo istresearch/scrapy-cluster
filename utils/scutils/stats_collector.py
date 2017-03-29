@@ -1,9 +1,10 @@
+from builtins import object
 import redis
 import time
 from threading import Thread
 
 
-class StatsCollector():
+class StatsCollector(object):
     '''
     A redis based statistics generator class. Use the following methods
     below to generate collectors for various statistic gathering.
@@ -193,7 +194,7 @@ class StatsCollector():
         return counter
 
 
-class AbstractCounter():
+class AbstractCounter(object):
 
     def __init__(self, key=None):
         self.redis_conn = None
@@ -210,7 +211,7 @@ class AbstractCounter():
             if host is not None and port is not None:
                 self.redis_conn = redis.Redis(host=host, port=port)
             else:
-                raise StandardError("Please specify some form of connection "
+                raise Exception("Please specify some form of connection "
                                     "to Redis")
         else:
             self.redis_conn = redis_conn

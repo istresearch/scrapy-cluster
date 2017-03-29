@@ -1,4 +1,5 @@
-from base_handler import BaseHandler
+from __future__ import absolute_import
+from .base_handler import BaseHandler
 import tldextract
 import redis
 import sys
@@ -15,7 +16,8 @@ class ActionHandler(BaseHandler):
         '''
         self.extract = tldextract.TLDExtract()
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
-                                      port=settings['REDIS_PORT'])
+                                      port=settings['REDIS_PORT'],
+                                      db=settings.get('REDIS_DB'))
 
         try:
             self.redis_conn.info()

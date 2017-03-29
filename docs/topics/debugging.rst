@@ -19,6 +19,8 @@ For all three components, you may set the Scrapy Cluster log level for the compo
 
     * **Crawler** - use the ``localsettings.py`` file to set ``SC_LOG_LEVEL="DEBUG"``. Note this is **different** so as to not interfere with normal Scrapy log levels.
 
+    * **Rest** - use the ``--log-level DEBUG`` flag when executing either the main command, or in your ``localsettings.py`` set ``LOG_LEVEL="DEBUG"``
+
 You can alter the Log Factory settings to log your data in JSON, to write your Scrapy Cluster logs to a file, or to write only important ``CRITICAL`` log messages to your desired output. JSON based logs will show all of the extra data passed into the log message, and can be useful for debugging python dictionaries without contaminating your log message itself.
 
 .. note:: Command line arguments take precedence over ``localsettings.py``, which take precedence over the default settings. This is useful if you need quick command line changes to your logging output, but want to keep production settings the same.
@@ -34,13 +36,26 @@ All of the different components in Scrapy Cluster have offline tests, to ensure 
 
 If you are making modifications to core components, or wish to add new functionality to Scrapy Cluster, please ensure that all the tests pass for your component. Upgrades and changes happen, but these tests should always pass in the end.
 
-If you are modifying a single component, you can run its individual offline test by issuing the following command.
+If you are modifying a single component, you can run its individual offline test by using `nose <http://nose.readthedocs.org/en/latest/>`_. The following commands should be run from within the component you are interested in, and will run both the nosetests and provide code coverage information to you:
 
 ::
 
-    $ python tests/tests_offline.py -v
+    # utilities
+    nosetests -v --with-coverage --cover-erase
 
-This runs the individual component's offline tests. You can do this in the Kafka Monitor, Crawler, Redis Monitor, and the Utilities folders.
+    # kafka monitor
+    nosetests -v --with-coverage --cover-erase --cover-package=../kafka-monitor/
+
+    # redis monitor
+    nosetests -v --with-coverage --cover-erase --cover-package=../redis-monitor/
+
+    # crawler
+    nosetests -v --with-coverage --cover-erase --cover-package=crawling/
+
+    # rest
+    nosetests -v --with-coverage --cover-erase --cover-package=../rest/
+
+This runs the individual component's offline tests. You can do this in the Kafka Monitor, Crawler, Redis Monitor, Rest, and the Utilities folders.
 
 Online Testing
 ^^^^^^^^^^^^^^
@@ -58,7 +73,7 @@ Where ``<your_host>`` is the machine where Redis, Kafka, or Zookeeper would resi
 
 ::
 
-    $ python tests/tests_online.py -v
+    $ python tests/online.py -v
 
 If your system is properly configured you will see the test pass, otherwise, the debug and error log output should indicate what is failing.
 
@@ -68,7 +83,7 @@ If you would like to debug the Utilities package, the online test is slightly di
 
 ::
 
-    python tests/tests_online.py -r <your_host>
+    python tests/online.py -r <your_host>
 
 If all your online tests pass, that means that the Scrapy Cluster component was successfully able to talk with its dependencies and deems itself operational.
 
@@ -118,6 +133,19 @@ To add further debug lines within the Redis Monitor, you can use the following v
 
 * Cannot connect to Redis/Kafka, look into your network configuration.
 * Lots of errors when writing to a Kafka topic - Kafka is in an unhappy state and should be looked at.
+
+Rest
+^^^^
+
+To add further debug lines within the Rest, you can use the following variables within the classes.
+
+* **Core**: ``self.logger``
+
+**Typical Issues**
+
+* Cannot connect to Redis/Kafka, look into your network configuration.
+* Improperly formatted requests - please ensure your request matches either the Kafka Monitor or Rest service API
+* All Redis Monitor requests come back as a ``poll_id`` - Ensure you have the Kafka Monitor and Redis Monitor properly set up and running.
 
 Utilities
 ^^^^^^^^^

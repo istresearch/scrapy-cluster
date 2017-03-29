@@ -48,15 +48,12 @@ Overall, the designs considered for the core scraping component of Scrapy Cluste
 
 - Distributed throttling and coordination so your scraping cluster does not overload any particular website
 
+- Ability to pass crawl jobs to other spiders within the cluster
+
 Components
 ----------
 
 This section explains the individual files located within the Scrapy crawler project.
-
-contextfactory.py
-^^^^^^^^^^^^^^^^^
-
-Allows Scrapy spiders to deal with poor SSL connections and bugs as documented `here <https://www.openssl.org/docs/manmaster/ssl/SSL_CTX_set_options.html>`_.
 
 custom_cookies.py
 ^^^^^^^^^^^^^^^^^
@@ -94,6 +91,11 @@ log_retry_middleware.py
 
 Logs and collects statistics about the Spider receiving 504 timeout status codes. This allows you to see in the Scrapy Cluster logs when your Spiders are having trouble connecting to the desired web pages.
 
+meta_passthrough_middleware.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Ensures the minimum amount of metadata information from the response is passed through to subsequent requests for the distribtued scheduler to work.
+
 pipelines.py
 ^^^^^^^^^^^^
 
@@ -118,6 +120,11 @@ redis\_retry\_middleware.py
 This class is a Scrapy Downloader Middleware that catches 504 timeout exceptions thrown by the spider. These exceptions are handled differently from other status codes because the spider never even got to the url, so the downloader throws an error.
 
 The url is thrown back into the cluster queue at a lower priority so the cluster can try all other higher priority urls before the one that failed. After a certain amount of retries, the url is given up on and discarded from the queue.
+
+redis\_stats\_middleware.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A Spider middleware that allows the spider to record Scrapy Cluster statistics about crawl response codes within Redis. This middleware grabs the response code from the Response object and increments a :ref:`StatsCollector <stats_collector>` counter.
 
 settings.py
 ^^^^^^^^^^^
@@ -148,3 +155,8 @@ spiders/redis\_spider.py
 A base class that extends the default Scrapy Spider so we can crawl continuously in cluster mode. All you need to do is implement the ``parse`` method and everything else is taken care of behind the scenes.
 
 .. note:: There is a method within this class called ``reconstruct_headers()`` that is very important you take advantage of! The issue we ran into was that we were dropping data in our headers fields when encoding the item into json. The Scrapy shell didn’t see this issue, print statements couldn’t find it, but it boiled down to the python list being treated as a single element. We think this may be a formal defect in Python 2.7 but have not made an issue yet as the bug needs much more testing.
+
+spiders/wandering_spider.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another example spider for crawling within Scrapy Cluster. This spider randomly hops around one link at a time. You can read more about how this spider was created :ref:`here <ws_example>`

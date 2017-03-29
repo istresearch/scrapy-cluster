@@ -1,10 +1,14 @@
-from base_monitor import BaseMonitor
-from kafka import KafkaClient, SimpleProducer
+from __future__ import absolute_import
+from builtins import str
+from .base_monitor import BaseMonitor
+from kafka import KafkaProducer
 from kafka.common import KafkaUnavailableError
 from scutils.method_timer import MethodTimer
+from retrying import retry
 
 import json
 import sys
+import traceback
 
 
 class KafkaBaseMonitor(BaseMonitor):
@@ -18,30 +22,46 @@ class KafkaBaseMonitor(BaseMonitor):
 
         @param settings: The loaded settings file
         '''
-        @MethodTimer.timeout(settings['KAFKA_CONN_TIMEOUT'], False)
-        def _hidden_setup():
-            try:
-                # set up kafka
-                self.kafka_conn = KafkaClient(settings['KAFKA_HOSTS'])
-                self.producer = SimpleProducer(self.kafka_conn)
-                self.topic_prefix = settings['KAFKA_TOPIC_PREFIX']
-            except KafkaUnavailableError as ex:
-                message = "An exception '{0}' occured while setting up kafka. "\
-                    "Arguments:\n{1!r}".format(type(ex).__name__, ex.args)
-                self.logger.error(message)
-                return False
-            return True
-        ret_val = _hidden_setup()
+        self.producer = self._create_producer(settings)
+        self.topic_prefix = settings['KAFKA_TOPIC_PREFIX']
+
         self.use_appid_topics = settings['KAFKA_APPID_TOPICS']
 
-        if ret_val:
-            self.logger.debug("Successfully connected to Kafka in {name}"
+        self.logger.debug("Successfully connected to Kafka in {name}"
                               .format(name=self.__class__.__name__))
-        else:
-            self.logger.error("Failed to set up Kafka Connection in {name} "
-                              "within timeout".format(name=self.__class__.__name__))
-            # this is essential to running the redis monitor
-            sys.exit(1)
+
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
+    def _create_producer(self, settings):
+        """Tries to establish a Kafka consumer connection"""
+        try:
+            brokers = settings['KAFKA_HOSTS']
+            self.logger.debug("Creating new kafka producer using brokers: " +
+                               str(brokers))
+
+            return KafkaProducer(bootstrap_servers=brokers,
+                                 value_serializer=lambda m: json.dumps(m),
+                                 retries=3,
+                                 linger_ms=settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
+                                 buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'])
+        except KeyError as e:
+            self.logger.error('Missing setting named ' + str(e),
+                               {'ex': traceback.format_exc()})
+        except:
+            self.logger.error("Couldn't initialize kafka producer in plugin.",
+                               {'ex': traceback.format_exc()})
+            raise
+
+    def _kafka_success(self, response):
+        '''
+        Callback for successful send
+        '''
+        self.logger.debug("Sent message to Kafka")
+
+    def _kafka_failure(self, response):
+        '''
+        Callback for failed send
+        '''
+        self.logger.error("Failed to send message to Kafka")
 
     def _send_to_kafka(self, master):
         '''
@@ -55,13 +75,14 @@ class KafkaBaseMonitor(BaseMonitor):
         firehose_topic = "{prefix}.outbound_firehose".format(
                                                     prefix=self.topic_prefix)
         try:
-            self.kafka_conn.ensure_topic_exists(firehose_topic)
             # dont want logger in outbound kafka message
-            dump = json.dumps(master)
             if self.use_appid_topics:
-                self.kafka_conn.ensure_topic_exists(appid_topic)
-                self.producer.send_messages(appid_topic, dump)
-            self.producer.send_messages(firehose_topic, dump)
+                f1 = self.producer.send(appid_topic, master)
+                f1.add_callback(self._kafka_success)
+                f1.add_errback(self._kafka_failure)
+            f2 = self.producer.send(firehose_topic, master)
+            f2.add_callback(self._kafka_success)
+            f2.add_errback(self._kafka_failure)
 
             return True
         except Exception as ex:
@@ -71,3 +92,7 @@ class KafkaBaseMonitor(BaseMonitor):
             self.logger.error(message)
 
         return False
+
+    def close(self):
+        self.producer.flush()
+        self.producer.close(timeout=10)

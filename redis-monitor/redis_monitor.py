@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import object
+from past.utils import old_div
 import redis
 import sys
 import time
@@ -5,15 +9,19 @@ import traceback
 import argparse
 import time
 import json
+import redis_lock
+import uuid
+import socket
 
 from collections import OrderedDict
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.stats_collector import StatsCollector
 from redis.exceptions import ConnectionError
+from redis_lock import AlreadyAcquired
 
 
-class RedisMonitor:
+class RedisMonitor(object):
 
     def __init__(self, settings_name, unit_test=False):
         '''
@@ -25,6 +33,7 @@ class RedisMonitor:
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.unit_test = unit_test
+        self.my_uuid = str(uuid.uuid4()).split('-')[4]
 
     def setup(self, level=None, log_file=None, json=None):
         '''
@@ -49,8 +58,10 @@ class RedisMonitor:
                                               bytes=self.settings['LOG_MAX_BYTES'],
                                               backups=self.settings['LOG_BACKUPS'])
 
-        self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
-                                      port=self.settings['REDIS_PORT'])
+        self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
+                                      port=self.settings['REDIS_PORT'],
+                                      db=self.settings['REDIS_DB'])
+
         try:
             self.redis_conn.info()
             self.logger.debug("Successfully connected to Redis")
@@ -104,7 +115,7 @@ class RedisMonitor:
 
             self.plugins_dict[plugins[key]] = mini
 
-        self.plugins_dict = OrderedDict(sorted(self.plugins_dict.items(),
+        self.plugins_dict = OrderedDict(sorted(list(self.plugins_dict.items()),
                                                key=lambda t: t[0]))
 
     def run(self):
@@ -125,7 +136,7 @@ class RedisMonitor:
                 self._process_plugin(obj)
 
             if self.settings['STATS_DUMP'] != 0:
-                new_time = int(time.time() / self.settings['STATS_DUMP'])
+                new_time = int(old_div(time.time(), self.settings['STATS_DUMP']))
                 # only log every X seconds
                 if new_time != old_time:
                     self._dump_stats()
@@ -137,8 +148,8 @@ class RedisMonitor:
                         self._dump_queue_stats()
 
                     old_time = new_time
-
-            time.sleep(0.1)
+            self._report_self()
+            time.sleep(self.settings['SLEEP_TIME'])
 
     def _process_plugin(self, plugin):
         '''
@@ -149,12 +160,59 @@ class RedisMonitor:
         instance = plugin['instance']
         regex = plugin['regex']
         for key in self.redis_conn.scan_iter(match=regex):
-            val = self.redis_conn.get(key)
+            # acquire lock
+            lock = self._create_lock_object(key)
+
             try:
-                self._process_key_val(instance, key, val)
+                if lock.acquire(blocking=False):
+                    val = self.redis_conn.get(key)
+                    self._process_key_val(instance, key, val)
             except Exception:
                 self.logger.error(traceback.format_exc())
                 self._increment_fail_stat('{k}:{v}'.format(k=key, v=val))
+
+                self._process_failures(key)
+
+            # remove lock regardless of if exception or was handled ok
+            if lock._held:
+                self.logger.debug("releasing lock")
+                lock.release()
+
+    def _create_lock_object(self, key):
+        '''
+        Returns a lock object, split for testing
+        '''
+        return redis_lock.Lock(self.redis_conn, key,
+                               expire=self.settings['REDIS_LOCK_EXPIRATION'],
+                               auto_renewal=True)
+
+    def _get_fail_key(self, key):
+        '''
+        Returns the fail key string of a normal key
+        '''
+        return 'lock:{k}:failures'.format(k=key)
+
+    def _process_failures(self, key):
+        '''
+        Handles the retrying of the failed key
+        '''
+        if self.settings['RETRY_FAILURES']:
+            self.logger.debug("going to retry failure")
+            # get the current failure count
+            failkey = self._get_fail_key(key)
+            current = self.redis_conn.get(failkey)
+            if current is None:
+                current = 0
+            else:
+                current = int(current)
+            if current < self.settings['RETRY_FAILURES_MAX']:
+                self.logger.debug("Incr fail key")
+                current += 1
+                self.redis_conn.set(failkey, current)
+            else:
+                self.logger.error("Could not process action within"
+                                  " failure limit")
+                self.redis_conn.delete(failkey)
                 self.redis_conn.delete(key)
 
     def _process_key_val(self, instance, key, val):
@@ -174,6 +232,9 @@ class RedisMonitor:
                 combined)
             instance.handle(key, val)
             self.redis_conn.delete(key)
+            failkey = self._get_fail_key(key)
+            if self.redis_conn.exists(failkey):
+                self.redis_conn.delete(failkey)
 
     def _setup_stats(self):
         '''
@@ -420,6 +481,25 @@ class RedisMonitor:
         else:
             self.logger.info('Queue Stats Dump', extra=extras)
 
+    def _report_self(self):
+        '''
+        Reports the redis monitor uuid to redis
+        '''
+        key = "stats:redis-monitor:self:{m}:{u}".format(
+            m=socket.gethostname(),
+            u=self.my_uuid)
+        self.redis_conn.set(key, time.time())
+        self.redis_conn.expire(key, self.settings['HEARTBEAT_TIMEOUT'])
+
+    def close(self):
+        '''
+        Closes the Redis Monitor and plugins
+        '''
+        for plugin_key in self.plugins_dict:
+            obj = self.plugins_dict[plugin_key]
+            instance = obj['instance']
+            instance.close()
+
 def main():
     parser = argparse.ArgumentParser(
         description='Redis Monitor: Monitor the Scrapy Cluster Redis '
@@ -441,12 +521,14 @@ def main():
     args = vars(parser.parse_args())
 
     redis_monitor = RedisMonitor(args['settings'])
-    redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
-                        json=args['log_json'])
+
     try:
+        redis_monitor.setup(level=args['log_level'], log_file=args['log_file'],
+                        json=args['log_json'])
         redis_monitor.run()
     except KeyboardInterrupt:
         redis_monitor.logger.info("Closing Redis Monitor")
+        redis_monitor.close()
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -13,7 +13,7 @@ In Scrapy Cluster's use case, it means that when a Spider process says "Give me 
 
 In practice, the Redlock algorithm has many safeguards in place to do true concurrent process locking on keys, but as explained above, Scrapy Cluster does not need all of those extra features. Because those features significantly slow down the ``pop()`` mechanism, the ``RedisThrottledQueue`` was born.
 
-.. class:: RedisThrottledQueue(redisConn, myQueue, throttleWindow, throttleLimit, moderate=False, windowName=None, modName=None)
+.. class:: RedisThrottledQueue(redisConn, myQueue, throttleWindow, throttleLimit, moderate=False, windowName=None, modName=None, elastic=False, elastic_buffer=0)
 
     :param redisConn: The Redis connection
     :param myQueue: The RedisQueue class instance
@@ -22,6 +22,8 @@ In practice, the Redlock algorithm has many safeguards in place to do true concu
     :param int moderation: Queue pop requests are moderated to be evenly distributed throughout the window
     :param str windowName: Use a custom rolling window Redis key name
     :param str modName: Use a custom moderation key name in Redis
+    :param elastic: When moderated and falling behind, break moderation to catch up to desired limit
+    :param elastic_buffer: The threshold number for how close we should get to the limit when using the elastic catch up
 
     .. method:: push(*args)
 
@@ -66,10 +68,12 @@ If you would like to throttle your Redis queue, you need to pass the queue in as
 
 The throttle merely acts as a wrapper around your queue, returning items only when allowed. You can use the same methods the original ``RedisQueue`` provides, like ``push()``, ``pop()``, ``clear()``, and ``__len__``.
 
+.. note:: Due to the distributed nature of the throttled queue, when using the ``elastic=True`` argument the queue must successfully pop the number of ``limit`` items before the elastic catch up will take effect.
+
 Example
 -------
 
-The Redis Throttled Queue really shines when multiple processes are trying to pop from the queue. There is a small test script under ``utils/tests/test_throttled_queue.py`` that allows you to tinker with all of the different settings the throttled queue provides. The script is shown below for convenience.
+The Redis Throttled Queue really shines when multiple processes are trying to pop from the queue. There is a small test script under ``utils/examples/example_rtq.py`` that allows you to tinker with all of the different settings the throttled queue provides. The script is shown below for convenience.
 
 ::
 
@@ -81,6 +85,7 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
         import argparse
         import redis
         import time
+        import random
 
         import sys
         from os import path
@@ -104,6 +109,9 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
                             help="The number of pops allowed in the given window")
         parser.add_argument('-q', '--queue', action='store', default='testqueue',
                             help="The Redis queue name")
+        parser.add_argument('-e', '--elastic', action='store_const', const=True,
+                            default=False, help="Test variable elastic catch up"
+                            " with moderation")
 
         args = vars(parser.parse_args())
 
@@ -113,11 +121,12 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
         port = args['redis_port']
         mod = args['moderate']
         queue = args['queue']
+        elastic = args['elastic']
 
         conn = redis.Redis(host=host, port=port)
 
         q = RedisPriorityQueue(conn, queue)
-        t = RedisThrottledQueue(conn, q, window, num, mod)
+        t = RedisThrottledQueue(conn, q, window, num, mod, elastic=elastic)
 
         def push_items(amount):
             for i in range(0, amount):
@@ -135,6 +144,9 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
                 if item:
                     print "My item", item, "My time:", time.time() - ti
                     count += 1
+
+                if elastic:
+                    time.sleep(int(random.random() * (t.moderation * 3)))
 
         try:
             read_items()
@@ -158,7 +170,7 @@ Spinning up two instances with exactly the same settings will give you similar r
 
 ::
 
-    $ python test_throttled_queue.py -r scdev -w 30 -n 15 -m
+    $ python example_rtq.py -r scdev -w 30 -n 15 -m
     Adding 30 items for testing
     Kill when satisfied ^C
     My item item-29 My time: 0.00285792350769
@@ -185,7 +197,7 @@ Spinning up two instances with exactly the same settings will give you similar r
 ::
 
     # this script was started slightly after process 1
-    $ python test_throttled_queue.py -r scdev -w 30 -n 15 -m
+    $ python example_rtq.py -r scdev -w 30 -n 15 -m
     Adding 30 items for testing
     Kill when satisfied ^C
     My item item-28 My time: 2.95087885857
@@ -211,7 +223,7 @@ If we did not pass the ``-m`` for moderated flag, your process output may look l
 
 ::
 
-    $ python test_throttled_queue.py -r scdev -w 10 -n 10
+    $ python example_rtq.py -r scdev -w 10 -n 10
     Adding 20 items for testing
     Kill when satisfied ^C
     My item item-19 My time: 0.00159978866577
@@ -237,7 +249,7 @@ If we did not pass the ``-m`` for moderated flag, your process output may look l
 
 ::
 
-    $ python test_throttled_queue.py -r scdev -w 10 -n 10
+    $ python example_rtq.py -r scdev -w 10 -n 10
     Adding 20 items for testing
     Kill when satisfied ^C
     My item item-19 My time: 9.12855100632
@@ -255,5 +267,5 @@ If we did not pass the ``-m`` for moderated flag, your process output may look l
 
 Notice that when unmoderated, Process 1 pops all available items in about one hundredth of a second. By the time we switched terminals, Process 2 doesn't have any items to pop and re-adds the 20 items to the queue. In the next 10 second increments, you can see each process receiving items when it is able to successfully pop from the same Redis Queue.
 
-Feel free to mess with the arguments to ``test_throttled_queue.py``, and figure out what kind of pop throttling works best for your use case.
+Feel free to mess with the arguments to ``example_rtq.py``, and figure out what kind of pop throttling works best for your use case.
 

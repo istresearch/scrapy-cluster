@@ -3,6 +3,21 @@ Settings
 
 This page covers all of the various settings contained within the Kafka Monitor. The sections are broken down by functional component.
 
+Core
+----
+
+**SLEEP_TIME**
+
+Default: ``0.01``
+
+The number of seconds the main process will sleep between checking for new crawl requests to take care of.
+
+**HEARTBEAT_TIMEOUT**
+
+Default: ``120``
+
+The amount of time the statistics key the Kafka Monitor instance lives to self identify to the rest of the cluster. Used for retrieving stats about the number of Kafka Monitor instances currently running.
+
 Redis
 -----
 
@@ -17,6 +32,12 @@ The Redis host.
 Default: ``6379``
 
 The port to use when connecting to the ``REDIS_HOST``.
+
+**REDIS_DB**
+
+Default: ``0``
+
+The Redis database to use when connecting to the ``REDIS_HOST``.
 
 Kafka
 -----
@@ -45,11 +66,47 @@ Default: ``5``
 
 How long to wait (in seconds) before timing out when trying to feed a JSON string into the ``KAFKA_INCOMING_TOPIC``
 
-**KAFKA_CONN_TIMEOUT**
+**KAFKA_CONSUMER_AUTO_OFFSET_RESET**
 
-Default: ``5``
+Default: ``'earliest'``
 
-How long to wait (in seconds) before timing out when trying to connect to the Kafka cluster.
+When the Kafka Consumer encounters and unexpected error, move the consumer offset to the 'latest' new message, or the 'earliest' available.
+
+**KAFKA_CONSUMER_TIMEOUT**
+
+Default: ``50``
+
+Time in ms spent to wait for a new message during a ``feed`` call that expects a response from the Redis Monitor
+
+**KAFKA_CONSUMER_COMMIT_INTERVAL_MS**
+
+Default: ``5000``
+
+How often to commit Kafka Consumer offsets to the Kafka Cluster
+
+**KAFKA_CONSUMER_AUTO_COMMIT_ENABLE**
+
+Default: ``True``
+
+Automatically commit Kafka Consumer offsets.
+
+**KAFKA_CONSUMER_FETCH_MESSAGE_MAX_BYTES**
+
+Default: ``10 * 1024 * 1024``
+
+The maximum size of a single message to be consumed by the Kafka Consumer. Defaults to 10 MB
+
+**KAFKA_PRODUCER_BATCH_LINGER_MS**
+
+Default: ``25``
+
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
+
+**KAFKA_PRODUCER_BUFFER_BYTES**
+
+Default: ``4 * 1024 * 1024``
+
+The size of the TCP send buffer when transmitting data to Kafka
 
 Plugins
 -------
@@ -72,6 +129,7 @@ Default:
         'plugins.scraper_handler.ScraperHandler': 100,
         'plugins.action_handler.ActionHandler': 200,
         'plugins.stats_handler.StatsHandler': 300,
+        'plugins.zookeeper_handler.ZookeeperHandler': 400,
     }
 
 The default plugins loaded for the Kafka Monitor. The syntax for this dictionary of settings is ``'<folder>.<file>.<class_name>': <rank>``. Where lower ranked plugin API's are validated first.

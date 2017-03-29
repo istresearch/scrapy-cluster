@@ -312,9 +312,11 @@ The Stats API allows you to gather metrics, health, and general crawl statistics
     * **all** - Gathers **kafka-monitor**, **redis-monitor**, and **crawler** stats.
     * **kafka-monitor** - Gathers information about the Kafka Monitor
     * **redis-monitor** - Gathers information about the Redis Monitor
-    * **crawler** - Gathers information about the crawlers in the cluster. Includes both the **spider** and **machine** information below
+    * **crawler** - Gathers information about the crawlers in the cluster. Includes both the **spider**, **machine**, and **queue** information below
     * **spider** - Gathers information about the existing spiders in your cluster
     * **machine** - Gathers information about the different spider machines in your cluster
+    * **queue** - Gathers information about the various spider queues within your Redis instance
+    * **rest** - Gathers information about the Rest services in your cluster
 
 
 Stats request results typically have numeric values for dictionary keys, like ``900``, ``3600``, ``86400``, or in the special case ``lifetime``. These numbers indicate **rolling time windows** in seconds for processing throughput. So if you see a value like ``"3600":14`` you can interpret this as `in the last 3600 seconds, the kafka-monitor saw 14 requests"`. In the case of lifetime, it is the total count over the cluster's operation.
@@ -339,6 +341,12 @@ Response from Kafka:
         {
             "server_time": 1452102876,
             "uuid": "cdefghi",
+            "nodes": {
+                "Madisons-MacBook-Pro-2.local": [
+                    "e2be29329410",
+                    "60295fece216"
+                ]
+            },
             "plugins": {
                 "ActionHandler": {
                     "604800": 11,
@@ -388,7 +396,7 @@ Here we can see the various totals broken down by total, fail, and each loaded p
 
 **Crawler**
 
-A Crawler stats request can consist of rolling time windows of spider stats, machine stats, or both of them combined. The following examples serve to illustrate this.
+A Crawler stats request can consist of rolling time windows of spider stats, machine stats, queue stats, or all of them combined. The following examples serve to illustrate this.
 
 * **Spider**
 
@@ -470,9 +478,45 @@ A Crawler stats request can consist of rolling time windows of spider stats, mac
 
     You can see we only have a local machine running those 2 crawlers, but if we had more machines their aggregated stats would be displayed in the same manner.
 
+* **Queue**
+
+    Queue stats give you information about the current queue backlog for each spider, broken down by spider type and domain.
+
+    Kafka Request:
+
+        ::
+
+            $ python kafka_monitor.py feed '{"stats":"queue", "appid":"test", "uuid":"1234567890"}'
+
+    Kafka Response:
+
+        ::
+
+            {
+                "stats": "queue",
+                "queues": {
+                    "queue_link": {
+                        "domains": [
+                            {
+                                "domain": "istresearch.com",
+                                "backlog": 229
+                            }
+                        ],
+                        "spider_backlog": 229,
+                        "num_domains": 1
+                    },
+                    "total_backlog": 229
+                },
+                "server_time": 1461700519,
+                "uuid": "1234567890",
+                "appid": "test"
+            }
+
+    Here, we have only one active spider queue with one domain. If there were more domains or more spiders that data would be displayed in the same format.
+
 * **Crawler**
 
-    The crawler stat is an aggregation of the **machine** and **spider** requests.
+    The crawler stat is a combination of the **machine**, **spider**, and **queue** requests.
 
     Kafka Request:
 
@@ -520,6 +564,19 @@ A Crawler stats request can consist of rolling time windows of spider stats, mac
                             "lifetime": 4
                         }
                     }
+                },
+                "queues": {
+                    "queue_link": {
+                        "domains": [
+                            {
+                                "domain": "istresearch.com",
+                                "backlog": 229
+                            }
+                        ],
+                        "spider_backlog": 229,
+                        "num_domains": 1
+                    },
+                    "total_backlog": 229
                 }
             }
 
@@ -542,6 +599,11 @@ Response from Kafka:
         {
             "stats": "redis-monitor",
             "uuid": "2hij1",
+            "nodes": {
+                "Madisons-MacBook-Pro-2.local": [
+                    "918145625a1e"
+                ]
+            },
             "plugins": {
                 "ExpireMonitor": {
                     "604800": 2,
@@ -589,6 +651,38 @@ Response from Kafka:
 
 In the above response, note that the ``fail`` key is omitted because there have been no failures in processing the requests to the redis monitor. All other plugins and totals are represented in the same format as usual.
 
+**Rest**
+
+The Rest stat request returns some basic information about the number of Rest services running within your cluster.
+
+Stats Request:
+
+    ::
+
+        $ python kafka_monitor.py feed '{"appid":"testapp", "uuid":"2hij1", "stats":"rest"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+          "data": {
+            "appid": "testapp",
+            "nodes": {
+              "scdev": [
+                "c4ec35bf9c1a"
+              ]
+            },
+            "server_time": 1489343194,
+            "stats": "rest",
+            "uuid": "2hij1"
+          },
+          "error": null,
+          "status": "SUCCESS"
+        }
+
+The response above shows the number of unique nodes running on each machine. Here, we see only one Rest service is running on the host ``scdev``.
+
 **All**
 
 The All stat request is an aggregation of the **kafka-monitor**, **crawler**, and **redis-monitor** stat requests. It does not contain any new information that the API does not already provide.
@@ -605,6 +699,12 @@ Kafka Response:
 
         {
             "kafka-monitor": {
+                "nodes": {
+                    "Madisons-MacBook-Pro-2.local": [
+                        "e2be29329410",
+                        "60295fece216"
+                    ]
+                },
                 "fail": {
                     "604800": 4,
                     "lifetime": 7,
@@ -650,6 +750,11 @@ Kafka Response:
             "stats": "all",
             "uuid": "hij3",
             "redis-monitor": {
+                "nodes": {
+                    "Madisons-MacBook-Pro-2.local": [
+                        "918145625a1e"
+                    ]
+                },
                 "total": {
                     "900": 3,
                     "3600": 9,
@@ -692,6 +797,13 @@ Kafka Response:
                     }
                 }
             },
+            "rest": {
+                "nodes": {
+                    "Madisons-MacBook-Pro-2.local": [
+                        "c4ec35bf9c1a"
+                    ]
+                }
+            },
             "appid": "testapp",
             "server_time": 1452105176,
             "crawler": {
@@ -726,6 +838,151 @@ Kafka Response:
                             "lifetime": 4
                         }
                     }
+                },
+                "queues": {
+                    "queue_link": {
+                        "domains": [
+                            {
+                                "domain": "istresearch.com",
+                                "backlog": 229
+                            }
+                        ],
+                        "spider_backlog": 229,
+                        "num_domains": 1
+                    },
+                    "total_backlog": 229
                 }
             }
         }
+
+.. _zookeeper_api:
+
+Zookeeper API
+-------------
+
+The Zookeeper API allows you to update and remove cluster wide blacklists or crawl rates for domains. A **domain** based update will apply a cluster wide throttle against the domain, and a **blacklist** update will apply a cluster wide ban on crawling that domain. Any blacklist domain or crawl setting will automatically be applied to all currently running spiders.
+
+**Required:**
+
+- **uuid:** The unique identifier associated with the request. This is useful for tracking purposes by the application who submitted the request.
+
+- **appid:** The application ID that is requesting the action.
+
+- **action:** The type of action you wish to apply. May be any of the following:
+
+    * **domain-update** - Update or add a domain specific throttle (requires both **hits** and **window** below)
+    * **domain-remove** - Removes a cluster wide domain throttle from Zookeeper
+    * **blacklist-update** - Completely ban a domain from being crawled by the cluster
+    * **blacklist-remove** - Remove a crawl ban within the cluster
+
+
+- **domain:** The domain to apply the **action** to. This must be the same as the domain portion of the queue key generated in Redis, like ``ebay.com``.
+
+**Optional:**
+
+- **hits:** The number of hits allowed for the domain within the time window
+
+- **window:** The number of seconds the hits is applied to
+
+- **scale:** A scalar between 0 and 1 to apply the number of hits to the domain.
+
+.. note:: For more information on controlling the Crawlers, please see :ref:`here <general_domain_settings>`
+
+Examples
+^^^^^^^^
+
+**Domain Update**
+
+Zookeeper Request:
+
+    Updates or adds the domain specific configuration
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-update", "domain":"dmoz.org", "hits":60, "window":60, "scale":0.9}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "domain-update",
+            "domain": "dmoz.org",
+            "server_time": 1464402128,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.
+
+**Domain Remove**
+
+Zookeeper Request:
+
+    Removes the domain specific configuration
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-remove", "domain":"dmoz.org"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "domain-remove",
+            "domain": "dmoz.org",
+            "server_time": 1464402146,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.
+
+**Blacklist Update**
+
+Zookeeper Request:
+
+    Updates or adds to the cluster blacklist
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"blacklist-update", "domain":"ebay.com"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "blacklist-update",
+            "domain": "ebay.com",
+            "server_time": 1464402173,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.
+
+**Blacklist Remove**
+
+Zookeeper Request:
+
+    Removes the blacklist from the cluster, allowing it to revert back to normal operation on that domain
+
+    ::
+
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"blacklist-remove", "domain":"ebay.com"}'
+
+Response from Kafka:
+
+    ::
+
+        {
+            "action": "blacklist-remove",
+            "domain": "ebay.com",
+            "server_time": 1464402160,
+            "uuid": "abc123",
+            "appid": "madisonTest"
+        }
+
+The response reiterates what has been done to the cluster wide settings.

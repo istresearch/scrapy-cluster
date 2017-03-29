@@ -27,7 +27,7 @@ Use this class as a convenience for connection establishment, large processing t
 Example
 -------
 
-Put the following code into a file named `timer.py`
+Put the following code into a file named ``example_mt.py``, or use the one located at ``utils/examples/example_my.py``
 
 ::
 
@@ -44,7 +44,7 @@ Put the following code into a file named `timer.py`
 
 ::
 
-    $ python timer.py
+    $ python example_mt.py
     did not finish
 
 Within the decorator declaration if you set the timeout value to 6, you will see ``finished!`` displayed instead.
@@ -73,7 +73,7 @@ Now we have a hidden method underneath our main one that will adjust both its ti
 
 ::
 
-    $ python timer.py
+    $ python example_mt.py
     did not finish 2*2
     9
     did not finish 4*4

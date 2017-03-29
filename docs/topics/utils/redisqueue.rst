@@ -3,7 +3,7 @@
 Redis Queue
 ===========
 
-A utility class that utilizes `Pickle <https://docs.python.org/2/library/pickle.html>`_ encoding to store and retrieve arbitrary sets of data in Redis. The queues come in three basic forms:
+A utility class that utilizes `Pickle <https://docs.python.org/2/library/pickle.html>`_ serialization by default to store and retrieve arbitrary sets of data in Redis. You may use another encoding mechanism as long as it supports both ``dumps()`` and ``loads()`` methods. The queues come in three basic forms:
 
 - ``RedisQueue`` - A `FIFO <https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>`_ queue utilizing a Redis List
 
@@ -11,12 +11,13 @@ A utility class that utilizes `Pickle <https://docs.python.org/2/library/pickle.
 
 - ``RedisPriorityQueue`` - A `Priority Queue <https://en.wikipedia.org/wiki/Priority_queue>`_ utilizing a Redis Sorted Set. This is the queue utilized by the scheduler for prioritized crawls
 
-All three of these classes can handle arbitrary sets of data, and handle the pickle encoding and decoding for you.
+All three of these classes can handle arbitrary sets of data, and handle the encoding and decoding for you.
 
-.. class:: RedisQueue(server, key)
+.. class:: RedisQueue(server, key, encoding=pickle)
 
     :param server: The established redis connection
     :param key: The key to use in Redis to store your data
+    :param encoding: The serialization module to use
 
     .. method:: push(item)
 
@@ -45,10 +46,11 @@ All three of these classes can handle arbitrary sets of data, and handle the pic
         :returns: The number of items in the RedisQueue
         :usage: ``len(my_queue_instance)``
 
-.. class:: RedisStack(server, key)
+.. class:: RedisStack(server, key, encoding=pickle)
 
     :param server: The established redis connection
     :param key: The key to use in Redis to store your data
+    :param encoding: The serialization module to use
 
     .. method:: push(item)
 
@@ -77,10 +79,11 @@ All three of these classes can handle arbitrary sets of data, and handle the pic
         :returns: The number of items in the RedisStack
         :usage: ``len(my_stack_instance)``
 
-.. class:: RedisPriorityQueue(server, key)
+.. class:: RedisPriorityQueue(server, key, encoding=pickle)
 
     :param server: The established redis connection
     :param key: The key to use in Redis to store your data
+    :param encoding: The serialization module to use
 
     .. method:: push(item, priority)
 
@@ -118,17 +121,18 @@ You can use any of the three classes in the following way, you just need to have
 ::
 
     >>> import redis
+    >>> import ujson
     >>> from scutils.redis_queue import RedisStack
     >>> redis_conn = redis.Redis(host='scdev', port=6379)
-    >>> queue = RedisStack(redis_conn, "stack_key")
+    >>> queue = RedisStack(redis_conn, "stack_key", encoding=ujson))
     >>> queue.push('item1')
     >>> queue.push(['my', 'array', 'here'])
     >>> queue.pop()
-    ['my', 'array', 'here']
+    [u'my', u'array', u'here']
     >>> queue.pop()
-    'item1'
+    u'item1'
 
-In the above example, we now have a host at ``scdev`` that is using the key called ``stack_key`` to store our Pickle encoded data.
+In the above example, we now have a host at ``scdev`` that is using the key called ``stack_key`` to store our data encoded using the ``ujson`` module.
 
 Example
 -------
@@ -178,13 +182,13 @@ In this example lets create a simple script that changes what type of Queue we u
     print "Pop 2 " + queue.pop()
     print "Pop 3 " + queue.pop()
 
-Save the file as ``example_queue.py``, and now lets run the different tests.
+Save the file as ``example_rq.py`` or use the one located at ``utils/examples/example_rq.py``, and now lets run the different tests.
 
 As a queue:
 
 ::
 
-    $ python example_queue.py -q
+    $ python example_rq.py -q
     Using RedisQueue
     Pop 1 item1
     Pop 2 item2
@@ -194,7 +198,7 @@ As a stack:
 
 ::
 
-    $ python example_queue.py -s
+    $ python example_rq.py -s
     Using RedisStack
     Pop 1 item3
     Pop 2 item2
@@ -204,7 +208,7 @@ As a priority queue:
 
 ::
 
-    $ python example_queue.py -p
+    $ python example_rq.py -p
     Using RedisPriorityQueue
     Pop 1 item2
     Pop 2 item1

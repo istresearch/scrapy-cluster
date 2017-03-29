@@ -1,11 +1,12 @@
+from __future__ import absolute_import
 import scrapy
 
 from scrapy.http import Request
-from lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
+from crawling.spiders.lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
-from redis_spider import RedisSpider
+from crawling.spiders.redis_spider import RedisSpider
 
 
 class LinkSpider(RedisSpider):
@@ -20,7 +21,6 @@ class LinkSpider(RedisSpider):
 
     def parse(self, response):
         self._logger.debug("crawled url {}".format(response.request.url))
-        self._increment_status_code_stat(response)
         cur_depth = 0
         if 'curdepth' in response.meta:
             cur_depth = response.meta['curdepth']
@@ -59,12 +59,10 @@ class LinkSpider(RedisSpider):
 
             for link in link_extractor.extract_links(response):
                 # link that was discovered
-                item["links"].append({"url": link.url, "text": link.text, })
-                req = Request(link.url, callback=self.parse)
-
-                # pass along all known meta fields
-                for key in response.meta.keys():
-                    req.meta[key] = response.meta[key]
+                the_url = link.url
+                the_url = the_url.replace('\n', '')
+                item["links"].append({"url": the_url, "text": link.text, })
+                req = Request(the_url, callback=self.parse)
 
                 req.meta['priority'] = response.meta['priority'] - 10
                 req.meta['curdepth'] = response.meta['curdepth'] + 1

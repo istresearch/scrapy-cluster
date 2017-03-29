@@ -35,6 +35,8 @@ This is **not** the same as the Scrapy `Auto Throttle <http://doc.scrapy.org/en/
 
 **QUEUE_MODERATED** - Determines whether you would like cluster of spiders to hit the domain at even intervals spread throughout the ``QUEUE_WINDOW``, or execute crawls as fast as possible and then pause. If you crawl at 10 hits every 60 seconds, a moderated queue would allow your spiders to crawl at one request every 6 seconds (60 sec / 10 hits = 6 secs between every 1 hit). Turning off this setting would allow your spiders to reach their 6 hit cap as fast as possible within the 60 second window.
 
+**SCHEDULER_QUEUE_TIMEOUT** - Gives you control over how long stagnant domain queues persist within the spider before they are expired. This prevents memory build up where a spider has every domain it has ever seen in memory. Instead, only the domains that have been active within this window will stay around. If a domain expires, it can be easily recreated when a new request generated for it.
+
 .. _domain_specific_configuration:
 
 Domain Specific Configuration
@@ -42,14 +44,18 @@ Domain Specific Configuration
 
 For crawls where you know a specific target site, you can override the general settings above and fine tune how fast your cluster hits a specific site.
 
-To do this, please look in the **Crawler** folder under ``config/``. You will find two files which allow you to control your cluster's domain specific crawl speed.
+To do this, please use the :ref:`Zookeeper API <zookeeper_api>` to add, remove, and update domain specific blacklists or domain specific throttle configuration. Adding a domain blacklist means that **all spiders** will ignore crawl requests for a domain, whereas a domain specific throttle will force **all spiders** to crawl the domain at that rate (a blacklist will override this).
+
+Through using the Zookeeper API you will build up a configuration file containing your blacklist and domain throttles.
 
 **example.yml**
 
-This is a yaml configuration file for overriding the general settings on a site by site basis. Scrapy Cluster requires the configuration to be like the following:
+This is an example yaml configuration file for overriding the general settings on a site by site basis. Scrapy Cluster requires the configuration to be like the following:
 
 ::
 
+    blacklist:
+        - <domain3.com>
     domains:
         <domain1.com>:
             window: <QUEUE_WINDOW>
@@ -59,9 +65,13 @@ This is a yaml configuration file for overriding the general settings on a site 
             hits: <QUEUE_HITS>
             scale: 0.5
 
-The yaml syntax dictates a series of domains, and within each domain there is required at minimum to be both a ``window`` and ``hits`` value. These correspond to the ``QUEUE_HITS`` and ``QUEUE_WINDOW`` above. There is also an optional value called ``scale``, where you can apply a scale value between 0 and 1 to the domain of choice. The combination of the window, hits, and scale values allows you to fine tune your cluster for targeted domains, but to apply the :ref:`general settings <general_domain_settings>` to any other domain.
+The yaml syntax dictates both a blacklist and a series of domains. The blacklist is a list of domains that all spiders should ignore. Within each domain, there is required at minimum to be both a ``window`` and ``hits`` value. These correspond to the ``QUEUE_HITS`` and ``QUEUE_WINDOW`` above. There is also an optional value called ``scale``, where you can apply a scale value between 0 and 1 to the domain of choice. The combination of the window, hits, and scale values allows you to fine tune your cluster for targeted domains, but to apply the :ref:`general settings <general_domain_settings>` to any other domain.
+
+.. note:: Your crawler cluster does **not** need to be restarted to read their new cluster configuration! The crawlers use the :ref:`Zookeeper Watcher <zookeeper_watcher>` utility class to dynamically receive and update their configuration.
 
 **file_pusher.py**
+
+.. warning:: The ``file_pusher.py`` manual script is deprecated in favor of the :ref:`Zookeeper API <zookeeper_api>`, and the documentation here may be removed in the future
 
 Once you have a desired yaml configuration, the next step is to push it into Zookeeper using the ``file_pusher.py`` script. This is a small script that allows you to deploy crawler configuration to the cluster.
 
@@ -71,8 +81,6 @@ Once you have a desired yaml configuration, the next step is to push it into Zoo
     updating conf file
 
 Here we pushed our example configuration file to the Zookeeper host located at ``scdev``. That is all you need to do in order to update your crawler configuration! You can also use an external application to update your Zookeeper configuration file, as long as it conforms to the required yaml syntax.
-
-.. note:: Your crawler cluster does **not** need to be restarted to read their new cluster configuration! The crawlers use the :ref:`Zookeeper Watcher <zookeeper_watcher>` utility class to dynamically receive and update their configuration.
 
 .. _throttle_mechanism:
 
@@ -140,3 +148,41 @@ This results in Spiders across the cluster continually polling all available dom
 If the spider polls a domain and is denied a request, it will cycle through all other known domains until it finds one that it can process. This allows for very high throughput when crawling many domains simultaneously. Domain A may only allow 10 hits per minute, domain B allows for 30 hits per minute, and domain C allows for 60 hits per minute. **In this case, all three domains can be crawled at the same time by the cluster while still respecting the domain specific rate limits.**
 
 By tuning your cluster configuration for your machine setup and desired crawl rate, you can easily scale your Scrapy Cluster to process as much data as your network can handle.
+
+Inter-spider Communication
+--------------------------
+
+By default, Scrapy Cluster spiders yield ``Request``'s to their own spider type. This means that **link** spiders will crawl other **link** spider requests, and if you have another spider running those requests will not interfere.
+
+The distributed scheduler that spider's use is actually flexible in that **you can yield ``Requests`` to other spiders within your cluster.** This is possible thanks to the ``spiderid`` that is built into every crawl request that the cluster deals with.
+
+The spider ``name`` at the top of your Spider class dictates the identifier you can use when yielding requests.
+
+::
+
+  class LinkSpider(RedisSpider):
+    name = "link"
+
+You can alse see this same name being used in the Redis Queues
+
+::
+
+  <spiderid>:<domain>:queue
+
+Thanks to the scheduler being indifferent as to what requests it is processing, Spider A can yield requests to Spider B, with both of them using different parsing, pipelines, middlewares, and anything else that is customizable for your spider. All you need to do is set the ``spiderid`` meta field within your request.
+
+::
+
+  response.meta['spiderid'] = 'othername'
+
+While this use case does not come up very often, you can imagine a couple scenarios where this might be useful:
+
+* Your cluster is doing a large crawl using the ``link`` spider, but you have special domains where you would like to switch to a different crawling approach. When Spider A (the one doing the large crawl) hits a target website, it yields a request to Spider B which does a more detailed or custom scrape of the site in question.
+
+* You are following web links from your favorite social media website and submitting them to be crawled by your cluster. On occasion, you get a "login" prompt that your spider can't handle. When that login prompt is detected, you yield to a special ``login`` spider in order to handle the extra logic of scraping that particular site.
+
+* You are scraping a shopping site, and already know all of the main pages you would like to grab. All of the links on your shopping site are actually for products, which have a different set of elements that require different middlewares or other logic to be applied. You main site spider then yields requests to the ``product`` spider.
+
+**So how is this different than using the** ``callback`` **parameter within a normal Scrapy Spider?** It's different because these Spiders may be completely different Scrapy projects, with their own settings, middleware, items, item pipelines, downloader middlewares, or anything else you need to enhance your Scrapy spider. Using a callback requires you to either combine your code, add extra logic, or not conduct special processing you would otherwise get from using two different Scrapy spiders to do very different jobs.
+
+The spiders can yield requests to each other, in a chain, or any other manner in order for your cluster to be successful.

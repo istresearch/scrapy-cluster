@@ -6,8 +6,9 @@ from scrapy.linkextractors.lxmlhtml import LxmlParserLinkExtractor
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.link import Link
 from six.moves.urllib.parse import urljoin
-from scrapy.utils.python import unique as unique_list
+from scrapy.utils.python import unique as unique_list, to_native_str
 import lxml.etree as etree
+from scrapy.utils.misc import rel_has_nofollow
 
 _collect_string_content = etree.XPath("string()")
 
@@ -16,32 +17,29 @@ class CustomParser(LxmlParserLinkExtractor):
 
     def _extract_links(self, selector, response_url, response_encoding, base_url):
         '''
-        Pretty much the same function, just added 'ignore' to url.encode
+        Pretty much the same function, just added 'ignore' to to_native_str()
         '''
         links = []
         # hacky way to get the underlying lxml parsed document
-        for el, attr, attr_val in self._iter_links(selector._root):
+        for el, attr, attr_val in self._iter_links(selector.root):
             # pseudo lxml.html.HtmlElement.make_links_absolute(base_url)
             try:
                 attr_val = urljoin(base_url, attr_val)
             except ValueError:
-                continue  # skipping bogus links
+                continue # skipping bogus links
             else:
                 url = self.process_attr(attr_val)
                 if url is None:
                     continue
-            if isinstance(url, unicode):
-                # add 'ignore' to encoding errors
-                url = url.encode(response_encoding, 'ignore')
+            # added 'ignore' to encoding errors
+            url = to_native_str(url, encoding=response_encoding,
+                                errors='ignore')
             # to fix relative links after process_value
             url = urljoin(response_url, url)
             link = Link(url, _collect_string_content(el) or u'',
-                        nofollow=True if el.get('rel') == 'nofollow' else False)
+                        nofollow=rel_has_nofollow(el.get('rel')))
             links.append(link)
-
-        return unique_list(links, key=lambda link: link.url) \
-                if self.unique else links
-
+        return self._deduplicate_if_needed(links)
 
 class CustomLxmlLinkExtractor(LxmlLinkExtractor):
     def __init__(self, allow=(), deny=(), allow_domains=(), deny_domains=(),

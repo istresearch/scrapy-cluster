@@ -3,6 +3,35 @@ Settings
 
 This page covers the various settings contained within the Redis Monitor. The sections are broken down by functional component.
 
+Core
+----
+
+**SLEEP_TIME**
+
+Default: ``0.1``
+
+The number of seconds the main process will sleep between checking for new actions to take care of.
+
+**RETRY_FAILURES**
+
+Default: ``True``
+
+Retry an action if there was an unexpected failure while computing the result.
+
+**RETRY_FAILURES_MAX**
+
+Default: ``3``
+
+The number of times to retry a failed action before giving up. Only applied when ``RETRY_FAILURES`` is enabled.
+
+**HEARTBEAT_TIMEOUT**
+
+Default: ``120``
+
+The amount of time the statistics key the Redis Monitor instance lives to self identify to the rest of the cluster. Used for retrieving stats about the number of Redis Monitor instances currently running.
+
+.. note:: On actions that take longer than the timeout, the key will expire and your stats may not be accurate until the main thread can heart beat again.
+
 Redis
 -----
 
@@ -17,6 +46,18 @@ The Redis host.
 Default: ``6379``
 
 The port to use when connecting to the ``REDIS_HOST``.
+
+**REDIS_DB**
+
+Default: ``0``
+
+The Redis database to use when connecting to the ``REDIS_HOST``.
+
+**REDIS_LOCK_EXPIRATION**
+
+Default: ``6``
+
+The number of seconds a vacant worker lock will stay within Redis before becoming available to a new worker
 
 Kafka
 -----
@@ -47,6 +88,39 @@ Default: ``False``
 
 Flag to send data to both the firehose and Application ID specific Kafka topics. If set to ``True``, results will be sent to both the ``demo.outbound_firehose`` **and** ``demo.outbound_<appid>`` Kafka topics, where ``<appid>`` is the Application ID used to submit the request. This is useful if you have many applications utilizing your cluster but only would like to listen to results for your specific application.
 
+**KAFKA_PRODUCER_BATCH_LINGER_MS**
+
+Default: ``25``
+
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
+
+**KAFKA_PRODUCER_BUFFER_BYTES**
+
+Default: ``4 * 1024 * 1024``
+
+The size of the TCP send buffer when transmitting data to Kafka
+
+Zookeeper
+---------
+
+**ZOOKEEPER_ASSIGN_PATH**
+
+Default: ``/scrapy-cluster/crawler/``
+
+The location to store Scrapy Cluster domain specific configuration within Zookeeper. Should be the same as the crawler :ref:`settings <zk_crawler_settings>`.
+
+**ZOOKEEPER_ID**
+
+Default: ``all``
+
+The file identifier to read crawler specific configuration from. This file is located within the ``ZOOKEEPER_ASSIGN_PATH`` folder above. Should be the same as the crawler :ref:`settings <zk_crawler_settings>`.
+
+**ZOOKEEPER_HOSTS**
+
+Default: ``localhost:2181``
+
+The zookeeper host to connect to. Should be the same as the crawler :ref:`settings <zk_crawler_settings>`.
+
 Plugins
 -------
 
@@ -69,6 +143,7 @@ Default:
         'plugins.stop_monitor.StopMonitor': 200,
         'plugins.expire_monitor.ExpireMonitor': 300,
         'plugins.stats_monitor.StatsMonitor': 400,
+        'plugins.zookeeper_monitor.ZookeeperMonitor': 500,
     }
 
 The default plugins loaded for the Redis Monitor. The syntax for this dictionary of settings is ``'<folder>.<file>.<class_name>': <rank>``. Where lower ranked plugin API's are validated first.

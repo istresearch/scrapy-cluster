@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 
 
@@ -41,10 +42,10 @@ def main():
     if zk.exists(path):
         # push the conf file
         if not zk.exists(path + id) and not wipe:
-            print "creaing conf node"
+            print("creaing conf node")
             zk.create(path + id, bytes)
         elif not wipe:
-            print "updating conf file"
+            print("updating conf file")
             zk.set(path + id, bytes)
 
         if wipe:

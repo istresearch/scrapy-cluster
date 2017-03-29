@@ -5,6 +5,65 @@ Change Log
 
 This page serves to document any changes made between releases.
 
+Scrapy Cluster 1.2
+------------------
+
+Date: 03/29/2017
+
+- Added `Coveralls <https://coveralls.io/github/istresearch/scrapy-cluster>`_ code coverage integration
+
+- Added full stack offline unit tests and online integration testing in `Travis CI <https://travis-ci.org/istresearch/scrapy-cluster>`_
+
+- Upgraded all components to newest Python packages
+
+- Switched example Virtual Machine from Miniconda to Virtualenv
+
+- Add setting to specify Redis db across all components
+
+- `Docker <https://hub.docker.com/r/istresearch/scrapy-cluster/>`_ support
+
+- Improved RedisThrottledQueue implementation to allow for rubber band catch up while under moderation
+
+- Added support for Centos and Ubuntu Virtual Machines
+
+Kafka Monitor Changes
+^^^^^^^^^^^^^^^^^^^^^
+
+- Updated stats schema to accept ``queue``, ``rest`` statistics requests.
+
+- Added plugin API for managing Zookeeper domain configuration
+
+- Added ability to scale horizontally with multiple processes for redundancy
+
+Redis Monitor Changes
+^^^^^^^^^^^^^^^^^^^^^
+
+- Added ``close()`` method to plugin base class for clean shutdown
+
+- Added queue statistics response object
+
+- Added plugin for executing Zookeeper configuration updates
+
+- Added ability to scale horizontally with multiple processes for redundancy
+
+- New limited retry ability for failed actions
+
+Crawler Changes
+^^^^^^^^^^^^^^^
+
+- Added ability to control cluster wide blacklists via Zookeeper
+
+- Improved memory management in scheduler for domain based queues
+
+- Added two new spider middlewares for stats collection and meta field passthrough
+
+- Removed excess pipeline middleware
+
+Rest Service
+^^^^^^^^^^^^
+
+- New component that allows for restful integration with Scrapy Cluster
+
 Scrapy Cluster 1.1
 ------------------
 

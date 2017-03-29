@@ -1,6 +1,6 @@
-import re
-import pickle
-from kafka_base_monitor import KafkaBaseMonitor
+from __future__ import absolute_import
+from .kafka_base_monitor import KafkaBaseMonitor
+
 
 class StatsMonitor(KafkaBaseMonitor):
 
@@ -44,6 +44,10 @@ class StatsMonitor(KafkaBaseMonitor):
             extras = self.get_spider_stats()
         elif stats == 'machine':
             extras = self.get_machine_stats()
+        elif stats == 'queue':
+            extras = self.get_queue_stats()
+        elif stats == 'rest':
+            extras = self.get_rest_stats()
         else:
             self.logger.warn('Received invalid stats request: {s}'\
                 .format(s=stats),
@@ -71,6 +75,7 @@ class StatsMonitor(KafkaBaseMonitor):
         the_dict['kafka-monitor'] = self.get_kafka_monitor_stats()
         the_dict['redis-monitor'] = self.get_redis_monitor_stats()
         the_dict['crawler'] = self.get_crawler_stats()
+        the_dict['rest'] = self.get_rest_stats()
 
         return the_dict
 
@@ -91,6 +96,15 @@ class StatsMonitor(KafkaBaseMonitor):
         '''
         self.logger.debug("Gathering redis-monitor stats")
         return self._get_plugin_stats('redis-monitor')
+
+    def get_rest_stats(self):
+        '''
+        Gather Rest stats
+
+        @return: A dict of stats
+        '''
+        self.logger.debug("Gathering rest stats")
+        return self._get_plugin_stats('rest')
 
     def _get_plugin_stats(self, name):
         '''
@@ -114,7 +128,14 @@ class StatsMonitor(KafkaBaseMonitor):
                 if main not in the_dict:
                     the_dict[main] = {}
                 the_dict[main][end] = self._get_key_value(key, end == 'lifetime')
-
+            elif main == 'self':
+                if 'nodes' not in the_dict:
+                    # main is self, end is machine, true_tail is uuid
+                    the_dict['nodes'] = {}
+                true_tail = elements[4]
+                if end not in the_dict['nodes']:
+                    the_dict['nodes'][end] = []
+                the_dict['nodes'][end].append(true_tail)
             else:
                 if 'plugins' not in the_dict:
                     the_dict['plugins'] = {}
@@ -192,6 +213,7 @@ class StatsMonitor(KafkaBaseMonitor):
         self.logger.debug("Gathering machine stats")
         the_dict = {}
         keys = self.redis_conn.keys('stats:crawler:*:*:*:*')
+
         for key in keys:
             # break down key
             elements = key.split(":")
@@ -214,7 +236,7 @@ class StatsMonitor(KafkaBaseMonitor):
                 the_dict[machine][response][end] = self._get_key_value(key, end == 'lifetime')
 
         # simple count
-        the_dict['count'] = len(the_dict.keys())
+        the_dict['count'] = len(list(the_dict.keys()))
 
         ret_dict = {}
         ret_dict['machines'] = the_dict
@@ -232,5 +254,44 @@ class StatsMonitor(KafkaBaseMonitor):
 
         the_dict['spiders'] = self.get_spider_stats()['spiders']
         the_dict['machines'] = self.get_machine_stats()['machines']
+        the_dict['queue'] = self.get_queue_stats()['queues']
 
         return the_dict
+
+    def get_queue_stats(self):
+        '''
+        Gather queue stats
+
+        @return: A dict of stats
+        '''
+        self.logger.debug("Gathering queue based stats")
+
+        the_dict = {}
+        keys = self.redis_conn.keys('*:*:queue')
+        total_backlog = 0
+        for key in keys:
+            elements = key.split(":")
+            spider = elements[0]
+            domain = elements[1]
+            spider = 'queue_' + spider
+
+            if spider not in the_dict:
+                the_dict[spider] = {
+                    'spider_backlog': 0,
+                    'num_domains': 0,
+                    'domains': []
+                }
+
+            count = self.redis_conn.zcard(key)
+            total_backlog += count
+            the_dict[spider]['spider_backlog'] += count
+            the_dict[spider]['num_domains'] += 1
+            the_dict[spider]['domains'].append({'domain': domain,
+                                                'backlog': count})
+
+        the_dict['total_backlog'] = total_backlog
+        ret_dict = {
+            'queues': the_dict
+        }
+
+        return ret_dict

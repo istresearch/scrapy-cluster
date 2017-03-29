@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # This file houses all default settings for the Crawler
 # to override please use a custom localsettings.py file
 
@@ -7,13 +8,16 @@
 # Specify the host and port to use when connecting to Redis.
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
+REDIS_DB = 0
 
 # Kafka server information
-KAFKA_HOSTS = 'localhost:9092'
+KAFKA_HOSTS = ['localhost:9092']
 KAFKA_TOPIC_PREFIX = 'demo'
 KAFKA_APPID_TOPICS = False
 # base64 encode the html body to avoid json dump errors due to malformed text
 KAFKA_BASE_64_ENCODE = False
+KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
+KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
 
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'
@@ -40,6 +44,9 @@ DUPEFILTER_TIMEOUT = 600
 
 # how often to refresh the ip address of the scheduler
 SCHEDULER_IP_REFRESH = 60
+
+# whether to add depth >= 1 blacklisted domain requests back to the queue
+SCHEDULER_BACKLOG_BLACKLIST = True
 
 '''
 ----------------------------------------
@@ -74,6 +81,9 @@ SCHEDULER_IP_ENABLED = True
 # how many times to retry getting an item from the queue before the spider is considered idle
 SCHEUDLER_ITEM_RETRIES = 3
 
+# how long to keep around stagnant domain queues
+SCHEDULER_QUEUE_TIMEOUT = 3600
+
 # log setup scrapy cluster crawler
 SC_LOGGER_NAME = 'sc-crawler'
 SC_LOG_DIR = 'logs'
@@ -106,8 +116,6 @@ STATS_TIMES = [
 
 # Scrapy Settings
 # ~~~~~~~~~~~~~~~
-DOWNLOADER_CLIENTCONTEXTFACTORY = 'crawling.contextfactory.MyClientContextFactory'
-
 # Scrapy settings for distributed_crawling project
 #
 BOT_NAME = 'crawling'
@@ -124,23 +132,24 @@ SCHEDULER = "crawling.distributed_scheduler.DistributedScheduler"
 ITEM_PIPELINES = {
     'crawling.pipelines.KafkaPipeline': 100,
     'crawling.pipelines.LoggingBeforePipeline': 1,
-    'crawling.pipelines.LoggingAfterPipeline': 101,
 }
 
 SPIDER_MIDDLEWARES = {
     # disable built-in DepthMiddleware, since we do our own
     # depth management per crawl request
-    'scrapy.contrib.spidermiddleware.depth.DepthMiddleware': None,
+    'scrapy.spidermiddlewares.depth.DepthMiddleware': None,
+    'crawling.meta_passthrough_middleware.MetaPassthroughMiddleware': 100,
+    'crawling.redis_stats_middleware.RedisStatsMiddleware': 101
 }
 
 DOWNLOADER_MIDDLEWARES = {
     # Handle timeout retries with the redis scheduler and logger
-    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': None,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
     'crawling.redis_retry_middleware.RedisRetryMiddleware': 510,
     # exceptions processed in reverse order
     'crawling.log_retry_middleware.LogRetryMiddleware': 520,
     # custom cookies to not persist across crawl requests
-    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
+    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
     'crawling.custom_cookies.CustomCookiesMiddleware': 700,
 }
 
@@ -161,6 +170,6 @@ DNSCACHE_ENABLED = True
 # ~~~~~~~~~~~~~~~
 
 try:
-    from localsettings import *
+    from .localsettings import *
 except ImportError:
     pass

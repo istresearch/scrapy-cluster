@@ -1,7 +1,8 @@
-from base_handler import BaseHandler
+from __future__ import absolute_import
+from .base_handler import BaseHandler
 import tldextract
 import redis
-import pickle
+import ujson
 import sys
 from redis.exceptions import ConnectionError
 
@@ -16,7 +17,8 @@ class ScraperHandler(BaseHandler):
         '''
         self.extract = tldextract.TLDExtract()
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
-                                      port=settings['REDIS_PORT'])
+                                      port=settings['REDIS_PORT'],
+                                      db=settings.get('REDIS_DB'))
 
         try:
             self.redis_conn.info()
@@ -39,7 +41,7 @@ class ScraperHandler(BaseHandler):
             dom=ex_res.domain,
             suf=ex_res.suffix)
 
-        val = pickle.dumps(dict, protocol=-1)
+        val = ujson.dumps(dict)
 
         # shortcut to shove stuff into the priority queue
         self.redis_conn.zadd(key, val, -dict['priority'])

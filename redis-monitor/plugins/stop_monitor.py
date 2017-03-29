@@ -1,5 +1,6 @@
-import pickle
-from kafka_base_monitor import KafkaBaseMonitor
+from __future__ import absolute_import
+import ujson
+from .kafka_base_monitor import KafkaBaseMonitor
 
 
 class StopMonitor(KafkaBaseMonitor):
@@ -101,7 +102,7 @@ class StopMonitor(KafkaBaseMonitor):
         for key in self.redis_conn.scan_iter(match=match_string):
             for item in self.redis_conn.zscan_iter(key):
                 item_key = item[0]
-                item = pickle.loads(item_key)
+                item = ujson.loads(item_key)
                 if 'meta' in item:
                     item = item['meta']
 

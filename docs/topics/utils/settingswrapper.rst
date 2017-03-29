@@ -56,7 +56,7 @@ You can load your settings and access them like the following
 Example
 -------
 
-Let's expand our use case into a working script that will accept both default settings and override settings. Use the following code as an example and save it as ``example_settings.py``
+Let's expand our use case into a working script that will accept both default settings and override settings. Use the following code as an example and save it as ``example_sw.py``, or use the one located at ``utils/examples/example_sw.py``
 
 ::
 
@@ -104,7 +104,7 @@ Loading these settings is easy.
 
 ::
 
-    $ python example_settings.py
+    $ python example_sw.py
     No override settings found
     Full settings: {'NAME': 'Bill', 'FAMILY': {'Sister': 'Kathy', 'Friends': ['Joe', 'Mark']}}
 
@@ -122,7 +122,7 @@ Using the override, we can see how things change.
 
 ::
 
-    $ python example_settings.py -o joe_settings.py
+    $ python example_sw.py -o joe_settings.py
     Full settings: {'HOUSE': True, 'NAME': 'Joe', 'FAMILY': {'Sister': 'Kim', 'Friends': ['Joe', 'Mark']}}
 
 Notice how we were able to override a specific key in our ``FAMILY`` dictionary, without touching the other keys. If we wanted to add a final application settings file, we could add Bill's twin brother who is identical to him in every way except his name, ``ben_settings.py``.
@@ -133,14 +133,14 @@ Notice how we were able to override a specific key in our ``FAMILY`` dictionary,
 
 ::
 
-    $ python example_settings.py -o ben_settings.py
+    $ python example_sw.py -o ben_settings.py
     Full settings: {'NAME': 'Ben', 'FAMILY': {'Sister': 'Kathy', 'Friends': ['Joe', 'Mark']}}
 
 If you would like to further play with this script, you can also use the ``-v`` flag to print out only a specific variable from your settings dictionary.
 
 ::
 
-    $ python example_settings.py -o ben_settings.py -v NAME
+    $ python example_sw.py -o ben_settings.py -v NAME
     NAME = Ben
 
 Hopefully by now you can see how nice it is to keep custom application settings distinct from the core default settings you may have. With just a couple of lines of code you now have a working settings manager for your application's different use cases.

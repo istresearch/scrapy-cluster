@@ -1,3 +1,4 @@
+from builtins import object
 import time
 
 
@@ -29,6 +30,12 @@ class BaseMonitor(object):
         @param value: The value associated with the key
         '''
         raise NotImplementedError("Please implement handle() for your handler class")
+
+    def close(self):
+        '''
+        Called when the over arching Redis Monitor is closed
+        '''
+        pass
 
     def get_current_time(self):
         '''

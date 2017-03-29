@@ -1,0 +1,18 @@
+ConcurrentLogHandler==0.9.1
+funcsigs==1.0.2
+future==0.16.0 # Updated from 0.15.2
+kafka-python==1.3.3 # Updated from 1.3.2
+kazoo==2.2.1
+mock==2.0.0
+nose==1.3.7
+pbr==2.0.0 # Updated from 1.10.0
+python-json-logger==0.1.7 # Updated from 0.1.5
+python-redis-lock==3.2.0 # Updated from 3.1.0
+PyYAML==3.12
+redis==2.10.5
+retrying==1.3.3
+scutils==1.2.0
+six==1.10.0
+testfixtures==4.13.5 # Updated from 4.10.0
+ujson==1.35
+# Generated with piprot 0.9.7

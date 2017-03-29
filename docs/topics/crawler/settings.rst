@@ -18,6 +18,12 @@ Default: ``6379``
 
 The port to use when connecting to the ``REDIS_HOST``.
 
+**REDIS_DB**
+
+Default: ``0``
+
+The Redis database to use when connecting to the ``REDIS_HOST``.
+
 Kafka
 -----
 
@@ -48,6 +54,20 @@ Flag to send data to both the firehose and Application ID specific Kafka topics.
 Default: ``False``
 
 `Base64 <https://en.wikipedia.org/wiki/Base64>`_ encode the raw crawl body from the crawlers. This is useful when crawling malformed utf8 encoded pages, where json encoding throws an error. If an error occurs when encoding the crawl object in the item pipeline, there will be an error thrown and the result will be dropped.
+
+**KAFKA_PRODUCER_BATCH_LINGER_MS**
+
+Default: ``25``
+
+The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
+
+**KAFKA_PRODUCER_BUFFER_BYTES**
+
+Default: ``4 * 1024 * 1024``
+
+The size of the TCP send buffer when transmitting data to Kafka
+
+.. _zk_crawler_settings:
 
 Zookeeper
 ---------
@@ -83,9 +103,21 @@ Determines whether to clear all Redis Queues when the Scrapy Scheduler is shut d
 
 Default: ``10``
 
-How many seconds to wait before checking for new domain queues. This is also dictated by internal Scrapy processes, so setting this any lower does not guarantee a quicker refresh time.
+How many seconds to wait before checking for new or expiring domain queues. This is also dictated by internal Scrapy processes, so setting this any lower does not guarantee a quicker refresh time.
+
+**SCHEDULER_QUEUE_TIMEOUT**
+
+Default: ``3600``
+
+The number of seconds older domain queues are allowed to persist before they expire. This acts as a cache to clean out queues from memory that have not been used recently.
 
 .. _c_throttle:
+
+**SCHEDULER_BACKLOG_BLACKLIST**
+
+Default: ``True``
+
+Allows blacklisted domains to be added back to Redis for future crawling. If set to ``False``, domains matching the Zookeeper based domain blacklist will not be added back in to Redis.
 
 Throttle
 --------

@@ -1,12 +1,13 @@
+from __future__ import absolute_import
 # Example Wandering Spider
 import scrapy
 
 from scrapy.http import Request
-from lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
+from .lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 from scrapy.conf import settings
 
 from crawling.items import RawResponseItem
-from redis_spider import RedisSpider
+from .redis_spider import RedisSpider
 
 import random
 
@@ -24,8 +25,6 @@ class WanderingSpider(RedisSpider):
     def parse(self, response):
         # debug output for receiving the url
         self._logger.debug("crawled url {}".format(response.request.url))
-        # collect stats
-        self._increment_status_code_stat(response)
 
         # step counter for how many pages we have hit
         step = 0
@@ -70,10 +69,6 @@ class WanderingSpider(RedisSpider):
             self._logger.debug("Attempting to find links")
             link = random.choice(links)
             req = Request(link.url, callback=self.parse)
-
-            # pass along all known meta fields
-            for key in response.meta.keys():
-                req.meta[key] = response.meta[key]
 
             # increment our step counter for this crawl job
             req.meta['step'] = step + 1

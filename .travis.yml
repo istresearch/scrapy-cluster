@@ -1,21 +1,36 @@
 sudo: required
-dist: trusty
-addons:
-  hosts:
-  - travis-trusty
+
 language: python
 python: '2.7'
-before_install:
-- sudo apt-get update -qq
-- sudo apt-get install -qq python-apt
-install:
-- pip install ansible
+
+env:
+  - centos: 1
+    distribution: centos
+    version: 7
+    init: /usr/lib/systemd/systemd
+    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+  - ubuntu: 1
+    distribution: ubuntu
+    version: 14.04
+    init: /sbin/init
+    run_opts: ""
+  - docker: 1
+    dockerfile_name: Dockerfile
+    docker_tag_suffix: 1.2
+  - docker: 1
+    dockerfile_name: Dockerfile.py2alpine
+    docker_tag_suffix: 1.2-alpine
+
+install: true
+
+services:
+  - docker
+
 script:
-- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --syntax-check
-- ansible-playbook -i ansible/travis.inventory ansible/scrapy-cluster.yml --connection=local
-  --become
-- virtualenv ~/sc; source ~/sc/bin/activate; pip install -r requirements.txt
-- source ~/sc/bin/activate; ./run_offline_tests.sh; ./run_online_tests.sh
+  - if [ -n "$centos" ]; then sudo ./travis/ansible.sh ; fi;
+  - if [ -n "$ubuntu" ]; then sudo ./travis/ansible.sh ; fi;
+  - if [ -n "$docker" ]; then sudo ./travis/docker.sh ; fi;
+
 notifications:
   slack:
     rooms:

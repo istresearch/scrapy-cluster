@@ -5,20 +5,39 @@ Quick Start
 
 *This guide does not go into detail as to how everything works, but hopefully will get you scraping quickly. For more information about each process works please see the rest of the documentation.*
 
+Setup
+-----
+
+There are a number of different options available to set up Scrapy Cluster. You can chose to provision with `Vagrant Quickstart`_, use the `Docker Quickstart`_, or manually configure via the `Cluster Quickstart`_ yourself.
+
 .. _vagrant_setup:
 
 Vagrant Quickstart
-------------------
+^^^^^^^^^^^^^^^^^^
 
 The Vagrant Quickstart provides you a simple Vagrant Virtual Machine in order to try out Scrapy Cluster. It is not meant to be a production crawling machine, and should be treated more like a test ground for development.
 
 1) Ensure you have Vagrant and VirtualBox installed on your machine. For instructions on setting those up please refer to the official documentation.
 
-2) Download and unzip the latest release `here <https://github.com/istresearch/scrapy-cluster/releases>`_.
+2) Download the latest ``master`` branch release via
+
+::
+
+  git clone https://github.com/istresearch/scrapy-cluster.git
+  # or
+  git clone git@github.com:istresearch/scrapy-cluster.git
+
+You may also use the pre-packaged git `releases <https://github.com/istresearch/scrapy-cluster/releases>`_, however the latest commit on the ``master`` branch will always have to most up to date code or minor tweaks that do not deserve another release.
 
 Lets assume our project is now in ``~/scrapy-cluster``
 
-3) Stand up the Scrapy Cluster Vagrant machine.
+3) Stand up the Scrapy Cluster Vagrant machine. By default this will start an **Ubuntu** virtual machine. If you would like to us **CentOS**, change the following line in the ``Vagrantfile`` in the root of the project
+
+::
+
+    node.vm.box = 'centos/7'
+
+Bring the machine up.
 
 ::
 
@@ -70,7 +89,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     (sc) vagrant@scdev:/vagrant$ ./run_offline_tests.sh
-    # There should be 4 core pieces, each of them saying all tests passed like so
+    # There should be 5 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
     ...
@@ -83,7 +102,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     (sc) vagrant@scdev:/vagrant$ ./run_online_tests.sh
-    # There should be 4 major blocks here, ensuring your cluster is setup correctly.
+    # There should be 5 major blocks here, ensuring your cluster is setup correctly.
     ...
     ----------------------------------------------------------------------
     Ran 2 tests in 0.105s
@@ -97,8 +116,81 @@ Lets assume our project is now in ``~/scrapy-cluster``
 
 You now appear to have a working test environment, so jump down to `Your First Crawl`_ to finish the quickstart.
 
+.. _docker_setup:
+
+Docker Quickstart
+^^^^^^^^^^^^^^^^^
+
+The Docker Quickstart will help you spin up a complete standalone cluster thanks to Docker and `Docker Compose <https://docs.docker.com/compose/>`_. All individual components will run in standard docker containers, and be controlled through the ``docker-compose`` command line interface.
+
+1) Ensure you have Docker Engine and Docker Compose installed on your machine. For more information about installation please refer to Docker's official documentation.
+
+2) Download and unzip the latest release `here <https://github.com/istresearch/scrapy-cluster/releases>`_.
+
+Lets assume our project is now in ``~/scrapy-cluster``
+
+3) Run docker compose
+
+::
+
+  $ docker-compose up -d
+
+This will pull the latest stable images from Docker hub and build your scraping cluster.
+
+At time of writing, there is no Docker container to interface and run all of the tests within your compose-based cluster. Instead, if you wish to run the unit and integration tests plese see the following steps.
+
+4) To run the integration tests, get into the bash shell on any of the containers.
+
+  Kafka monitor
+
+  ::
+
+    $ docker exec -it scrapycluster_kafka_monitor_1 bash
+
+  Redis monitor
+
+  ::
+
+    $ docker exec -it scrapycluster_redis_monitor_1 bash
+
+  Crawler
+
+  ::
+
+    $ docker exec -it scrapycluster_crawler_1 bash
+
+  Rest
+
+  ::
+
+    $ docker exec -it scrapycluster_rest_1 bash
+
+5) Run the unit and integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
+
+::
+
+  $ ./run_docker_tests.sh
+  ...
+
+  ----------------------------------------------------------------------
+  Ran 20 tests in 5.742s
+
+  OK
+  ...
+
+  ----------------------------------------------------------------------
+  Ran 1 test in 27.583s
+
+  OK
+
+This script will run both of offline unit tests and the online integration tests for your particular container. You will want to do this on all three component containers.
+
+You now appear to have a working docker environment, so jump down to `Your First Crawl`_ to finish the quickstart. Note that since this is a precanned cluster thanks to docker compose, you have everything already spun up except the dump utilities.
+
+.. _cluster_setup:
+
 Cluster Quickstart
---------------------
+^^^^^^^^^^^^^^^^^^
 
 The Cluster Quickstart will help you set up your components across a number of different machines. Here, we assume everything runs on a single box with external Kafka, Zookeeper, and Redis.
 
@@ -120,7 +212,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     $ ./run_offline_tests.sh
-    # There should be 4 core pieces, each of them saying all tests passed like so
+    # There should be 5 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
     ...
@@ -151,7 +243,7 @@ It is recommended you use this 'local' override instead of altering the default 
 
 ::
 
-    $ python tests/tests_online.py -v
+    $ python tests/online.py -v
     test_feed (__main__.TestKafkaMonitor) ... ok
     test_run (__main__.TestKafkaMonitor) ... ok
 
@@ -183,7 +275,7 @@ Add the following to your new custom local settings.
 
 ::
 
-  $ python tests/tests_online.py -v
+  $ python tests/online.py -v
   test_process_item (__main__.TestRedisMonitor) ... ok
   test_sent_to_kafka (__main__.TestRedisMonitor) ... ok
 
@@ -217,7 +309,7 @@ Add the following fields to override the defaults
 ::
 
   $ cd ../
-  $ python tests/tests_online.py -v
+  $ python tests/online.py -v
   ...
   ----------------------------------------------------------------------
   Ran 1 test in 23.191s
@@ -232,12 +324,43 @@ This test spins up a spider using the internal Scrapy API, directs it to a real 
 
 .. warning:: If your integration test fails, please ensure the port(s) are open on the machine your Kafka cluster, your Redis host, and your Zookeeper hosts. Ensure that the machines the crawlers are set up on can access the desired hosts, and that your machine can successfully access the internet.
 
+11) If you would like, you can set up the rest service as well
+
+::
+
+    $ cd ../rest/
+    $ vi localsettings.py
+
+Add the following fields to override the defaults
+
+::
+
+    # Here, 'scdev' is the host with Kafka and Redis
+    REDIS_HOST = 'scdev'
+    KAFKA_HOSTS = 'scdev:9092'
+
+12) Run the online integration tests to see if the rest service works.
+
+::
+
+  $ python tests/online.py -v
+  test_status (__main__.TestRestService) ...  * Running on http://0.0.0.0:62976/ (Press CTRL+C to quit)
+  127.0.0.1 - - [11/Nov/2016 17:09:17] "GET / HTTP/1.1" 200 -
+  ok
+
+  ----------------------------------------------------------------------
+  Ran 1 test in 15.034s
+
+    OK
+
 Your First Crawl
 ----------------
 
-At this point you should have a Vagrant or Cluster setup that has been tested and appears to be operational. We can choose to start up either a bare bones cluster, or a fully operational cluster.
+At this point you should have a Scrapy Cluster setup that has been tested and appears to be operational. We can choose to start up either a bare bones cluster, or a fully operational cluster.
 
 .. note:: You can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.
+
+The following commands outline what you would run in a traditional environment. If using a container based solution these commands are ran when you run the container itself.
 
 **Bare Bones:**
 
@@ -262,37 +385,47 @@ At this point you should have a Vagrant or Cluster setup that has been tested an
 
 **Fully Operational:**
 
--  The Kafka Monitor:
+-  The Kafka Monitor (1+):
 
-   ::
+    ::
 
-       python kafka_monitor.py run
+        python kafka_monitor.py run
 
--  The Redis Monitor:
+-  The Redis Monitor (1+):
 
-   ::
+    ::
 
-       python redis_monitor.py
+        python redis_monitor.py
 
 -  A crawler (1+):
 
-   ::
+    ::
 
-       scrapy runspider crawling/spiders/link_spider.py
+        scrapy runspider crawling/spiders/link_spider.py
+
+- The rest service (1+):
+
+    ::
+
+        python rest_service.py
 
 -  The dump utility located in Kafka Monitor to see your crawl results
 
-   ::
+    ::
 
-       python kafkadump.py dump -t demo.crawled_firehose
+        python kafkadump.py dump -t demo.crawled_firehose
 
 -  The dump utility located in Kafka Monitor to see your action results
 
-   ::
+    ::
 
        python kafkadump.py dump -t demo.outbound_firehose
 
 Which ever setup you chose, every process within should stay running for the remainder that your cluster is in an operational state.
+
+.. note:: If you chose to set the Rest service up, this section may also be performed via the :doc:`../rest/index` endpoint. You just need to ensure the JSON identified in the following section is properly fed into the :ref:`feed <feed_endpoint>` rest endpoint.
+
+*The follwing commands can be ran from the command line, whether that is on the machine itself or inside the Kafka Monitor container depends on the setup chosen above.*
 
 1) We now need to feed the cluster a crawl request. This is done via the same Kafka Monitor python script, but with different command line arguements.
 

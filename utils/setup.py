@@ -15,12 +15,14 @@ def readme():
         return f.read()
 
 install_requires = [
-    'python-json-logger>=0.1.2',
+    'python-json-logger==0.1.7',
     'ConcurrentLogHandler>=0.9.1',
-    'redis>=2.10.3',
+    'redis==2.10.5',
     'kazoo>=2.2.1',
-    'mock>=1.3.0',
-    'testfixtures>=4.3.3'
+    'mock==2.0.0',
+    'testfixtures==4.13.5',
+    'ujson==1.35',
+    'future==0.16.0'
 ]
 
 lint_requires = [
@@ -29,8 +31,8 @@ lint_requires = [
 ]
 
 tests_require = [
-    'mock>=1.3.0',
-    'testfixtures>=4.3.3'
+    'mock==2.0.0',
+    'testfixtures==4.13.5'
 ]
 
 dependency_links = []

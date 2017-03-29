@@ -1,0 +1,52 @@
+version: '2'
+# this file is used for travis ci testing, and is built in .travis.yml
+
+services:
+  kafka_monitor:
+    image: istresearch/scrapy-cluster:kafka-monitor-test
+    depends_on:
+      - kafka
+      - redis
+    restart: always
+  redis_monitor:
+    image: istresearch/scrapy-cluster:redis-monitor-test
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
+    restart: always
+  crawler:
+    image: istresearch/scrapy-cluster:crawler-test
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
+    restart: always
+  rest:
+    image: istresearch/scrapy-cluster:rest-test
+    depends_on:
+      - kafka
+      - redis
+    restart: always
+  redis:
+    image: redis
+    ports:
+      - "6379"
+    restart: always
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    restart: always
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+    restart: always

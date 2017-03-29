@@ -4,11 +4,19 @@
 # Redis host configuration
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+REDIS_DB = 0
 
 KAFKA_HOSTS = 'localhost:9092'
 KAFKA_TOPIC_PREFIX = 'demo'
 KAFKA_CONN_TIMEOUT = 5
 KAFKA_APPID_TOPICS = False
+KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
+KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
+
+# Zookeeper Settings
+ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
+ZOOKEEPER_ID = 'all'
+ZOOKEEPER_HOSTS = 'localhost:2181'
 
 PLUGIN_DIR = "plugins/"
 PLUGINS = {
@@ -16,6 +24,7 @@ PLUGINS = {
     'plugins.stop_monitor.StopMonitor': 200,
     'plugins.expire_monitor.ExpireMonitor': 300,
     'plugins.stats_monitor.StatsMonitor': 400,
+    'plugins.zookeeper_monitor.ZookeeperMonitor': 500,
 }
 
 # logging setup
@@ -44,3 +53,12 @@ STATS_TIMES = [
     'SECONDS_1_DAY',
     'SECONDS_1_WEEK',
 ]
+
+# retry failures on actions
+RETRY_FAILURES = True
+RETRY_FAILURES_MAX = 3
+REDIS_LOCK_EXPIRATION = 6
+# main thread sleep time
+SLEEP_TIME = 0.1
+HEARTBEAT_TIMEOUT = 120
+

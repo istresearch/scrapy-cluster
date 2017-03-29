@@ -34,6 +34,14 @@ You should alter a couple of settings used within each of the main components of
 
 * ``SC_LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
 
+**Rest**
+
+* ``LOG_STDOUT = False`` - Forces the Rest service logs to be written to a file on the machine
+
+* ``LOG_JSON = True`` - Flips logging output from human readable to JSON.
+
+* ``LOG_DIR = '/var/log/scrapy-cluster'`` - Logs the file into a particular directory on your machines
+
 .. note:: Depending on your machine's ``/var/log`` folder permissions, you may need to create the ``scrapy-cluster`` directory manually and ensure your Scrapy Cluster processes have permission to write to the directory.
 
 You should now be able to ``tail -f`` any of your logs and see the JSON objects flowing by.
@@ -58,30 +66,26 @@ We will use Logstash to automatically store and manage Scrapy Cluster's logs via
         "dynamic_templates" : [ {
           "message_field" : {
             "mapping" : {
-              "index" : "not_analyzed",
               "omit_norms" : true,
-              "include_in_parent": true,
-              "type" : "string"
+              "type" : "keyword"
             },
-            "match_mapping_type" : "string",
+            "match_mapping_type" : "keyword",
             "match" : "message"
           }
         }, {
-          "string_fields" : {
+          "keyword_fields" : {
             "mapping" : {
-              "index" : "not_analyzed",
               "omit_norms" : true,
-              "include_in_parent": true,
-              "type" : "string"
+              "type" : "keyword"
             },
-            "match_mapping_type" : "string",
+            "match_mapping_type" : "keyword",
             "match" : "*"
           }
         } ],
         "properties" : {
           "@version" : {
             "index" : "not_analyzed",
-            "type" : "string"
+            "type" : "keyword"
           }
         },
         "_all" : {
@@ -93,32 +97,32 @@ We will use Logstash to automatically store and manage Scrapy Cluster's logs via
   }
 
 
-Save this file as ``logs-template.json`` in your logstash templates directory, here we will assume it is located at ``/etc/logstash.d/templates/``.
+Save this file as ``logs-template.json`` in your logstash templates directory, here we will assume it is located at ``/etc/logstash/templates/``.
 
 Now we need to configure Logstash to use the template, and read from our logs. For this we will use a simple file input and elasticsearch output available via Logstash.
 
 ::
 
-    input {
-      file {
-        path => ['/var/log/scrapy-cluster/*.log']
-        codec => json
-        tags => ['scrapy-cluster']
-      }
+  input {
+    file {
+      path => ['/var/log/scrapy-cluster/*.log']
+      codec => json
+      tags => ['scrapy-cluster']
     }
+  }
 
-    output {
-      if 'scrapy-cluster' in [tags]{
-        elasticsearch {
-          hosts => "<your es hosts here>"
-          template => "/etc/logstash.d/templates/logs-template.json"
-          template_name => "logs-*"
-          template_overwrite => true
-          index => "logs-scrapy-cluster"
-          document_type => "%{[logger]}"
-        }
+  output {
+    if 'scrapy-cluster' in [tags]{
+      elasticsearch {
+        hosts => "<your es hosts here>"
+        template => "/etc/logstash/templates/logs-template.json"
+        template_name => "logs-*"
+        template_overwrite => true
+        index => "logs-scrapy-cluster"
+        document_type => "%{[logger]}"
       }
     }
+  }
 
 
 Save this file as ``scrapy-cluster-logstash.conf``, and put it into the folder where Logstash reads its configuration files. This logstash template says that we are going to read from any file that matches our pattern ``*.log`` within the Scrapy Cluster log folder we defined prior. The output of this operation says to ship that log to our Elasticsearch hosts, using the template we created one step above. This will write our logs to the Elasticsearch index ``logs-scrapy-cluster``, with the document `type <https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html>`_ defined as the logger name.
@@ -144,6 +148,8 @@ Here, we have done a bit of crawling already and have around 20,000 log records 
 
 At this point you should now have your logs indexed in Elasticsearch, and we can use Kibana to visualize them.
 
+.. _elk_kibana:
+
 Kibana
 ------
 
@@ -151,7 +157,9 @@ In your Kibana instance, you now need to configure a new index pattern. If you w
 
 From here, you can play around with the different searching and visualization functions provided by Kibana.
 
-If you would like to use some preconfigured searches and visualizations, go to **Settings** and (at time of writing) click **Objects**, then **Import**. We are going to import a sample set of visualizations and searches from the Scrapy Cluster project under the folder ``elk``. Select the ``export.json`` file to import everything in.
+If you would like to use some preconfigured searches and visualizations, go to **Settings** and (at time of writing) click **Saved Objects**, then **Import**. We are going to import a sample set of visualizations and searches from the Scrapy Cluster project under the folder ``elk``. Select the ``export.json`` file to import everything in.
+
+.. note:: It is important you actually use your cluster before you try to upload the preconfigured visualizations. This ensures the defined mappings within Elasticsearch are present for the widgets. You can check this by looking at the number of fields in your index defined above - if is has over **170** different fields you should be ok to import, otherwise refresh it, use the cluster more, or exercise a different component.
 
 You should now have a number of different Visualizations, Dashboards, and Searches so you can better understand how your cluster is operating at scale.
 
@@ -194,6 +202,16 @@ The Redis Monitor breakdown shows you the backlog of your current spiders, and t
 
 .. figure:: ../img/redismonitor_kibana.png
     :alt: Redis Monitor Kibana
+    :align: center
+    :width: 600px
+
+Rest
+^^^^
+
+The Rest breakdown gives you a view of the endpoints and logs being generated by the Rest components in your cluster. It shows a basic breakdown over time and by log type.
+
+.. figure:: ../img/rest_kibana.png
+    :alt: Rest Kibana
     :align: center
     :width: 600px
 

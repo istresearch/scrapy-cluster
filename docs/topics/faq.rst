@@ -44,6 +44,10 @@ General
 
     Deploying a scrapy cluster in an automated fashion is highly dependent on the environment **you** are working in. Because we cannot control the OS you are running, packages installed, or network setup, it is best recommended you use an automated deployment framework that fits your needs. Some suggestions include `Ansible <https://www.ansible.com/>`_, `Puppet <https://puppetlabs.com/>`_, `Chef <https://www.chef.io/chef/>`_, `Salt <http://saltstack.com/>`_, `Anaconda Cluster <http://docs.continuum.io/anaconda-cluster/index>`_, etc.
 
+**Do you support Docker?**
+
+    Docker support is new with the ``1.2`` release, please see the :doc:`advanced/docker` guide for more information.
+
 **Are there other distributed Scrapy projects?**
 
     Yes! Please see our breakdown at :ref:`other_projects`
@@ -54,7 +58,7 @@ General
 
 **How do I contact the community surrounding Scrapy Cluster?**
 
-   Feel free to reach out by joining the `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room, or for more formal issues please :ref:`raise an issue <report_issue>`.
+   Feel free to reach out by joining the `Gitter <https://gitter.im/istresearch/scrapy-cluster?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`_ chat room, send an email to scrapy-cluster-tech@istresearch.com, or for more formal issues please :ref:`raise an issue <report_issue>`.
 
 
 Kafka Monitor
@@ -69,11 +73,7 @@ Crawler
 
 **How do I create a Scrapy Spider that works with the cluster?**
 
-    To use everything scrapy cluster has to offer with your new Spider, you need your class to inherit from our ``RedisSpider`` base class. You will have a custom ``self._logger`` for scrapy cluster based logging and a method that will allow you to update your spider statistics you can use with your Response:
-
-    ::
-
-        self._increment_status_code_stat(response)
+    To use everything scrapy cluster has to offer with your new Spider, you need your class to inherit from our ``RedisSpider`` base class.
 
     You can also yield new Requests or items like a normal Scrapy Spider. For more information see the :ref:`crawl extension <crawl_extension>` documentation.
 
@@ -85,12 +85,23 @@ Crawler
 
     No, the crawlers will receive a notification from Zookeeper that their configuration has changed. They will then automatically update to the new desired settings, without a restart. For more information please see :ref:`here <domain_specific_configuration>`.
 
+**How do I use Scrapy** ``start_urls`` **with Scrapy Cluster?**
+
+    Don't put ``start_urls`` within your Scrapy Cluster spiders! Use the :ref:`Crawl API <crawl_api>` to feed those initial urls into your cluster. This will ensure the crawl is not duplicated by many spiders running and the same time, and that the crawl has all the meta-data it needs to be successful.
+
 Redis Monitor
 -------------
 
 **How do I extend the Redis Monitor to fit my needs?**
 
     Please see the plugin documentation :ref:`here <rm_extension>` for adding new plugins to the Redis Monitor. If you would like to contribute to core Redis Monitor development please consider looking at our guide for :ref:`pull_requests`.
+
+Rest
+----
+
+**My rest endpoint reports RED or YELLOW, how do I fix this?**
+
+    A red or yellow status indicates the service cannot connect to one or more components. There should be error logs indicating a failure or loss of connection to a particular component.
 
 Utilities
 ---------
