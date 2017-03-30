@@ -5,6 +5,13 @@ Change Log
 
 This page serves to document any changes made between releases.
 
+Scrapy Cluster 1.3
+------------------
+
+Date: ??/??/????
+
+- todo
+
 Scrapy Cluster 1.2
 ------------------
 
