@@ -16,10 +16,10 @@ env:
     run_opts: ""
   - docker: 1
     dockerfile_name: Dockerfile
-    docker_tag_suffix: 1.3-dev
+    docker_tag_suffix: dev
   - docker: 1
     dockerfile_name: Dockerfile.py2alpine
-    docker_tag_suffix: 1.3-dev-alpine
+    docker_tag_suffix: dev-alpine
 
 install: true
 
