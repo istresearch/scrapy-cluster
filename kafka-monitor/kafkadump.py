@@ -103,6 +103,7 @@ def main():
                 group_id=consumer_id,
                 bootstrap_servers=kafka_host,
                 consumer_timeout_ms=settings['KAFKA_CONSUMER_TIMEOUT'],
+                iter_timeout=settings['KAFKA_ITER_TIMEOUT'],
                 auto_offset_reset=offset,
                 auto_commit_interval_ms=settings['KAFKA_CONSUMER_COMMIT_INTERVAL_MS'],
                 enable_auto_commit=settings['KAFKA_CONSUMER_AUTO_COMMIT_ENABLE'],
