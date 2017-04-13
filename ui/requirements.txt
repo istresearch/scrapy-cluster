@@ -1,4 +1,4 @@
-appdirs==1.4.2
+appdirs==1.4.3
 click==6.7
 ConcurrentLogHandler==0.9.1
 Flask==0.12.1 # Updated from 0.11
