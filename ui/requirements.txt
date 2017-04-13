@@ -1,24 +1,25 @@
-appdirs==1.4.0
+appdirs==1.4.2
 click==6.7
 ConcurrentLogHandler==0.9.1
-Flask==0.11
+Flask==0.12.1 # Updated from 0.11
 Flask-Triangle==0.5.4
 funcsigs==1.0.2
-functools32==3.2.3.post2
-future==0.15.2
+functools32==3.2.3.post2 # Error checking latest version
+future==0.16.0 # Updated from 0.15.2
 itsdangerous==0.24
-Jinja2==2.9.5
-jsonschema==2.5.1
+Jinja2==2.9.6 # Updated from 2.9.5
+jsonschema==2.6.0 # Updated from 2.5.1
 kazoo==2.2.1
-MarkupSafe==0.23
+MarkupSafe==1.0 # Updated from 0.23
 mock==2.0.0
 packaging==16.8
-pbr==1.10.0
-pyparsing==2.1.10
-python-json-logger==0.1.4
+pbr==2.1.0 # Updated from 1.10.0
+pyparsing==2.2.0 # Updated from 2.1.10
+python-json-logger==0.1.7 # Updated from 0.1.4
 redis==2.10.5
-scutils==1.2.0.dev6
+scutils==1.2.0
 six==1.10.0
-testfixtures==4.10.0
+testfixtures==4.13.5 # Updated from 4.10.0
 ujson==1.35
-Werkzeug==0.11.15
+Werkzeug==0.12.1 # Updated from 0.11.15
+# Generated with piprot 0.9.6
