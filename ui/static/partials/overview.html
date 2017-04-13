@@ -1,0 +1,71 @@
+<div class="col-xs-12" style="height:20px;"></div>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">Scrapy Cluster status</div>
+    <div class="panel-body">
+		<div class="row" ng-controller="mainController" ng-init="loadstatus()">
+		<div class="col-md-4">
+			<div ng-attr-class="{{ data.redis_connected && 'panel panel-success' || 'panel panel-danger' }}">
+				<div class="panel-heading">
+					<h3 class="panel-title">Crawl Queue</h3>
+				</div>
+				<div class="panel-body">
+					<p style="font-size:70%;">Status: {{ data.redis_connected == true ? 'OK' : 'FAULT' }} <br/></p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div ng-attr-class="{{ data.kafka_connected && 'panel panel-success' || 'panel panel-danger' }}">
+				<div class="panel-heading">
+					<h3 class="panel-title">Kafka</h3>
+				</div>
+				<div class="panel-body">
+					<p style="font-size:70%;">Status: {{ data.kafka_connected == true ? 'OK' : 'FAULT' }} <br/></p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div ng-attr-class="{{ data.kafka_connected + data.redis_connected ? 'panel panel-success' : 'panel panel-danger' }}">
+				<div class="panel-heading">
+					<h3 class="panel-title">Spiders</h3>
+				</div>
+				<div class="panel-body">
+					<p style="font-size:70%;">Total number of spiders: <br/></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+  </div>
+  <div class="col-xs-12" style="height:20px;"></div>
+  <div class="panel panel-default">
+    <div class="panel-heading">Feed a crawl request to Scrapy Cluster</div>
+    <div class="panel-body">
+		<div class="container" ng-controller="mainController">
+		<div class="col-md-10">
+			<!--<div class="page-header"><h2></h2></div>-->
+			<!-- FORM -->
+			<form name="userForm" ng-submit="submitForm()">
+			<div class="form-group">
+				<label>URL:</label>
+				<input type="text" name="url" class="form-control" ng-model="request.url">
+			</div>
+			<div class="form-group">
+				<label>CrawlID:</label>
+				<input type="text" name="crawlid" class="form-control" ng-model="request.crawlid">
+			</div>
+			<div class="form-group">
+				<label>Depth:</label>
+				<input type="text" name="depth" class="form-control" ng-model="request.depth">
+			</div>
+			<div class="form-group">
+				<label>Priority:</label>
+				<input type="text" name="priority" class="form-control" ng-model="request.priority">
+			</div>
+			<button type="submit" class="btn btn-primary">Submit</button>
+			</form>
+		</div>
+	</div>
+	</div>
+  </div>
+</div>

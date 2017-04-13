@@ -7,6 +7,8 @@
 HOST='localhost'
 PORT=6379
 
+export PYTHONPATH='.'
+
 if [ $# -ne 2 ]
   then
     echo "---- Running utils online test with localhost 6379"

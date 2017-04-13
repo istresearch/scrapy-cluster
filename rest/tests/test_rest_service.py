@@ -509,7 +509,7 @@ class TestRestService(TestCase):
                 "my_id": 'a908',
                 "node_health": 'RED'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
 
     def test_feed(self):
@@ -528,9 +528,9 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 500)
+            self.assertEquals(results.status_code, 500)
 
         # connected
         self.rest_service.kafka_connected = True
@@ -548,9 +548,9 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 500)
+            self.assertEquals(results.status_code, 500)
 
         # test no uuid
         self.rest_service._feed_to_kafka = MagicMock(return_value=True)
@@ -562,9 +562,9 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 200)
+            self.assertEquals(results.status_code, 200)
 
         # test with uuid, got response
         time_list = [0, 1, 2, 3, 4, 5]
@@ -584,9 +584,9 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 200)
+            self.assertEquals(results.status_code, 200)
             self.assertFalse(self.rest_service.uuids.has_key('key'))
 
         # test with uuid, no response
@@ -603,9 +603,9 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 200)
+            self.assertEquals(results.status_code, 200)
             self.assertTrue(self.rest_service.uuids.has_key('key'))
             self.assertEquals(self.rest_service.uuids['key'], 'poll')
 
@@ -629,9 +629,9 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 500)
+            self.assertEquals(results.status_code, 500)
 
         # test connected found poll key
         self.rest_service.redis_conn = MagicMock()
@@ -645,9 +645,9 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 200)
+            self.assertEquals(results.status_code, 200)
 
         # test connected didnt find poll key
         self.rest_service.redis_conn.get = MagicMock(return_value=None)
@@ -662,9 +662,9 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 404)
+            self.assertEquals(results.status_code, 404)
 
         # test connection error
         self.rest_service._spawn_redis_connection_thread = MagicMock()
@@ -684,9 +684,9 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 500)
+            self.assertEquals(results.status_code, 500)
 
         # test value error
         self.rest_service.logger.warning = MagicMock()
@@ -704,9 +704,8 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results.data)
             self.assertEquals(data, d)
-            self.assertEquals(results[1], 500)
+            self.assertEquals(results.status_code, 500)
 
         self.rest_service.validator = orig
-
