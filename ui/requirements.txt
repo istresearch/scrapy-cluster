@@ -17,6 +17,7 @@ pbr==2.1.0 # Updated from 1.10.0
 pyparsing==2.2.0 # Updated from 2.1.10
 python-json-logger==0.1.7 # Updated from 0.1.4
 redis==2.10.5
+requests==2.13.0
 scutils==1.2.0
 six==1.10.0
 testfixtures==4.13.5 # Updated from 4.10.0

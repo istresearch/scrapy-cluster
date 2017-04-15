@@ -1,9 +1,14 @@
 import argparse
 from functools import wraps
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, redirect, jsonify
 from flask_triangle import Triangle
 import time
 import logging
+import requests
+import traceback
+from requests.exceptions import RequestException, \
+                                ConnectionError, \
+                                Timeout
 
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
@@ -61,6 +66,12 @@ class UIService(object):
                                               bytes=self.settings['LOG_MAX_BYTES'],
                                               backups=self.settings['LOG_BACKUPS'])
 
+        self.api_path = self.settings['REST_ENDPOINT']
+        if self.api_path[-1:] != '/':
+            self.api_path += '/'
+        self.timeout = self.settings.get('REQUEST_SO_TIMEOUT_SECS', 6.05)
+        self.read_timeout = self.settings.get('REQUEST_READ_TIMEOUT_SECS', 10)
+
         self._decorate_routes()
 
         self.start_time = time.time()
@@ -82,6 +93,46 @@ class UIService(object):
         self.logger.info("Closing UI Service")
         self.closed = True
 
+    def _call_rest(self, path='', method='GET', data={}):
+        """
+        Calls the rest endpoint
+
+        :param str path: the uri
+        :param str method: the method
+        :param obj data: the json data to send
+        """
+        final_path = self.api_path + path
+        self.logger.debug("Rest Endpoint call",
+                          {
+                            "path": final_path,
+                            "json": data,
+                            "method": method
+                          })
+        try:
+            response = requests.request(method=method,
+                                       url=final_path,
+                                       json=data,
+                                       timeout=(self.timeout,
+                                                self.read_timeout))
+            return response.json(), response.status_code
+        except ConnectionError as e:
+            self.logger.warn("Connection Error",
+                               {"ex": traceback.format_exc()})
+        except Timeout as e:
+            self.logger.warn("Request Timeout",
+                               {"ex": traceback.format_exc()})
+        except RequestException as e:
+            self.logger.warn("Request Exception",
+                             {"ex": traceback.format_exc()})
+
+        r = {
+            "status": "FAILURE",
+            "data": {},
+            "error": {
+                "cause": "Failure during communication with the Rest endpoint"
+            }}
+        return r, 500
+
     # Routes --------------------
 
     def _decorate_routes(self):
@@ -90,10 +141,27 @@ class UIService(object):
         """
         self.logger.debug("Decorating routes")
         self.app.add_url_rule('/', 'index', self.index, methods=['GET'])
+        self.app.add_url_rule('/api', 'api_base', self.api_base,
+                              methods=['GET', 'POST'])
+        self.app.add_url_rule('/api/<path:url>', 'api', self.api,
+                              methods=['POST'])
 
     @log_call('\'index\' endpoint called')
     def index(self):
         return send_file("templates/index.html")
+
+    @log_call('\'api_base\' endpoint called')
+    def api_base(self):
+        resp, status = self._call_rest()
+        return jsonify(resp), status
+
+    @log_call('\'api\' endpoint called')
+    def api(self, url):
+        resp, status = self._call_rest(method=request.method,
+                          path=url,
+                          data=request.get_json())
+
+        return jsonify(resp), status
 
 
 if __name__ == '__main__':

@@ -13,7 +13,8 @@ LOG_JSON = False
 LOG_LEVEL = 'INFO'
 
 # internal configuration
-SLEEP_TIME = 5
-WAIT_FOR_RESPONSE_TIME = 5
+REST_ENDPOINT = "http://localhost:5343"
+REQUEST_SO_TIMEOUT_SECS = 6.05 # set timeout slightly larger than a multiple of 3
+REQUEST_READ_TIMEOUT_SECS = 10
 
 # Angular settings are dir /static

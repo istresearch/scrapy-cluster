@@ -1,3 +1,3 @@
-uiApp.constant('REST_CONFIG', {
-  url: 'http://localhost:5343/',
+uiApp.constant('API_ENDPOINT', {
+  url: 'http://localhost:5000/api',
 });
