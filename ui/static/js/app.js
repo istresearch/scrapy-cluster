@@ -48,9 +48,9 @@ uiApp.controller('tabsController', ['$scope', function($scope) {
       return "";
     }
   }
-}]).controller('mainController', function($scope, $http, REST_CONFIG) {
+}]).controller('mainController', function($scope, $http, API_ENDPOINT) {
      $scope.loadstatus=function(){
-         $http.get(REST_CONFIG.url)
+         $http.get(API_ENDPOINT.url)
          .success(function(response){
               $scope.data=response;
          })
@@ -75,7 +75,7 @@ uiApp.controller('tabsController', ['$scope', function($scope) {
     // Posting data to php file
     $http({
       method  : 'POST',
-      url     : REST_CONFIG.url + '/feed',
+      url     : API_ENDPOINT.url + '/feed',
       data    : angular.toJson(reqObj), //forms user object
       headers : {'Content-Type': 'application/json'}
      })
