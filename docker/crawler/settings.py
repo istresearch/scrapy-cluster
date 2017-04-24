@@ -101,7 +101,7 @@ SC_LOG_LEVEL = os.getenv('SC_LOG_LEVEL', 'INFO')
 
 
 # stats setup
-STATS_STATUS_CODES = True
+STATS_STATUS_CODES = str2bool(os.getenv('STATS_STATUS_CODES', True))
 STATS_RESPONSE_CODES = [
     200,
     404,
