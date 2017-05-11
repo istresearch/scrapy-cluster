@@ -80,6 +80,10 @@ class LogCallbackHandler:
         criteria = criteria or {}
 
         num_to_level_map = {v: k for k, v in self.logger.level_dict.items()}
+
+        # Force normalization of WARN
+        num_to_level_map[2] = "WARNING"
+
         log_range = self.parse_log_level(log_level)
 
         for log_n in log_range:
