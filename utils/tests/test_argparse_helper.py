@@ -9,7 +9,12 @@ import sys
 
 # from http://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
 from contextlib import contextmanager
-from StringIO import StringIO
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 @contextmanager
 def captured_output():
     new_out, new_err = StringIO(), StringIO()
