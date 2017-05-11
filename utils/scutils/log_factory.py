@@ -67,19 +67,19 @@ class LogCallbackHandler:
             log_level_n = self.logger.level_dict[log_level]
             r = range(log_level_n, log_level_n+1)
 
-        return r
+        return list(r)
 
     def is_subdict(self, a,b):
         '''
         Return True if a is a subdict of b
         '''
-        return all((k in b and b[k]==v) for k,v in a.iteritems())
+        return all((k in b and b[k]==v) for k,v in a.items())
 
 
     def register_callback(self, log_level, fn, criteria=None):
         criteria = criteria or {}
 
-        num_to_level_map = {v: k for k, v in self.logger.level_dict.iteritems()}
+        num_to_level_map = {v: k for k, v in self.logger.level_dict.items()}
         log_range = self.parse_log_level(log_level)
 
         for log_n in log_range:
