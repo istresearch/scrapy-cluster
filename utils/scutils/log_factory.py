@@ -25,36 +25,46 @@ class LogFactory(object):
 
         return self._instance
 
-class LogCallbackMixin:
+class LogCallbackHandler:
+    def __init__(self, logger):
+        self.logger = logger
+        self.callbacks = OrderedDict([
+            ("DEBUG", []),
+            ("INFO", []),
+            ("WARNING", []),
+            ("ERROR", []),
+            ("CRITICAL", []),
+        ])
+
     def parse_log_level(self, log_level):
-        MIN_LOG_LEVEL = self.level_dict['DEBUG']
-        MAX_LOG_LEVEL = self.level_dict['CRITICAL']
+        MIN_LOG_LEVEL = self.logger.level_dict['DEBUG']
+        MAX_LOG_LEVEL = self.logger.level_dict['CRITICAL']
 
         chrs = log_level[:2]
         if chrs == '<=':
             log_level = log_level[2:]
-            log_level_n = self.level_dict[log_level]
+            log_level_n = self.logger.level_dict[log_level]
             r = range(MIN_LOG_LEVEL, log_level_n + 1)
         elif chrs.startswith('<'):
             log_level = log_level[1:]
-            log_level_n = self.level_dict[log_level]
+            log_level_n = self.logger.level_dict[log_level]
             r = range(MIN_LOG_LEVEL, log_level_n)
         elif chrs == '>=':
             log_level = log_level[2:]
-            log_level_n = self.level_dict[log_level]
+            log_level_n = self.logger.level_dict[log_level]
             r = range(log_level_n, MAX_LOG_LEVEL+1)
         elif chrs.startswith('>'):
             log_level = log_level[1:]
-            log_level_n = self.level_dict[log_level]
+            log_level_n = self.logger.level_dict[log_level]
             r = range(log_level_n+1, MAX_LOG_LEVEL+1)
         elif chrs.startswith('='):
             log_level = log_level[1:]
-            log_level_n = self.level_dict[log_level]
+            log_level_n = self.logger.level_dict[log_level]
             r = range(log_level_n, log_level_n+1)
         elif chrs == '*':
             r = range(MIN_LOG_LEVEL, MAX_LOG_LEVEL+1)
         else:
-            log_level_n = self.level_dict[log_level]
+            log_level_n = self.logger.level_dict[log_level]
             r = range(log_level_n, log_level_n+1)
 
         return r
@@ -69,7 +79,7 @@ class LogCallbackMixin:
     def register_callback(self, log_level, fn, criteria=None):
         criteria = criteria or {}
 
-        num_to_level_map = {v: k for k, v in self.level_dict.iteritems()}
+        num_to_level_map = {v: k for k, v in self.logger.level_dict.iteritems()}
         log_range = self.parse_log_level(log_level)
 
         for log_n in log_range:
@@ -88,7 +98,7 @@ class LogCallbackMixin:
             else:
                 cb(log_message, log_extra)
 
-class LogObject(object, LogCallbackMixin):
+class LogObject(object):
     '''
     Easy wrapper for writing json logs to a rotating file log
     '''
@@ -127,15 +137,9 @@ class LogObject(object, LogCallbackMixin):
         self.logger.propagate = propagate
         self.json = json
         self.log_level = level
+        self.cb_handler = LogCallbackHandler(self)
         self.format_string = format
         self.include_extra = include_extra
-        self.callbacks = OrderedDict([
-            ("DEBUG", []),
-            ("INFO", []),
-            ("WARNING", []),
-            ("ERROR", []),
-            ("CRITICAL", []),
-        ])
 
         if stdout:
             # set up to std out
@@ -198,7 +202,7 @@ class LogObject(object, LogCallbackMixin):
         if self.level_dict['DEBUG'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "DEBUG")
             self._write_message(message, extras)
-            self.fire_callbacks('DEBUG', message, extra)
+            self.cb_handler.fire_callbacks('DEBUG', message, extra)
 
     def info(self, message, extra={}):
         '''
@@ -210,7 +214,7 @@ class LogObject(object, LogCallbackMixin):
         if self.level_dict['INFO'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "INFO")
             self._write_message(message, extras)
-            self.fire_callbacks('INFO', message, extra)
+            self.cb_handler.fire_callbacks('INFO', message, extra)
 
     def warn(self, message, extra={}):
         '''
@@ -231,7 +235,7 @@ class LogObject(object, LogCallbackMixin):
         if self.level_dict['WARNING'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "WARNING")
             self._write_message(message, extras)
-            self.fire_callbacks('WARNING', message, extra)
+            self.cb_handler.fire_callbacks('WARNING', message, extra)
 
     def error(self, message, extra={}):
         '''
@@ -243,7 +247,7 @@ class LogObject(object, LogCallbackMixin):
         if self.level_dict['ERROR'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "ERROR")
             self._write_message(message, extras)
-            self.fire_callbacks('ERROR', message, extra)
+            self.cb_handler.fire_callbacks('ERROR', message, extra)
 
     def critical(self, message, extra={}):
         '''
@@ -255,7 +259,7 @@ class LogObject(object, LogCallbackMixin):
         if self.level_dict['CRITICAL'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "CRITICAL")
             self._write_message(message, extras)
-            self.fire_callbacks('CRITICAL', message, extra)
+            self.cb_handler.fire_callbacks('CRITICAL', message, extra)
 
     def _write_message(self, message, extra):
         '''
