@@ -144,9 +144,9 @@ class TestLogCallbacks(TestCase):
         def multiply_5(log_message=None, log_extra=None):
             self.logger.x *= 5
 
-        self.logger.register_callback('<=INFO', add_1, {'key': 'val1'})
-        self.logger.register_callback('<=INFO', negate, {'key': 'val2'})
-        self.logger.register_callback('<=INFO', multiply_5)
+        self.logger.cb_handler.register_callback('<=INFO', add_1, {'key': 'val1'})
+        self.logger.cb_handler.register_callback('<=INFO', negate, {'key': 'val2'})
+        self.logger.cb_handler.register_callback('<=INFO', multiply_5)
 
         self.logger.x = 1
         self.logger.log_level = 'INFO'
@@ -176,22 +176,22 @@ class TestLogCallbacks(TestCase):
         self.assertEqual(1, self.logger.x)
 
     def test_parse_log_level(self):
-        log_range = self.logger.parse_log_level("<=INFO")
+        log_range = self.logger.cb_handler.parse_log_level("<=INFO")
         self.assertEqual([0,1], log_range)
 
-        log_range = self.logger.parse_log_level("<INFO")
+        log_range = self.logger.cb_handler.parse_log_level("<INFO")
         self.assertEqual([0], log_range)
 
-        log_range = self.logger.parse_log_level(">=WARNING")
+        log_range = self.logger.cb_handler.parse_log_level(">=WARNING")
         self.assertEqual([2,3,4], log_range)
 
-        log_range = self.logger.parse_log_level(">WARN")
+        log_range = self.logger.cb_handler.parse_log_level(">WARN")
         self.assertEqual([3,4], log_range)
 
-        log_range = self.logger.parse_log_level("=INFO")
+        log_range = self.logger.cb_handler.parse_log_level("=INFO")
         self.assertEqual([1], log_range)
 
-        log_range = self.logger.parse_log_level("CRITICAL")
+        log_range = self.logger.cb_handler.parse_log_level("CRITICAL")
         self.assertEqual([4], log_range)
 
     def test_register_callback(self):
@@ -207,24 +207,24 @@ class TestLogCallbacks(TestCase):
         def add_4(log_obj, log_message=None, log_extra=None):
             pass
 
-        self.logger.register_callback('>=INFO', add_1)
-        self.logger.register_callback('<=WARN', add_2)
-        self.logger.register_callback('ERROR', add_3)
-        self.logger.register_callback('*', add_4)
+        self.logger.cb_handler.register_callback('>=INFO', add_1)
+        self.logger.cb_handler.register_callback('<=WARN', add_2)
+        self.logger.cb_handler.register_callback('ERROR', add_3)
+        self.logger.cb_handler.register_callback('*', add_4)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['DEBUG']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['DEBUG']]
         self.assertEqual([add_2, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['INFO']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['INFO']]
         self.assertEqual([add_1, add_2, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['WARNING']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['WARNING']]
         self.assertEqual([add_1, add_2, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['ERROR']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['ERROR']]
         self.assertEqual([add_1, add_3, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['CRITICAL']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['CRITICAL']]
         self.assertEqual([add_1, add_4], callbacks)
 
     def test_fire_callbacks_basic_1(self):
@@ -237,34 +237,34 @@ class TestLogCallbacks(TestCase):
         def multiply_5(log_message=None, log_extra=None):
             self.logger.x *= 5
 
-        self.logger.register_callback('<=INFO', add_1)
-        self.logger.register_callback('INFO', negate)
-        self.logger.register_callback('<CRITICAL', add_1)
-        self.logger.register_callback('>DEBUG', multiply_5)
+        self.logger.cb_handler.register_callback('<=INFO', add_1)
+        self.logger.cb_handler.register_callback('INFO', negate)
+        self.logger.cb_handler.register_callback('<CRITICAL', add_1)
+        self.logger.cb_handler.register_callback('>DEBUG', multiply_5)
 
         self.logger.x = 0
         self.logger.log_level = 'DEBUG'
-        self.logger.fire_callbacks('DEBUG')
+        self.logger.cb_handler.fire_callbacks('DEBUG')
         self.assertEqual(2, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'INFO'
-        self.logger.fire_callbacks('INFO')
+        self.logger.cb_handler.fire_callbacks('INFO')
         self.assertEqual(0, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'WARNING'
-        self.logger.fire_callbacks('WARNING')
+        self.logger.cb_handler.fire_callbacks('WARNING')
         self.assertEqual(5, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'ERROR'
-        self.logger.fire_callbacks('ERROR')
+        self.logger.cb_handler.fire_callbacks('ERROR')
         self.assertEqual(5, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'CRITICAL'
-        self.logger.fire_callbacks('CRITICAL')
+        self.logger.cb_handler.fire_callbacks('CRITICAL')
         self.assertEqual(0, self.logger.x)
 
     def test_fire_callbacks_basic_2(self):
@@ -277,35 +277,35 @@ class TestLogCallbacks(TestCase):
         def multiply_5(log_message=None, log_extra=None):
             self.logger.x *= 5
 
-        self.logger.register_callback('>DEBUG', add_1)
-        self.logger.register_callback('=WARNING', negate)
-        self.logger.register_callback('<INFO', add_1)
-        self.logger.register_callback('>=INFO', multiply_5)
-        self.logger.register_callback('*', add_1)
+        self.logger.cb_handler.register_callback('>DEBUG', add_1)
+        self.logger.cb_handler.register_callback('=WARNING', negate)
+        self.logger.cb_handler.register_callback('<INFO', add_1)
+        self.logger.cb_handler.register_callback('>=INFO', multiply_5)
+        self.logger.cb_handler.register_callback('*', add_1)
 
         self.logger.x = 0
         self.logger.log_level = 'DEBUG'
-        self.logger.fire_callbacks('DEBUG')
+        self.logger.cb_handler.fire_callbacks('DEBUG')
         self.assertEqual(2, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'INFO'
-        self.logger.fire_callbacks('INFO')
+        self.logger.cb_handler.fire_callbacks('INFO')
         self.assertEqual(6, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'WARNING'
-        self.logger.fire_callbacks('WARNING')
+        self.logger.cb_handler.fire_callbacks('WARNING')
         self.assertEqual(-4, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'ERROR'
-        self.logger.fire_callbacks('ERROR')
+        self.logger.cb_handler.fire_callbacks('ERROR')
         self.assertEqual(6, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'CRITICAL'
-        self.logger.fire_callbacks('CRITICAL')
+        self.logger.cb_handler.fire_callbacks('CRITICAL')
         self.assertEqual(6, self.logger.x)
 
     def test_preserve_data(self):
@@ -316,7 +316,7 @@ class TestLogCallbacks(TestCase):
             self.assertEquals(log_message, message)
             self.assertEquals(log_extra, extras)
 
-        self.logger.register_callback('>DEBUG', cb)
+        self.logger.cb_handler.register_callback('>DEBUG', cb)
         self.logger.log_level = 'INFO'
         self.logger.info(message, extras)
 
