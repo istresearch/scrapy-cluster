@@ -12,7 +12,6 @@ COPY kafka-monitor/requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN rm -rf /usr/src/utils
 
-
 # move codebase over
 COPY kafka-monitor /usr/src/app
 
