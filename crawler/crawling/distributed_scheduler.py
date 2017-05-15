@@ -501,7 +501,7 @@ class DistributedScheduler(object):
 
         item = self.find_item()
         if item:
-            self.logger.debug("Found url to crawl {url}" \
+            self.logger.debug(u"Found url to crawl {url}" \
                     .format(url=item['url']))
             try:
                 req = Request(item['url'])
