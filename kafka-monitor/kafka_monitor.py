@@ -441,6 +441,7 @@ class KafkaMonitor(object):
             self.logger.info("Successfully fed item to Kafka")
         else:
             self.logger.error("Failed to feed item into Kafka")
+        return result
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
     def _create_consumer(self):
