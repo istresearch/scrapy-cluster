@@ -128,7 +128,7 @@ class TestStatsThreaded(RedisMixin, TestCase):
         self.redis_conn.set('default_counter:2015-10', 'stuff2')
 
         tc.purge_old()
-        self.assertEqual(['default_counter:2015-10'],
+        self.assertEqual([b'default_counter:2015-10'],
             self.redis_conn.keys(tc.get_key() + ':*'))
 
         self.redis_conn.delete('default_counter:2015-10')
