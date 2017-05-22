@@ -10,6 +10,7 @@ from unittest import TestCase
 from mock import MagicMock
 import time
 import sys
+import six
 
 import redis
 import argparse
@@ -128,8 +129,8 @@ class TestStatsThreaded(RedisMixin, TestCase):
         self.redis_conn.set('default_counter:2015-10', 'stuff2')
 
         tc.purge_old()
-        self.assertEqual([b'default_counter:2015-10'],
-            self.redis_conn.keys(tc.get_key() + ':*'))
+        self.assertEqual([six.b('default_counter:2015-10')],
+                         self.redis_conn.keys(tc.get_key() + ':*'))
 
         self.redis_conn.delete('default_counter:2015-10')
 
