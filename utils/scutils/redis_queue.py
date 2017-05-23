@@ -122,8 +122,7 @@ class RedisPriorityQueue(Base):
         @param priority: the priority of the item
         '''
         data = self._encode_item(item)
-        pairs = {data: -priority}
-        self.server.zadd(self.key, **pairs)
+        self.server.execute_command('ZADD', self.key, -priority, data)
 
     def pop(self, timeout=0):
         '''
