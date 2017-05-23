@@ -24,7 +24,7 @@ elif args['stack']:
 elif args['priority']:
     queue = RedisPriorityQueue(redis_conn, "my_key")
 
-print "Using " + queue.__class__.__name__
+print("Using " + queue.__class__.__name__)
 
 if isinstance(queue, RedisPriorityQueue):
     queue.push("item1", 50)
@@ -35,6 +35,6 @@ else:
     queue.push("item2")
     queue.push("item3")
 
-print "Pop 1 " + queue.pop()
-print "Pop 2 " + queue.pop()
-print "Pop 3 " + queue.pop()
+print("Pop 1 " + queue.pop())
+print("Pop 2 " + queue.pop())
+print("Pop 3 " + queue.pop())

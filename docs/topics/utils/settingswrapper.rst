@@ -84,11 +84,11 @@ Let's expand our use case into a working script that will accept both default se
 
     if args['variable'] is not None:
         if args['variable'] in my_settings:
-            print args['variable'], '=', my_settings[args['variable']]
+            print(args['variable'], '=', my_settings[args['variable']])
         else:
-            print args['variable'], "not in loaded settings"
+            print(args['variable'], "not in loaded settings")
     else:
-        print "Full settings:", my_settings
+        print("Full settings:", my_settings)
 
 Now create a ``settings.py`` file containing the same settings described above. This will be our **default** settings.
 

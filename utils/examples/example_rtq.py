@@ -53,17 +53,17 @@ def main():
         for i in range(0, amount):
             t.push('item-'+str(i), i)
 
-    print "Adding", num * 2, "items for testing"
+    print("Adding", num * 2, "items for testing")
     push_items(num * 2)
 
     def read_items():
-        print "Kill when satisfied ^C"
+        print("Kill when satisfied ^C")
         ti = time.time()
         count = 0
         while True:
             item = t.pop()
             if item:
-                print "My item", item, "My time:", time.time() - ti
+                print("My item", item, "My time:", time.time() - ti)
                 count += 1
 
             if elastic:
@@ -74,7 +74,7 @@ def main():
     except KeyboardInterrupt:
         pass
     t.clear()
-    print "Finished"
+    print("Finished")
 
 if __name__ == "__main__":
     sys.exit(main())

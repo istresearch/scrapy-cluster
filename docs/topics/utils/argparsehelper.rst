@@ -68,10 +68,10 @@ Put the following code into ``example_ah.py``, or use the file located at ``util
     args = vars(parser.parse_args())
 
     if args['command'] == 'bro':
-        print "Your brother's name is " + args['brother']
+        print("Your brother's name is " + args['brother'])
     elif args['command'] == 'fam':
-        print "Your sister's name is " + args['sister'] + " and you call your "\
-            "Mother '" + args['mom'] + "'"
+        print("Your sister's name is " + args['sister'] + " and you call your "\
+            "Mother '" + args['mom'] + "'")
 
 Running ``-h`` from the base command prints out nicely formatted statements for all your subcommands.
 
