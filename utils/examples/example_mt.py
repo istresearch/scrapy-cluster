@@ -10,6 +10,6 @@ def timeout(sleep_time, wait_time, default, mul_value):
     # call the newly declared function
     return _hidden(mul_value)
 
-print timeout(5, 3, "did not finish 2*2", 2)
-print timeout(3, 5, "did not finish 3*3", 3)
-print timeout(2, 1, "did not finish 4*4", 4)
+print(timeout(5, 3, "did not finish 2*2", 2))
+print(timeout(3, 5, "did not finish 3*3", 3))
+print(timeout(2, 1, "did not finish 4*4", 4))

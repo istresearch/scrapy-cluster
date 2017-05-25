@@ -5,7 +5,7 @@ version: '2'
 
 services:
   kafka_monitor:
-    image: istresearch/scrapy-cluster:kafka-monitor-1.2
+    image: istresearch/scrapy-cluster:kafka-monitor-dev
     volumes:
       - logs:/usr/src/app/logs
     environment:
@@ -16,7 +16,7 @@ services:
       - redis
     restart: always
   redis_monitor:
-    image: istresearch/scrapy-cluster:redis-monitor-1.2
+    image: istresearch/scrapy-cluster:redis-monitor-dev
     volumes:
       - logs:/usr/src/app/logs
     environment:
@@ -28,7 +28,7 @@ services:
       - zookeeper
     restart: always
   crawler:
-    image: istresearch/scrapy-cluster:crawler-1.2
+    image: istresearch/scrapy-cluster:crawler-dev
     volumes:
       - logs:/usr/src/app/logs
     environment:
@@ -40,7 +40,7 @@ services:
       - zookeeper
     restart: always
   rest:
-    image: istresearch/scrapy-cluster:rest-1.2
+    image: istresearch/scrapy-cluster:rest-dev
     volumes:
       - logs:/usr/src/app/logs
     depends_on:

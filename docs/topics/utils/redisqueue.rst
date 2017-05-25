@@ -167,7 +167,7 @@ In this example lets create a simple script that changes what type of Queue we u
     elif args['priority']:
         queue = RedisPriorityQueue(redis_conn, "my_key")
 
-    print "Using " + queue.__class__.__name__
+    print("Using " + queue.__class__.__name__)
 
     if isinstance(queue, RedisPriorityQueue):
         queue.push("item1", 50)
@@ -178,9 +178,9 @@ In this example lets create a simple script that changes what type of Queue we u
         queue.push("item2")
         queue.push("item3")
 
-    print "Pop 1 " + queue.pop()
-    print "Pop 2 " + queue.pop()
-    print "Pop 3 " + queue.pop()
+    print("Pop 1 " + queue.pop())
+    print("Pop 2 " + queue.pop())
+    print("Pop 3 " + queue.pop())
 
 Save the file as ``example_rq.py`` or use the one located at ``utils/examples/example_rq.py``, and now lets run the different tests.
 

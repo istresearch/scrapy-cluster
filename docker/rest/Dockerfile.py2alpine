@@ -2,6 +2,7 @@ FROM python:2.7.12-alpine
 MAINTAINER Madison Bahmer <madison.bahmer@istresearch.com>
 
 # copy rest own requirements.txt with its dependencies
+COPY utils /usr/src/utils
 COPY rest/requirements.txt /usr/src/app/
 
 # Combine run command to create single intermeiate image layer
@@ -23,6 +24,7 @@ RUN mkdir -p /usr/src/app \
  && apk del build-dependencies
 
 # move codebase over
+RUN rm -rf /usr/src/utils
 COPY rest /usr/src/app
 
 WORKDIR /usr/src/app

@@ -129,13 +129,13 @@ In this example, we will create a fully functional file watcher that allows us t
     valid = args['valid_init']
 
     def valid_file(state):
-        print "The valid state is now", state
+        print("The valid state is now", state)
 
     def change_file(conf_string):
-        print "Your file contents:", conf_string
+        print("Your file contents:", conf_string)
 
     def error_file(message):
-        print "An error was thrown:", message
+        print("An error was thrown:", message)
 
     # You can use any or all of these, polling + handlers, some handlers, etc
     if pointer:
@@ -157,12 +157,12 @@ In this example, we will create a fully functional file watcher that allows us t
                                            error_handler=error_file,
                                            valid_init=valid, ensure=True)
 
-    print "Use a keyboard interrupt to shut down the process."
+    print("Use a keyboard interrupt to shut down the process.")
     try:
         while True:
             if poll:
-                print "Valid File?", zoo_watcher.is_valid()
-                print "Contents:", zoo_watcher.get_file_contents()
+                print("Valid File?", zoo_watcher.is_valid())
+                print("Contents:", zoo_watcher.get_file_contents())
             sleep(sleep_time)
     except:
         pass

@@ -17,7 +17,7 @@ sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ans
 sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ansible-playbook -i ${PWD}/ansible/travis.inventory ${PWD}/ansible/scrapy-cluster.yml --connection=local --become"
 
 # Install coveralls and other pip requiremnts
-sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; pip install -r ${PWD}/requirements.txt; cd ${PWD}; find . -name "*.pyc" -type f -delete;"
+sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; cd ${PWD}; pip install -r requirements.txt; find . -name "*.pyc" -type f -delete;"
 
 # Run offline tests
 sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; ./run_offline_tests.sh"

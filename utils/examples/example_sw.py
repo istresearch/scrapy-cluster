@@ -22,8 +22,8 @@ my_settings = wrapper.load(default=args['settings'],
 
 if args['variable'] is not None:
     if args['variable'] in my_settings:
-        print args['variable'], '=', my_settings[args['variable']]
+        print(args['variable'], '=', my_settings[args['variable']])
     else:
-        print args['variable'], "not in loaded settings"
+        print(args['variable'], "not in loaded settings")
 else:
-    print "Full settings:", my_settings
+    print("Full settings:", my_settings)
