@@ -319,6 +319,12 @@ class ThreadedCounter(AbstractCounter):
         self.thread.setDaemon(True)
         self.thread.start()
 
+    def deactivate(self):
+        '''
+        Call to shut down the threaded stats collector without joining; returns immediately
+        '''
+        self.active = False
+
     def stop(self):
         '''
         Call to shut down the threaded stats collector
