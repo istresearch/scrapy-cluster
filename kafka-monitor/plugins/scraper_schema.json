@@ -78,6 +78,10 @@
             "maxLength": 1000,
             "default": null
         },
+        "splash": {
+            "type": "object",
+            "default": null
+        },
         "attrs": {
             "type": "object",
             "default": null

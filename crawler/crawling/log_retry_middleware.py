@@ -92,13 +92,16 @@ class LogRetryMiddleware(object):
     def _log_retry(self, request, exception, spider):
         extras = {}
         extras['logger'] = self.logger.name
-        extras['error_request'] = request
+        extras['error_request'] = str(request)
         extras['error_reason'] = exception
         extras['retry_count'] = request.meta.get('retry_times', 0)
         extras['status_code'] = 504
         extras['appid'] = request.meta['appid']
         extras['crawlid'] = request.meta['crawlid']
         extras['url'] = request.url
+
+        if 'splash' in request.meta:
+            extras['url'] = request.meta['splash']['args']['url']
 
         self.logger.error('Scraper Retry', extra=extras)
 

@@ -4,6 +4,8 @@ from scutils.log_factory import LogFactory
 
 class MetaPassthroughMiddleware(object):
 
+    blacklist = ['_splash_processed']
+
     def __init__(self, settings):
         self.setup(settings)
 
@@ -47,6 +49,6 @@ class MetaPassthroughMiddleware(object):
                 # pass along all known meta fields, only if
                 # they were not already set in the spider's new request
                 for key in list(response.meta.keys()):
-                    if key not in x.meta:
+                    if key not in x.meta and key not in self.blacklist:
                         x.meta[key] = response.meta[key]
             yield x

@@ -20,6 +20,7 @@ services:
       - kafka
       - redis
       - zookeeper
+      - splash
     restart: always
   rest:
     image: istresearch/scrapy-cluster:rest-dev
@@ -51,3 +52,10 @@ services:
     depends_on:
       - zookeeper
     restart: always
+  splash:
+    image: scrapinghub/splash:2.3.2
+    ports:
+      - 8050:8050
+    restart: always
+    # add --maxrss 1 GB on to normal docker entrypoint command
+    entrypoint: python3 /app/bin/splash --proxy-profiles-path /etc/splash/proxy-profiles --js-profiles-path /etc/splash/js-profiles --filters-path /etc/splash/filters --lua-package-path /etc/splash/lua_modules/?.lua --maxrss 1000

@@ -139,7 +139,9 @@ SPIDER_MIDDLEWARES = {
     # depth management per crawl request
     'scrapy.spidermiddlewares.depth.DepthMiddleware': None,
     'crawling.meta_passthrough_middleware.MetaPassthroughMiddleware': 100,
-    'crawling.redis_stats_middleware.RedisStatsMiddleware': 101
+    'crawling.redis_stats_middleware.RedisStatsMiddleware': 101,
+    # Splash
+    'scrapy_splash.SplashDeduplicateArgsMiddleware': 99,
 }
 
 DOWNLOADER_MIDDLEWARES = {
@@ -151,6 +153,10 @@ DOWNLOADER_MIDDLEWARES = {
     # custom cookies to not persist across crawl requests
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
     'crawling.custom_cookies.CustomCookiesMiddleware': 700,
+    # Splash
+    'scrapy_splash.SplashCookiesMiddleware': 723,
+    'scrapy_splash.SplashMiddleware': 725,
+    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
 # Disable the built in logging in production
@@ -165,6 +171,9 @@ DOWNLOAD_TIMEOUT = 10
 
 # Avoid in-memory DNS cache. See Advanced topics of docs for info
 DNSCACHE_ENABLED = True
+
+# Scrapy splash url
+SPLASH_URL = 'http://localhost:8050'
 
 # Local Overrides
 # ~~~~~~~~~~~~~~~

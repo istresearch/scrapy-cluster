@@ -1,5 +1,8 @@
 from scrapy.dupefilters import BaseDupeFilter
 from scrapy.utils.request import request_fingerprint
+from scrapy_splash.utils import dict_hash
+from scrapy.utils.url import canonicalize_url
+from copy import deepcopy
 
 
 class RFPDupeFilter(BaseDupeFilter):
@@ -21,6 +24,16 @@ class RFPDupeFilter(BaseDupeFilter):
 
     def request_seen(self, request):
         fp = request_fingerprint(request)
+        # from https://github.com/scrapy-plugins/scrapy-splash/blob/master/scrapy_splash/dupefilter.py
+        if 'splash' in request.meta:
+            splash_options = deepcopy(request.meta['splash'])
+            args = splash_options.setdefault('args', {})
+
+            if 'url' in args:
+                args['url'] = canonicalize_url(args['url'], keep_fragments=True)
+
+            fp = dict_hash(splash_options, fp)
+
         c_id = request.meta['crawlid']
 
         added = self.server.sadd(self.key + ":" + c_id, fp)

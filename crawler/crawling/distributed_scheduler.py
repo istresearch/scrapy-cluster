@@ -7,6 +7,8 @@ from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
 from scrapy.utils.python import to_unicode
+from scrapy_splash import SplashRequest
+from scrapy_splash.utils import to_native_str
 
 import redis
 import random
@@ -387,15 +389,23 @@ class DistributedScheduler(object):
         '''
         Pushes a request from the spider into the proper throttled queue
         '''
+        self.logger.debug("Received new request to enqueue")
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
             return
         req_dict = self.request_to_dict(request)
+        #self.logger.debug("request dictionary", req_dict)
 
         if not self.is_blacklisted(req_dict['meta']['appid'],
                                    req_dict['meta']['crawlid']):
             # grab the tld of the request
-            ex_res = self.extract(req_dict['url'])
+            the_url = req_dict['url']
+            # insert the original url back into redis, not the splash url
+            if 'splash' in req_dict['meta']:
+                self.logger.debug("altering scheduler enqueue url")
+                the_url = req_dict['meta']['splash']['args']['url']
+
+            ex_res = self.extract(the_url)
             key = "{sid}:{dom}.{suf}:queue".format(
                 sid=req_dict['meta']['spiderid'],
                 dom=ex_res.domain,
@@ -503,12 +513,23 @@ class DistributedScheduler(object):
         if item:
             self.logger.debug(u"Found url to crawl {url}" \
                     .format(url=item['url']))
+            #self.logger.debug("item dump", extra=item)
             try:
                 req = Request(item['url'])
             except ValueError:
                 # need absolute url
                 # need better url validation here
                 req = Request('http://' + item['url'])
+
+            if 'meta' in item and '_splash_processed' in item['meta']:
+                self.logger.debug("found splash request")
+                # these seems ugly, shouldn't the SplashRequest populate most
+                # of these values for us?
+                req = SplashRequest(item['url'],
+                                    method='POST',
+                                    magic_response=True,
+                                    body=ujson.dumps(item['meta']['splash']['args']),
+                                    headers=item['meta']['splash']['args']['headers'],)
 
             try:
                 if 'callback' in item and item['callback'] is not None:
@@ -534,6 +555,27 @@ class DistributedScheduler(object):
             for key in list(item.keys()):
                 req.meta[key] = item[key]
 
+            # consider possible splash requests
+            if 'splash' in req.meta:
+                if req.meta['splash'] is None:
+                    self.logger.debug("splash key not in use, deleting")
+                    del req.meta['splash']
+                else:
+                    # logic/defaults for splash request
+                    self.logger.debug("splash in use")
+                    req.meta['splash']['endpoint'] = 'render.html' # set render endpoint
+
+                    if 'args' not in req.meta['splash']:
+                        req.meta['splash']['args'] = {}
+                    if 'headers' not in req.meta['splash']['args']:
+                        req.meta['splash']['args']['headers'] = {}
+                    req.meta['splash']['args']['headers']['content-type'] = 'application/json' # set content type
+
+                    # when maxdepth > 0, we need to modify the passed through
+                    # splash meta to process the correct url
+                    if not isinstance(req, SplashRequest):
+                        req.meta['splash']['args']['url'] = to_native_str(req.url)
+
             # extra check to add items to request
             if 'useragent' in item and item['useragent'] is not None:
                 req.headers['User-Agent'] = item['useragent']
@@ -543,6 +585,7 @@ class DistributedScheduler(object):
                 elif isinstance(item['cookie'], basestring):
                     req.cookies = self.parse_cookie(item['cookie'])
 
+            #self.logger.debug("finished generating request", self.request_to_dict(req))
             return req
 
         return None
