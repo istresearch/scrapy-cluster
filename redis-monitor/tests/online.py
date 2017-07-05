@@ -61,6 +61,11 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor.redis_conn = redis.Redis(
             host=self.redis_monitor.settings['REDIS_HOST'],
             port=self.redis_monitor.settings['REDIS_PORT'],
+            db=self.redis_monitor.settings['REDIS_DB'],
+            decode_responses=True)
+        self.redis_monitor.lock_redis_conn = redis.Redis(
+            host=self.redis_monitor.settings['REDIS_HOST'],
+            port=self.redis_monitor.settings['REDIS_PORT'],
             db=self.redis_monitor.settings['REDIS_DB'])
 
         self.redis_monitor._load_plugins()
@@ -72,7 +77,8 @@ class TestRedisMonitor(TestCase):
             group_id="demo-id",
             auto_commit_interval_ms=10,
             consumer_timeout_ms=5000,
-            auto_offset_reset='earliest'
+            auto_offset_reset='earliest',
+            value_deserializer=lambda m: m.decode('utf-8')
         )
         sleep(1)
 

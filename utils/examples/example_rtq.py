@@ -44,7 +44,7 @@ def main():
     queue = args['queue']
     elastic = args['elastic']
 
-    conn = redis.Redis(host=host, port=port)
+    conn = redis.Redis(host=host, port=port, decode_responses=True)
 
     q = RedisPriorityQueue(conn, queue)
     t = RedisThrottledQueue(conn, q, window, num, mod, elastic=elastic)

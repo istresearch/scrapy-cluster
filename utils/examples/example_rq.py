@@ -5,7 +5,7 @@ import argparse
 # change these for your Redis host
 host = 'scdev'
 port = 6379
-redis_conn = redis.Redis(host=host, port=port)
+redis_conn = redis.Redis(host=host, port=port, decode_responses=True)
 
 parser = argparse.ArgumentParser(description='Example Redis Queues.')
 group = parser.add_mutually_exclusive_group(required=True)

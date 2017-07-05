@@ -102,6 +102,7 @@ def main():
                 topic,
                 group_id=consumer_id,
                 bootstrap_servers=kafka_host,
+                value_deserializer=lambda m: m.decode('utf-8'),
                 consumer_timeout_ms=settings['KAFKA_CONSUMER_TIMEOUT'],
                 auto_offset_reset=offset,
                 auto_commit_interval_ms=settings['KAFKA_CONSUMER_COMMIT_INTERVAL_MS'],
