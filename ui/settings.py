@@ -11,6 +11,8 @@ STAT_REQ_FREQ = 910
 # REST host information
 REST_HOST = 'http://rest:5343'
 
+DAEMON_THREAD_JOIN_TIMEOUT = 10
+
 # logging setup
 LOGGER_NAME = 'ui-service'
 LOG_DIR = 'logs'

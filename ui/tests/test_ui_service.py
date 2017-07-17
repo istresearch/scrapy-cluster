@@ -7,7 +7,7 @@ from mock import MagicMock
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-from admin_ui import AdminUIService
+from ui_service import AdminUIService
 
 
 class TestAdminUIService(TestCase):

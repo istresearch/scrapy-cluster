@@ -17,8 +17,7 @@ COPY ui /usr/src/app
 COPY docker/ui/settings.py /usr/src/app/localsettings.py
 
 # copy testing script into container
-# Unknown tests yet
-#COPY docker/run_docker_tests.sh /usr/src/app/run_docker_tests.sh
+COPY docker/run_docker_tests.sh /usr/src/app/run_docker_tests.sh
 
 # set up environment variables
 
