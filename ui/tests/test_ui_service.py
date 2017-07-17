@@ -14,8 +14,8 @@ from ui_service import AdminUIService
 class TestAdminUIService(TestCase):
 
     def setUp(self):
-        self.admin_ui_service = AdminUIService("settings.py")
-        self.admin_ui_service.settings = self.admin_ui_service.wrapper.load("settings.py")
+        self.admin_ui_service = AdminUIService("localsettings.py")
+        self.admin_ui_service.settings = self.admin_ui_service.wrapper.load("localsettings.py")
         self.admin_ui_service.logger = MagicMock()
 
     def test_close(self):

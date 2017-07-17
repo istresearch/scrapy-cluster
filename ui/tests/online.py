@@ -23,7 +23,7 @@ class TestAdminUIService(TestCase):
     port_number = 52976
 
     def setUp(self):
-        self.admin_ui_service = AdminUIService("settings.py")
+        self.admin_ui_service = AdminUIService("localsettings.py")
         self.admin_ui_service.setup()
         self.admin_ui_service.settings['FLASK_PORT'] = self.port_number
 
