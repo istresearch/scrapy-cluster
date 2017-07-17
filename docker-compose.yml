@@ -30,7 +30,9 @@ services:
     ports:
       - "5343:5343"
   ui:
-    image: istresearch/scrapy-cluster:ui-dev
+    build:
+      context: .
+      dockerfile: docker/ui/Dockerfile
     depends_on:
       - rest
       - kafka

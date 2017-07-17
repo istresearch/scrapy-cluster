@@ -104,6 +104,18 @@ Rest
 :doc:`topics/rest/settings`
     Explains all of the settings used by the Rest component
 
+Admin UI
+^^^^^^^^
+
+:doc:`topics/admin-ui/design`
+    Learn about the design considerations for the Admin-UI service
+
+:doc:`topics/admin-ui/quickstart`
+    How to use and run the Admin-UI service
+
+:doc:`topics/admin-ui/settings`
+    Explains all of the settings used by the Admin-UI component
+
 Utilities
 ^^^^^^^^^
 

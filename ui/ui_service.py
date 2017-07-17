@@ -3,8 +3,12 @@ import argparse
 import uuid
 import logging
 import time
+import json
+import plotly
+import datetime
 
 from flask import Flask, render_template, request, flash, redirect
+from flask_table import Table, Col, DatetimeCol
 from collections import deque
 from threading import Thread
 
@@ -31,8 +35,10 @@ class AdminUIService(object):
         self.app = Flask(__name__)
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
         self.appid = Flask(__name__).name
-        self.pollids = deque([])
-        self.kafka_stats = {}
+        self.pollids_km = deque([])
+        self.pollids_rm = deque([])
+        self.pollids_c = deque([])
+        self.stats = {}
 
     def setup(self, level=None, log_file=None, json=None):
         """
@@ -58,14 +64,22 @@ class AdminUIService(object):
                                               backups=self.settings['LOG_BACKUPS'])
         self._decorate_routes()
 
-        # spawn heartbeat processing loop
         self._initiate_stats_req_thread = Thread(target=self._initiate_stats_req_loop)
         self._initiate_stats_req_thread.setDaemon(True)
         self._initiate_stats_req_thread.start()
 
         self.start_time = self.get_time()
 
-        self.kafka_stats['stats'] = "Stats not populated yet!"
+        self.stats['kafka-monitor'] = {}
+        self.stats['kafka-monitor']['total'] = []
+        self.stats['kafka-monitor']['fail'] = []
+
+        self.stats['redis-monitor'] = {}
+        self.stats['redis-monitor']['total'] = []
+        self.stats['redis-monitor']['fail'] = []
+
+        self.stats['queue'] = {}
+        self.stats['queue']['total_backlog'] = []
 
         # disable flask logger
         if self.settings['FLASK_LOGGING_ENABLED'] == False:
@@ -80,40 +94,140 @@ class AdminUIService(object):
         """
         Main flask run loop
         """
-        self.logger.info("Running main flask method on port " +
-                         str(self.settings['FLASK_PORT']))
-        self.app.run(host='0.0.0.0', port=self.settings['FLASK_PORT'])
+        self.logger.info("Running main flask method on port " + str(self.settings['FLASK_PORT']))
+        self.app.run(host='0.0.0.0', port=self.settings['FLASK_PORT'], debug=self.settings['DEBUG'])
+
+    # Declare table
+    class ItemTable(Table):
+        classes = ['table', 'table-striped']
+        timestamp = DatetimeCol('timestamp')
+        total_requests = Col('total_requests')
 
     def _initiate_stats_req_loop(self):
-        """A main run loop thread to do work"""
         self.logger.debug("running stats req loop thread")
         while not self.closed:
+            self._kafka_stats()
+            self._kafka_stats_poll()
+            self._redis_stats()
+            self._redis_stats_poll()
+            self._crawler_stats()
+            self._crawler_stats_poll()
             time.sleep(self.settings['STAT_REQ_FREQ'])
-            self.kafka_stats()
-            self.kafka_stats_poll()
 
-    def kafka_stats(self):
+    def _kafka_stats(self):
         data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "kafka-monitor"}
 
         r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        res = r.content
+        res = json.loads(r.content)
 
-        if res.data.poll_id:
-            pollid = res.data.poll_id
-            self.pollids.append(pollid)
+        if 'poll_id' in res:
+            pollid = res['poll_id']
+            self.pollids_km.append(pollid)
+        elif res['status'] == 'SUCCESS':
+            dt = datetime.datetime.now()
+            if 'total' in res['data']:
+                res['data']['total']['ts'] = dt
+                self.stats['kafka-monitor']['total'].append(res['data']['total'])
+                self.stats['kafka-monitor']['total'] = self.stats['kafka-monitor']['total'][:10]
+            if 'fail' in res['data']:
+                res['data']['total']['ts'] = dt
+                self.stats['kafka-monitor']['fail'].append(res['data']['fail'])
+                self.stats['kafka-monitor']['fail'] = self.stats['kafka-monitor']['fail'][:10]
 
-    def kafka_stats_poll(self):
-        pollid = self.pollids.popleft()
+    def _kafka_stats_poll(self):
+        while self.pollids_km:
+            pollid = self.pollids_km.popleft()
+            data = {"poll_id": pollid}
 
-        data = {"poll_id": pollid}
+            r = requests.post(self.settings['REST_HOST'] + "/poll", json=data)
+            res = json.loads(r.content)
+
+            if res.status == "FAILURE":
+                self.pollids_km.appendleft(pollid)
+            else:
+                dt = datetime.datetime.now()
+                if 'total' in res['data']:
+                    res['data']['total']['ts'] = dt
+                    self.stats['kafka-monitor']['total'].append(res['data']['total'])
+                    self.stats['kafka-monitor']['total'] = self.stats['kafka-monitor']['total'][:10]
+                if 'fail' in res['data']:
+                    res['data']['total']['ts'] = dt
+                    self.stats['kafka-monitor']['fail'].append(res['data']['fail'])
+                    self.stats['kafka-monitor']['fail'] = self.stats['kafka-monitor']['fail'][:10]
+
+    def _redis_stats(self):
+        data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "redis-monitor"}
 
         r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        res = r.content
+        res = json.loads(r.content)
 
-        if res.status == "FAILURE":
-            self.pollids.appendleft(pollid)
-        else:
-            self.kafka_stats['stats'] = res.data
+        if 'poll_id' in res:
+            pollid = res['poll_id']
+            self.pollids_rm.append(pollid)
+        elif res['status'] == 'SUCCESS':
+            dt = datetime.datetime.now()
+            if 'total' in res['data']:
+                res['data']['total']['ts'] = dt
+                self.stats['redis-monitor']['total'].append(res['data']['total'])
+                self.stats['redis-monitor']['total'] = self.stats['redis-monitor']['total'][:10]
+            if 'fail' in res['data']:
+                res['data']['total']['ts'] = dt
+                self.stats['redis-monitor']['fail'].append(res['data']['fail'])
+                self.stats['redis-monitor']['fail'] = self.stats['redis-monitor']['fail'][:10]
+
+    def _redis_stats_poll(self):
+        while self.pollids_rm:
+            pollid = self.pollids_rm.popleft()
+            data = {"poll_id": pollid}
+
+            r = requests.post(self.settings['REST_HOST'] + "/poll", json=data)
+            res = json.loads(r.content)
+
+            if res.status == "FAILURE":
+                self.pollids_rm.appendleft(pollid)
+            else:
+                dt = datetime.datetime.now()
+                if 'total' in res['data']:
+                    res['data']['total']['ts'] = dt
+                    self.stats['redis-monitor']['total'].append(res['data']['total'])
+                    self.stats['redis-monitor']['total'] = self.stats['redis-monitor']['total'][:10]
+                if 'fail' in res['data']:
+                    res['data']['total']['ts'] = dt
+                    self.stats['redis-monitor']['fail'].append(res['data']['fail'])
+                    self.stats['redis-monitor']['fail'] = self.stats['redis-monitor']['fail'][:10]
+
+    def _crawler_stats(self):
+        data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "queue"}
+
+        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
+        res = json.loads(r.content)
+
+        if 'poll_id' in res:
+            pollid = res['poll_id']
+            self.pollids_c.append(pollid)
+        elif res['status'] == 'SUCCESS':
+            dt = datetime.datetime.now()
+            if 'queues' in res['data']:
+                res['data']['queues']['ts'] = dt
+                self.stats['queue']['total_backlog'].append(res['data']['queues'])
+                self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
+
+    def _crawler_stats_poll(self):
+        while self.pollids_rm:
+            pollid = self.pollids_c.popleft()
+            data = {"poll_id": pollid}
+
+            r = requests.post(self.settings['REST_HOST'] + "/poll", json=data)
+            res = json.loads(r.content)
+
+            if res.status == "FAILURE":
+                self.pollids_c.appendleft(pollid)
+            else:
+                dt = datetime.datetime.now()
+                if 'queues' in res['data']:
+                    res['data']['queues']['ts'] = dt
+                    self.stats['queue']['total_backlog'].append(res['data']['queues'])
+                    self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
 
     def _close_thread(self, thread, thread_name):
         """Closes daemon threads
@@ -161,7 +275,11 @@ class AdminUIService(object):
         if r.status_code == 200:
             status = r.json()
         else:
-            status = "Unable to connect to Rest service"
+            status = {
+                "kafka_connected": False,
+                "node_health": "RED",
+                "redis_connected": False,
+                "uptime_sec": 0}
         return render_template('index.html', status=status)
 
     def submit(self):
@@ -180,20 +298,110 @@ class AdminUIService(object):
                 return redirect("/")
 
     def kafka(self):
-        data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "kafka-monitor"}
-        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        res = r.content
-        return render_template("kafka.html", result=res)
+        ts_1 = []
+        total_1 = []
+        dt_items = []
+
+        for item in self.stats['kafka-monitor']['total']:
+            ts_1.append(item['ts'])
+            total_1.append(item['900'])
+            dt_items.append(dict(timestamp=item['ts'], total_requests=item['900']))
+
+        graphs = [
+            dict(
+                data=[
+                    dict(
+                        x=ts_1,
+                        y=total_1,
+                        type='bar'
+                    ),
+                ],
+                layout=dict(
+                    title='Total Requests'
+                )
+            ),
+        ]
+
+        ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
+
+        # Convert the figures to JSON
+        graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+
+        table = self.ItemTable(dt_items)
+
+        return render_template("kafka.html",
+                               ids=ids,
+                               graphJSON=graphJSON, table=table)
 
     def redis(self):
-        data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "redis-monitor"}
-        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        return render_template("redis.html", result=r.content)
+        ts_1 = []
+        total_1 = []
+        dt_items = []
+
+        for item in self.stats['redis-monitor']['total']:
+            ts_1.append(item['ts'])
+            total_1.append(item['900'])
+            dt_items.append(dict(timestamp=item['ts'], total_requests=item['900']))
+
+        graphs = [
+            dict(
+                data=[
+                    dict(
+                        x=ts_1,
+                        y=total_1,
+                        type='bar'
+                    ),
+                ],
+                layout=dict(
+                    title='Total Requests'
+                )
+            ),
+        ]
+
+        ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
+
+        # Convert the figures to JSON
+        graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+
+        table = self.ItemTable(dt_items)
+        return render_template("redis.html",
+                               ids=ids,
+                               graphJSON=graphJSON, table=table)
 
     def crawler(self):
-        data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "crawler"}
-        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        return render_template("crawler.html", result=r.content)
+        ts_1 = []
+        total_1 = []
+        dt_items = []
+
+        for item in self.stats['queue']['total_backlog']:
+            ts_1.append(item['ts'])
+            total_1.append(item['total_backlog'])
+            dt_items.append(dict(timestamp=item['ts'], total_requests=item['total_backlog']))
+
+        graphs = [
+            dict(
+                data=[
+                    dict(
+                        x=ts_1,
+                        y=total_1,
+                        type='bar'
+                    ),
+                ],
+                layout=dict(
+                    title='Backlog'
+                )
+            ),
+        ]
+
+        ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
+
+        # Convert the figures to JSON
+        graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+
+        table = self.ItemTable(dt_items)
+        return render_template("crawler.html",
+                               ids=ids,
+                               graphJSON=graphJSON, table=table)
 
 
 if __name__ == '__main__':
@@ -219,10 +427,10 @@ if __name__ == '__main__':
 
     args = vars(parser.parse_args())
 
-    rest_service = AdminUIService(args['settings'])
-    rest_service.setup(level=args['log_level'], log_file=args['log_file'], json=args['log_json'])
+    ui_service = AdminUIService(args['settings'])
+    ui_service.setup(level=args['log_level'], log_file=args['log_file'], json=args['log_json'])
 
     try:
-        rest_service.run()
+        ui_service.run()
     finally:
-        rest_service.close()
+        ui_service.close()

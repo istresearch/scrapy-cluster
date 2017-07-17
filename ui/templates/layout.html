@@ -13,8 +13,8 @@
 <ul>
   <li><a href="/"><img alt="" src="/static/img/rsz_11logo.png"></a></li>
   <li style="font-size: 26px"><a href="/">Scrapy Cluster</a></li>
-  <li style="font-size: 22px"><a href="/kafka">Kafka</a></li>
-  <li style="font-size: 22px"><a href="/redis">Redis</a></li>
+  <li style="font-size: 22px"><a href="/kafka">Kafka Monitor</a></li>
+  <li style="font-size: 22px"><a href="/redis">Redis Monitor</a></li>
   <li style="font-size: 22px"><a href="/crawler">Crawler</a></li>
   <li style="font-size: 26px; float:right"><a href="http://scrapy-cluster.readthedocs.io/en/latest/">Documentation     .</a></li>
 </ul>
@@ -37,7 +37,22 @@
 </body>
 
 <footer class="text-center">
-  <p>Scrapy Cluster</p>
+  <!-- D3.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <!-- Plotly.js -->
+  <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+
+  <script type="text/javascript">
+      var graphs = {{graphJSON | safe}};
+      var ids = {{ids | safe}};
+      for(var i in graphs) {
+          Plotly.plot(ids[i], // the ID of the div, created above
+                      graphs[i].data,
+                      graphs[i].layout || {});
+      }
+  </script>
 </footer>
 
 </html>

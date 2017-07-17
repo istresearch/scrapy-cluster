@@ -1,7 +1,7 @@
 /* centered columns styles */
 .row-centered {
-    margin: auto;
-    max-width: 2000px;
+    margin:0px auto;
+    width: 2000px;
 }
 .col-centered {
     display:inline-block;

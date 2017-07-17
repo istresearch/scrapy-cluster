@@ -1,2 +1,6 @@
 Flask==0.12
 requests==2.13.0
+scutils==1.2.0
+plotly
+pandas
+flask_table

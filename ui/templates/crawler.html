@@ -1,8 +1,10 @@
 {% extends "layout.html" %}
 {% block body %}
 
-{% if result %}
-   <pre>{{ result }}</pre>
-{% endif %}
+{% for id in ids %}
+  <div id="{{id}}"></div>
+{% endfor %}
+
+{{ table }}
 
 {% endblock %}

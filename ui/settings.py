@@ -4,11 +4,12 @@
 # Flask configuration
 FLASK_LOGGING_ENABLED = True
 FLASK_PORT = 5000
+DEBUG = False
 
-STAT_REQ_FREQ = 5
+STAT_REQ_FREQ = 910
 
 # REST host information
-REST_HOST = 'http://0.0.0.0:5343'
+REST_HOST = 'http://rest:5343'
 
 # logging setup
 LOGGER_NAME = 'ui-service'
@@ -18,4 +19,4 @@ LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUPS = 5
 LOG_STDOUT = True
 LOG_JSON = False
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
