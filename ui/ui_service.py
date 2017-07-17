@@ -106,6 +106,7 @@ class AdminUIService(object):
     def _initiate_stats_req_loop(self):
         self.logger.debug("running stats req loop thread")
         while not self.closed:
+            time.sleep(10)
             self._kafka_stats()
             self._kafka_stats_poll()
             self._redis_stats()
