@@ -20,7 +20,7 @@ from threading import Thread
 class TestRestService(TestCase):
 
     # random port number for local connections
-    port_number = 62976
+    port_number = 52976
 
     def setUp(self):
         self.admin_ui_service = AdminUIService("localsettings.py")
