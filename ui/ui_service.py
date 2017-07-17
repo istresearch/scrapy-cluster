@@ -229,6 +229,11 @@ class AdminUIService(object):
                     self.stats['queue']['total_backlog'].append(res['data']['queues'])
                     self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
 
+    def rest_api(self, endpoint, data=None):
+        api_endpoint = self.settings['REST_HOST'] + endpoint
+        response = requests.get(api_endpoint, json=data)
+        return response
+
     def _close_thread(self, thread, thread_name):
         """Closes daemon threads
 
@@ -271,7 +276,7 @@ class AdminUIService(object):
                               methods=['GET'])
 
     def index(self):
-        r = requests.get(self.settings['REST_HOST'])
+        r = self.rest_api('/')
         if r.status_code == 200:
             status = r.json()
         else:
