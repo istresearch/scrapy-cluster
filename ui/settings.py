@@ -9,7 +9,7 @@ DEBUG = False
 STAT_REQ_FREQ = 910
 
 # REST host information
-REST_HOST = 'http://rest:5343'
+REST_HOST = 'http://localhost:5343'
 
 DAEMON_THREAD_JOIN_TIMEOUT = 10
 
