@@ -17,13 +17,13 @@ import requests
 from threading import Thread
 
 
-class TestRestService(TestCase):
+class TestAdminUIService(TestCase):
 
     # random port number for local connections
     port_number = 52976
 
     def setUp(self):
-        self.admin_ui_service = AdminUIService("localsettings.py")
+        self.admin_ui_service = AdminUIService("settings.py")
         self.admin_ui_service.setup()
         self.admin_ui_service.settings['FLASK_PORT'] = self.port_number
 
@@ -40,7 +40,6 @@ class TestRestService(TestCase):
     def test_status(self):
         r = requests.get('http://127.0.0.1:{p}'.format(p=self.port_number))
         results = r.content
-
         self.assertIn("<title>Scrapy Cluster</title>", results)
 
     def tearDown(self):

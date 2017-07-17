@@ -253,7 +253,7 @@ class AdminUIService(object):
         """
         self._close_thread(self._initiate_stats_req_thread, "Stats Loop")
 
-        self.logger.info("Closing Rest Service")
+        self.logger.info("Closing UI Service")
         self.closed = True
 
     # Routes --------------------
