@@ -21,38 +21,18 @@ else
 fi
 
 cd utils
-python tests/online.py -r $HOST -p $PORT
-if [ $? -eq 1 ]; then
-    echo "utils tests failed"
-    exit 1
-fi
-cd ../kafka-monitor
-python tests/online.py -v
-if [ $? -eq 1 ]; then
-    echo "kafka-monitor tests failed"
-    exit 1
-fi
-cd ../redis-monitor
-python tests/online.py -v
-if [ $? -eq 1 ]; then
-    echo "redis-monitor tests failed"
-    exit 1
-fi
-cd ../crawler
-python tests/online.py -v
-if [ $? -eq 1 ]; then
-    echo "crawler tests failed"
-    exit 1
-fi
 cd ../rest
 python tests/online.py -v
 if [ $? -eq 1 ]; then
     echo "rest tests failed"
     exit 1
 fi
+python rest_service.py &
+sleep 5
 cd ../ui
 python tests/online.py -v
 if [ $? -eq 1 ]; then
     echo "ui tests failed"
     exit 1
 fi
+sudo kill $(ps aux | grep 'rest_service.py' | awk '{print $2}')

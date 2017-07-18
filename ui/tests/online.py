@@ -21,6 +21,7 @@ class TestAdminUIService(TestCase):
 
     # random port number for local connections
     port_number = 52976
+    rest_port_number = 52977
 
     def setUp(self):
         self.admin_ui_service = AdminUIService("localsettings.py")
