@@ -28,6 +28,15 @@ services:
       - kafka
       - redis
     restart: always
+  ui:
+    image: istresearch/scrapy-cluster:ui-test
+    depends_on:
+      - rest
+      - kafka
+      - redis
+    restart: always
+    ports:
+      - "5000:5000"
   redis:
     image: redis
     ports:
