@@ -1,4 +1,3 @@
-import requests
 import argparse
 import uuid
 import logging
@@ -103,7 +102,7 @@ class AdminUIService(object):
         self.logger.info("Running main flask method on port " + str(self.settings['FLASK_PORT']))
         self.app.run(host='0.0.0.0', port=self.settings['FLASK_PORT'], debug=self.settings['DEBUG'])
 
-    # Declare table
+    # Declare table which is sent to client
     class ItemTable(Table):
         classes = ['table', 'table-striped']
         timestamp = DatetimeCol('timestamp')
@@ -230,7 +229,6 @@ class AdminUIService(object):
                 self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
 
     def _crawler_stats_poll(self):
-        self.logger.debug("collecting crawler stats poll")
         while self.pollids_c:
             pollid = self.pollids_c.popleft()
             data = {"poll_id": pollid}
@@ -245,15 +243,6 @@ class AdminUIService(object):
                     res['data']['queues']['ts'] = dt
                     self.stats['queue']['total_backlog'].append(res['data']['queues'])
                     self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
-
-    # def rest_api(self, endpoint='/', data=None):
-    #     self.logger.debug("sending rest request", {
-    #                         "endpoint": endpoint,
-    #                         "data": data
-    #                       })
-    #     api_endpoint = self.settings['REST_HOST'] + endpoint
-    #     response = requests.get(api_endpoint, json=data)
-    #     return response
 
     def _close_thread(self, thread, thread_name):
         """Closes daemon threads
