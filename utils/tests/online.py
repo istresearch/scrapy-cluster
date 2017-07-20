@@ -13,6 +13,7 @@ import sys
 
 import redis
 import argparse
+from kazoo.client import KazooClient
 
 from scutils.redis_queue import RedisQueue, RedisPriorityQueue, RedisStack
 
@@ -366,6 +367,20 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
         self.assertEqual(1, counter.value())
         counter.stop()
         self.clean_keys(counter.key)
+
+
+class TestZookeeperWatcher(TestCase):
+    def __init__(self, hosts):
+        self.hosts = hosts
+
+    def setUp(self):
+        self.zoo_client = KazooClient(hosts=self.hosts)
+        self.zoo_client.start()
+
+    def tearDown(self):
+        self.zoo_client.stop()
+        self.zoo_client.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Online deployment Test"
