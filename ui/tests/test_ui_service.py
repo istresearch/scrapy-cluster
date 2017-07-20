@@ -29,7 +29,7 @@ class TestAdminUIService(TestCase):
             response = requests.Response()
             response.status_code = 400
 
-            self.admin_ui_service.rest_api = MagicMock(return_value=response)
+            self.admin_ui_service._rest_api = MagicMock(return_value={'status':'FAILURE'})
             res = self.admin_ui_service.index()
             d = "<title>Scrapy Cluster</title>"
             self.assertIn(d, res)
