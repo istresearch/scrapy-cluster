@@ -6,6 +6,7 @@ import time
 import json
 import plotly
 import datetime
+import traceback
 
 from flask import Flask, render_template, request, flash, redirect
 from flask_table import Table, Col, DatetimeCol
@@ -14,6 +15,8 @@ from threading import Thread
 
 from scutils.log_factory import LogFactory
 from scutils.settings_wrapper import SettingsWrapper
+
+from rest_api import SCRestAPI
 
 
 class AdminUIService(object):
@@ -33,6 +36,7 @@ class AdminUIService(object):
         self.wrapper = SettingsWrapper()
         self.logger = None
         self.app = Flask(__name__)
+        self.app.secret_key = 'some_secret12'
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
         self.appid = Flask(__name__).name
         self.pollids_km = deque([])
@@ -63,6 +67,8 @@ class AdminUIService(object):
                                               bytes=self.settings['LOG_MAX_BYTES'],
                                               backups=self.settings['LOG_BACKUPS'])
         self._decorate_routes()
+
+        self._rest_api = SCRestAPI(endpoint=self.settings['REST_HOST'])
 
         self._initiate_stats_req_thread = Thread(target=self._initiate_stats_req_loop)
         self._initiate_stats_req_thread.setDaemon(True)
@@ -107,24 +113,32 @@ class AdminUIService(object):
         self.logger.debug("running stats req loop thread")
         while not self.closed:
             time.sleep(10)
-            self._kafka_stats()
-            self._kafka_stats_poll()
-            self._redis_stats()
-            self._redis_stats_poll()
-            self._crawler_stats()
-            self._crawler_stats_poll()
+            try:
+                self._kafka_stats()
+                self._kafka_stats_poll()
+                self._redis_stats()
+                self._redis_stats_poll()
+                self._crawler_stats()
+                self._crawler_stats_poll()
+                self.logger.debug("stats thread sleeping")
+            except Exception:
+                self.logger.error("Uncaught Exception", {
+                                    'ex': traceback.format_exc()
+                                  })
             time.sleep(self.settings['STAT_REQ_FREQ'])
 
     def _kafka_stats(self):
+        self.logger.debug("collecting kafka monitor stats poll")
         data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "kafka-monitor"}
 
-        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        res = json.loads(r.content)
+        res = self._rest_api.feed(data=data)
 
         if 'poll_id' in res:
+            self.logger.debug("kafka monitor stats generated poll id")
             pollid = res['poll_id']
             self.pollids_km.append(pollid)
         elif res['status'] == 'SUCCESS':
+            self.logger.debug("kafka monitor stats got result")
             dt = datetime.datetime.now()
             if 'total' in res['data']:
                 res['data']['total']['ts'] = dt
@@ -140,8 +154,7 @@ class AdminUIService(object):
             pollid = self.pollids_km.popleft()
             data = {"poll_id": pollid}
 
-            r = requests.post(self.settings['REST_HOST'] + "/poll", json=data)
-            res = json.loads(r.content)
+            res = self._rest_api.poll(data=data)
 
             if res.status == "FAILURE":
                 self.pollids_km.appendleft(pollid)
@@ -157,15 +170,17 @@ class AdminUIService(object):
                     self.stats['kafka-monitor']['fail'] = self.stats['kafka-monitor']['fail'][:10]
 
     def _redis_stats(self):
+        self.logger.debug("collecting redis monitor stats poll")
         data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "redis-monitor"}
 
-        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        res = json.loads(r.content)
+        res = self._rest_api.feed(data=data)
 
         if 'poll_id' in res:
+            self.logger.debug("redis monitor stats generated poll id")
             pollid = res['poll_id']
             self.pollids_rm.append(pollid)
         elif res['status'] == 'SUCCESS':
+            self.logger.debug("redis monitor stats got result")
             dt = datetime.datetime.now()
             if 'total' in res['data']:
                 res['data']['total']['ts'] = dt
@@ -181,8 +196,7 @@ class AdminUIService(object):
             pollid = self.pollids_rm.popleft()
             data = {"poll_id": pollid}
 
-            r = requests.post(self.settings['REST_HOST'] + "/poll", json=data)
-            res = json.loads(r.content)
+            res = self._rest_api.poll(data=data)
 
             if res.status == "FAILURE":
                 self.pollids_rm.appendleft(pollid)
@@ -198,15 +212,17 @@ class AdminUIService(object):
                     self.stats['redis-monitor']['fail'] = self.stats['redis-monitor']['fail'][:10]
 
     def _crawler_stats(self):
+        self.logger.debug("collecting crawler stats")
         data = {"appid": self.appid, "uuid": self.my_uuid, "stats": "queue"}
 
-        r = requests.post(self.settings['REST_HOST'] + "/feed", json=data)
-        res = json.loads(r.content)
+        res = self._rest_api.feed(data=data)
 
         if 'poll_id' in res:
+            self.logger.debug("crawler stats generated poll id")
             pollid = res['poll_id']
             self.pollids_c.append(pollid)
         elif res['status'] == 'SUCCESS':
+            self.logger.debug("collecting crawler got result")
             dt = datetime.datetime.now()
             if 'queues' in res['data']:
                 res['data']['queues']['ts'] = dt
@@ -214,12 +230,12 @@ class AdminUIService(object):
                 self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
 
     def _crawler_stats_poll(self):
-        while self.pollids_rm:
+        self.logger.debug("collecting crawler stats poll")
+        while self.pollids_c:
             pollid = self.pollids_c.popleft()
             data = {"poll_id": pollid}
 
-            r = requests.post(self.settings['REST_HOST'] + "/poll", json=data)
-            res = json.loads(r.content)
+            res = self._rest_api.poll(data=data)
 
             if res.status == "FAILURE":
                 self.pollids_c.appendleft(pollid)
@@ -230,10 +246,14 @@ class AdminUIService(object):
                     self.stats['queue']['total_backlog'].append(res['data']['queues'])
                     self.stats['queue']['total_backlog'] = self.stats['queue']['total_backlog'][:10]
 
-    def rest_api(self, endpoint, data=None):
-        api_endpoint = self.settings['REST_HOST'] + endpoint
-        response = requests.get(api_endpoint, json=data)
-        return response
+    # def rest_api(self, endpoint='/', data=None):
+    #     self.logger.debug("sending rest request", {
+    #                         "endpoint": endpoint,
+    #                         "data": data
+    #                       })
+    #     api_endpoint = self.settings['REST_HOST'] + endpoint
+    #     response = requests.get(api_endpoint, json=data)
+    #     return response
 
     def _close_thread(self, thread, thread_name):
         """Closes daemon threads
@@ -252,10 +272,11 @@ class AdminUIService(object):
         """
         Cleans up anything from the process
         """
-        self._close_thread(self._initiate_stats_req_thread, "Stats Loop")
-
-        self.logger.info("Closing UI Service")
+        self.logger.info("Trying to close UI Service")
         self.closed = True
+
+        self._close_thread(self._initiate_stats_req_thread, "Stats Loop")
+        self.logger.info("Closed UI Service")
 
     # Routes --------------------
 
@@ -277,33 +298,53 @@ class AdminUIService(object):
                               methods=['GET'])
 
     def index(self):
-        r = self.rest_api('/')
-        if r.status_code == 200:
-            status = r.json()
+        self.logger.info("'index' endpoint called")
+        r = self._rest_api.index()
+        if not 'status' in r: # we got a valid response from the index endpoint
+            status = r
         else:
             status = {
                 "kafka_connected": False,
                 "node_health": "RED",
                 "redis_connected": False,
-                "uptime_sec": 0}
+                "uptime_sec": 0
+            }
         return render_template('index.html', status=status)
 
     def submit(self):
-        if request.method == 'POST':
-            if not request.form['url']:
-                flash('Submit failed')
-                return redirect("/")
-            else:
-                data = {"url": request.form['url'], "crawlid": request.form.get("crawlid", None),
-                        "depth": request.form.get("depth", None), "priority": request.form.get("priority", None)}
-                r = requests.post(self.settings['REST_HOST'] + "/feed", data=data)
-                if r.content["status"] == "SUCCESS":
-                    flash('You successfully submitted a crawl job')
-                else:
+        self.logger.info("'submit' endpoint called")
+        try:
+            if request.method == 'POST':
+                if not request.form['url']:
+                    self.logger.debug("request form does not have a url")
                     flash('Submit failed')
-                return redirect("/")
+                    return redirect("/")
+                else:
+                    self.logger.debug("generating submit request")
+                    data = {
+                        "url": request.form['url'],
+                        "crawlid": request.form.get("crawlid", None),
+                        "maxdepth": int(request.form.get("depth", None)),
+                        "priority": int(request.form.get("priority", None)),
+                        "appid": "admin-ui",
+                    }
+                    r = self._rest_api.feed(data=data)
+                    if r["status"] == "SUCCESS":
+                        flash('You successfully submitted a crawl job')
+                    else:
+                        flash('Submit failed')
+                    return redirect("/")
+            else:
+                self.logger.warn("Unsupported request method type", {
+                                    "method_type": request.method
+                                 })
+        except Exception:
+            self.logger.error("Uncaught Exception", {
+                                'ex': traceback.format_exc()
+                              })
 
     def kafka(self):
+        self.logger.info("'kafka' endpoint called")
         ts_1 = []
         total_1 = []
         dt_items = []
@@ -340,6 +381,7 @@ class AdminUIService(object):
                                graphJSON=graphJSON, table=table)
 
     def redis(self):
+        self.logger.info("'redis' endpoint called")
         ts_1 = []
         total_1 = []
         dt_items = []
@@ -375,6 +417,7 @@ class AdminUIService(object):
                                graphJSON=graphJSON, table=table)
 
     def crawler(self):
+        self.logger.info("'crawler' endpoint called")
         ts_1 = []
         total_1 = []
         dt_items = []
