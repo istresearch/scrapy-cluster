@@ -123,7 +123,7 @@ You can use any of the three classes in the following way, you just need to have
     >>> import redis
     >>> import ujson
     >>> from scutils.redis_queue import RedisStack
-    >>> redis_conn = redis.Redis(host='scdev', port=6379)
+    >>> redis_conn = redis.Redis(host='scdev', port=6379, decode_responses=True)
     >>> queue = RedisStack(redis_conn, "stack_key", encoding=ujson))
     >>> queue.push('item1')
     >>> queue.push(['my', 'array', 'here'])

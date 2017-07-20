@@ -56,7 +56,7 @@ If you would like to throttle your Redis queue, you need to pass the queue in as
     >>> import redis
     >>> from scutils.redis_queue import RedisPriorityQueue
     >>> from scutils.redis_throttled_queue import RedisThrottledQueue
-    >>> redis_conn = redis.Redis(host='scdev', port=6379)
+    >>> redis_conn = redis.Redis(host='scdev', port=6379, decode_responses=True)
     >>> queue = RedisPriorityQueue(redis_conn, 'my_key')
     >>> t = RedisThrottledQueue(redis_conn, queue, 10, 5)
     >>> t.push('item', 5)
@@ -123,7 +123,7 @@ The Redis Throttled Queue really shines when multiple processes are trying to po
         queue = args['queue']
         elastic = args['elastic']
 
-        conn = redis.Redis(host=host, port=port)
+        conn = redis.Redis(host=host, port=port, decode_responses=True)
 
         q = RedisPriorityQueue(conn, queue)
         t = RedisThrottledQueue(conn, q, window, num, mod, elastic=elastic)
