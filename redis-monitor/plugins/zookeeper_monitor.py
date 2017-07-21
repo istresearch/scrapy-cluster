@@ -91,7 +91,7 @@ class ZookeeperMonitor(KafkaBaseMonitor):
             self.logger.warn("Unknown command given to Zookeeper Monitor")
 
         # write the configuration back to zookeeper
-        the_string = yaml.dump(the_dict, default_flow_style=False)
+        the_string = yaml.safe_dump(the_dict, default_flow_style=False)
         try:
             self.zoo_client.set(self.path, the_string.encode('utf-8'))
         except ZookeeperError:
