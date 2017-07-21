@@ -20,6 +20,7 @@ from scutils.redis_queue import RedisQueue, RedisPriorityQueue, RedisStack
 from scutils.stats_collector import (ThreadedCounter, TimeWindow,
                                      RollingTimeWindow, Counter, UniqueCounter,
                                      HyperLogLogCounter, BitMapCounter)
+from scutils.zookeeper_watcher import ZookeeperWatcher
 
 
 class RedisMixin(object):
@@ -370,14 +371,55 @@ class TestStatsBitMapCounter(RedisMixin, TestCase, CleanMixin):
 
 
 class TestZookeeperWatcher(TestCase):
-    def __init__(self, hosts):
+    def __init__(self, name, hosts):
         self.hosts = hosts
+        self.file_path = '/test_path'
+        self.file_data = 'test_data'
+        self.pointer_path = '/test_pointer'
+        self.pointer_data = self.file_path
+        TestCase.__init__(self, name)
 
     def setUp(self):
         self.zoo_client = KazooClient(hosts=self.hosts)
         self.zoo_client.start()
+        # prepare data
+        self.zoo_client.ensure_path(self.file_path)
+        self.zoo_client.set(self.file_path, self.file_data.encode('utf-8'))
+        self.zoo_client.ensure_path(self.pointer_path)
+        self.zoo_client.set(self.pointer_path,
+                            self.pointer_data.encode('utf-8'))
+
+        self.zoo_watcher = ZookeeperWatcher(hosts=self.hosts,
+                                            filepath=self.file_path,
+                                            pointer=False,
+                                            ensure=False,
+                                            valid_init=True)
+
+    def test_ping(self):
+        self.assertTrue(self.zoo_watcher.ping())
+
+    def test_get_file_contents(self):
+        pointer_zoo_watcher = ZookeeperWatcher(hosts=self.hosts,
+                                               filepath=self.pointer_path,
+                                               pointer=True,
+                                               ensure=False,
+                                               valid_init=True)
+
+        self.assertEquals(self.zoo_watcher.get_file_contents(), self.file_data)
+        self.assertEquals(pointer_zoo_watcher.get_file_contents(),
+                          self.file_data)
+        self.assertEquals(pointer_zoo_watcher.get_file_contents(True),
+                          self.pointer_data)
+
+        pointer_zoo_watcher.close()
 
     def tearDown(self):
+        self.zoo_watcher.close()
+
+        self.zoo_client.ensure_path(self.file_path)
+        self.zoo_client.delete(self.file_path)
+        self.zoo_client.ensure_path(self.pointer_path)
+        self.zoo_client.delete(self.pointer_path)
         self.zoo_client.stop()
         self.zoo_client.close()
 
@@ -389,6 +431,9 @@ if __name__ == '__main__':
                         default='localhost', help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
+    parser.add_argument('-z', '--zoo-keeper', action='store',
+                        default='localhost:2181',
+                        help="The Zookeeper connection <host>:<port>")
 
     args = vars(parser.parse_args())
     redis_conn = redis.Redis(host=args['redis_host'], port=args['redis_port'],
@@ -426,6 +471,9 @@ if __name__ == '__main__':
     suite.addTest(TestStatsBitMapCounter('test_bitmap_counter', redis_conn))
     suite.addTest(TestStatsBitMapCounter('test_roll_bitmap_counter',
                   redis_conn))
+    suite.addTest(TestZookeeperWatcher('test_ping', args['zoo_keeper']))
+    suite.addTest(TestZookeeperWatcher('test_get_file_contents',
+                  args['zoo_keeper']))
 
     result = unittest.TextTestRunner(verbosity=2).run(suite)
 
