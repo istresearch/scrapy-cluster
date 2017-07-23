@@ -19,6 +19,9 @@ sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "ans
 # Install coveralls and other pip requiremnts
 sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; cd ${PWD}; pip install -r requirements.txt; find . -name "*.pyc" -type f -delete;"
 
+# Install scutils from source
+sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "virtualenv ${PWD}/sc; source ${PWD}/sc/bin/activate; cd ${PWD}; pip uninstall scutils -y; cd utils; python setup.py install; cd ../; find . -name "*.pyc" -type f -delete;"
+
 # Run offline tests
 sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "source ${PWD}/sc/bin/activate; cd ${PWD}; ./run_offline_tests.sh"
 
