@@ -23,7 +23,7 @@ Typical usage of the Admin UI service is done in conjunction with both the Rest 
 
 .. warning:: This guide assumes you have both a running Rest service, Kafka Monitor and Redis Monitor already. Please see the Kafka Monitor :doc:`../kafka-monitor/quickstart`  or the Redis Monitor :doc:`../redis-monitor/quickstart` for more information.
 
-Open a terminals.
+Open a terminal.
 
 **Terminal 1:**
 

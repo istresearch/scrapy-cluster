@@ -89,7 +89,7 @@ Bring the machine up.
 ::
 
     (sc) vagrant@scdev:/vagrant$ ./run_offline_tests.sh
-    # There should be 5 core pieces, each of them saying all tests passed like so
+    # There should be 6 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
     ...
@@ -165,6 +165,12 @@ At time of writing, there is no Docker container to interface and run all of the
 
     $ docker exec -it scrapycluster_rest_1 bash
 
+  UI
+
+  ::
+
+    $ docker exec -it scrapycluster_ui_1 bash
+
 5) Run the unit and integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
 
 ::
@@ -212,7 +218,7 @@ Lets assume our project is now in ``~/scrapy-cluster``
 ::
 
     $ ./run_offline_tests.sh
-    # There should be 5 core pieces, each of them saying all tests passed like so
+    # There should be 6 core pieces, each of them saying all tests passed like so
     ----------------------------------------------------------------------
     Ran 20 tests in 0.034s
     ...
@@ -353,6 +359,34 @@ Add the following fields to override the defaults
 
     OK
 
+13) You can also set up the Admin UI to connect to the rest service
+
+::
+
+    $ cd ../ui/
+    $ vi localsettings.py
+
+Add the following fields to override the defaults
+
+::
+
+    # Here, 'scdev' is the host with the rest service
+    REST_HOST = 'scdev'
+
+14) Run the online integration tests to see if the ui service works.
+
+::
+
+    $ python tests/online.py -v
+    ...
+    ok
+
+    ----------------------------------------------------------------------
+    Ran 1 test in 11.309s
+
+    OK
+
+
 Your First Crawl
 ----------------
 
@@ -408,6 +442,12 @@ The following commands outline what you would run in a traditional environment. 
     ::
 
         python rest_service.py
+
+- The Admin UI (1):
+
+    ::
+
+        python ui_service.py
 
 -  The dump utility located in Kafka Monitor to see your crawl results
 

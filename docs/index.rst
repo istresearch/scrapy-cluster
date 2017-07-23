@@ -17,6 +17,7 @@ This documentation provides everything you need to know about the `Scrapy <http:
     topics/crawler/index
     topics/redis-monitor/index
     topics/rest/index
+    topics/admin-ui/index
     topics/utils/index
     topics/advanced/index
     topics/faq

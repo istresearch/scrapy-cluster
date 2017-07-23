@@ -18,17 +18,30 @@ Default: ``5343``
 
 The default port for the Rest service to listen on. The abbreviation ``SC`` equals ``5343`` in hexidecimal.
 
-**SLEEP_TIME**
+**DEBUG**
 
-Default: ``0.1``
+Default: ``False``
 
-The number of seconds the main threads will sleep between checking for items.
+Turns on Flask debugging while running the application.
 
-**WAIT_FOR_RESPONSE_TIME**
+**STAT_REQ_FREQ**
 
-Default: ``5``
+Default: ``910``
 
-The amount of time the Rest service will wait for a response from Kafka before converting the request into a ``poll``.
+The amount of time to wait in between statistics requests to build graphs or gather other metrics
+
+**STAT_START_DELAY**
+
+Default: ``10``
+
+The amount of time to wait before first executing stats requests to the rest endpoint
+
+
+**DAEMON_THREAD_JOIN_TIMEOUT**
+
+Default: ``10``
+
+The amount of time the UI will wait to join daemon threads it spawns to conduct background tasks
 
 Rest
 ----
@@ -43,7 +56,7 @@ Logging
 
 **LOGGER_NAME**
 
-Default: ``'rest-service'``
+Default: ``'ui-service'``
 
 The logger name.
 
@@ -55,7 +68,7 @@ The directory to write logs into. Only applicable when ``LOG_STDOUT`` is set to 
 
 **LOG_FILE**
 
-Default: ``'rest_service.log'``
+Default: ``'ui_service.log'``
 
 The file to write the logs into. When this file rolls it will have ``.1`` or ``.2`` appended to the file name. Only applicable when ``LOG_STDOUT`` is set to ``False``.
 
