@@ -11,9 +11,10 @@ def str2bool(v):
 # Flask configuration
 FLASK_LOGGING_ENABLED = os.getenv('FLASK_LOGGING_ENABLED', True)
 FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
-DEBUG = False
+DEBUG = str2bool(os.getenv('DEBUG', False))
 
-STAT_REQ_FREQ = 910
+STAT_REQ_FREQ = int(os.getenv('STAT_REQ_FREQ', 910))
+STAT_START_DELAY = int(os.getenv('STAT_START_DELAY', 10))
 
 # logging setup
 LOGGER_NAME = 'ui_service'
@@ -27,6 +28,4 @@ LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 # internal configuration
 REST_HOST = os.getenv('REST_HOST', "http://rest:5343")
-REQUEST_SO_TIMEOUT_SECS = 6.05  # set timeout slightly larger than a multiple of 3
-REQUEST_READ_TIMEOUT_SECS = 10
 DAEMON_THREAD_JOIN_TIMEOUT = 10

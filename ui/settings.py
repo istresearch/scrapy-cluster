@@ -7,6 +7,7 @@ FLASK_PORT = 5000
 DEBUG = False
 
 STAT_REQ_FREQ = 910
+STAT_START_DELAY = 10
 
 # REST host information
 REST_HOST = 'http://localhost:5343'

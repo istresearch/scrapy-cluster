@@ -41,7 +41,7 @@ class TestAdminUIService(TestCase):
     def test_status(self):
         r = requests.get('http://127.0.0.1:{p}'.format(p=self.port_number))
         results = r.content
-        self.assertIn("<title>Scrapy Cluster</title>", results)
+        self.assertIn(b"<title>Scrapy Cluster</title>", results)
 
     def tearDown(self):
         self.admin_ui_service.close()

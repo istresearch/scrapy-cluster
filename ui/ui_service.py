@@ -110,21 +110,32 @@ class AdminUIService(object):
 
     def _initiate_stats_req_loop(self):
         self.logger.debug("running stats req loop thread")
+        time.sleep(self.settings['STAT_START_DELAY'])
+
         while not self.closed:
-            time.sleep(10)
             try:
-                self._kafka_stats()
-                self._kafka_stats_poll()
-                self._redis_stats()
-                self._redis_stats_poll()
-                self._crawler_stats()
-                self._crawler_stats_poll()
-                self.logger.debug("stats thread sleeping")
+                if not self.closed:
+                    self._kafka_stats()
+                if not self.closed:
+                    self._kafka_stats_poll()
+                if not self.closed:
+                    self._redis_stats()
+                if not self.closed:
+                    self._redis_stats_poll()
+                if not self.closed:
+                    self._crawler_stats()
+                if not self.closed:
+                    self._crawler_stats_poll()
+
             except Exception:
                 self.logger.error("Uncaught Exception", {
                                     'ex': traceback.format_exc()
                                   })
-            time.sleep(self.settings['STAT_REQ_FREQ'])
+
+            self.logger.debug("stats thread sleeping")
+            t1 = datetime.datetime.now()
+            while (datetime.datetime.now() - t1).seconds < self.settings['STAT_REQ_FREQ'] and not self.closed:
+                time.sleep(1)
 
     def _kafka_stats(self):
         self.logger.debug("collecting kafka monitor stats poll")

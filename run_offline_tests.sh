@@ -36,5 +36,5 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 cd ../
-coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage rest/.coverage
+coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage rest/.coverage ui/.coverage
 
