@@ -147,6 +147,17 @@ To add further debug lines within the Rest, you can use the following variables 
 * Improperly formatted requests - please ensure your request matches either the Kafka Monitor or Rest service API
 * All Redis Monitor requests come back as a ``poll_id`` - Ensure you have the Kafka Monitor and Redis Monitor properly set up and running.
 
+Admin UI
+^^^^^^^^
+
+If you need to add more debug lines, the following variable is is used for logging.
+
+* **Core**: ``self.logger``
+
+**Typical Issues**
+
+* Cannot connect to Rest endpoint - please ensure that the rest endpoint is exposed on your machine, you have the right port number, and it is running.
+
 Utilities
 ^^^^^^^^^
 

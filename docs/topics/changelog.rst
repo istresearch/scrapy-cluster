@@ -12,6 +12,11 @@ Date: ??/??/????
 
 - todo
 
+Admin UI
+^^^^^^^^
+
+- new component that allows for browser based interaction with the Scrapy Cluster
+
 Scrapy Cluster 1.2
 ------------------
 
