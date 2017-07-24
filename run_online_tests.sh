@@ -6,20 +6,22 @@
 
 HOST='localhost'
 PORT=6379
+ZOOKEEPER_HOST='localhost:2181'
 
-if [ $# -ne 2 ]
+if [ $# -ne 3 ]
   then
-    echo "---- Running utils online test with localhost 6379"
+    echo "---- Running utils online test with redis on localhost:6379 and zookeeper on localhost:2181"
     echo "Other usage:"
-    echo "    ./bundle.sh <utils_redis_host> <utils_redis_port>"
+    echo "    ./bundle.sh <utils_redis_host> <utils_redis_port> <utils_zookeeper_host>"
 else
-    echo "---- Using custom redis host and port for utils online test"
+    echo "---- Using custom redis and zookeeper host and port for utils online test"
     HOST=$1
     PORT=$2
+    ZOOKEEPER_HOST=$3
 fi
 
 cd utils
-python tests/online.py -r $HOST -p $PORT
+python tests/online.py -r $HOST -p $PORT -z $ZOOKEEPER_HOST
 if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1
