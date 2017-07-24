@@ -86,6 +86,10 @@ class AdminUIService(object):
         self.stats['queue'] = {}
         self.stats['queue']['total_backlog'] = []
 
+        self.km_previous_total = 0
+        self.rm_previous_total = 0
+        self.km_previous_fail = 0
+
         # disable flask logger
         if self.settings['FLASK_LOGGING_ENABLED'] == False:
             log = logging.getLogger('werkzeug')
@@ -151,12 +155,20 @@ class AdminUIService(object):
             self.logger.debug("kafka monitor stats got result")
             dt = datetime.datetime.now()
             if 'total' in res['data']:
-                res['data']['total']['ts'] = dt
-                self.stats['kafka-monitor']['total'].append(res['data']['total'])
+                current_total = res['data']['total']['lifetime']
+                total = current_total - self.km_previous_total
+                self.km_previous_total = current_total
+                reading = {'ts': dt, 'value': total}
+
+                self.stats['kafka-monitor']['total'].append(reading)
                 self.stats['kafka-monitor']['total'] = self.stats['kafka-monitor']['total'][:10]
             if 'fail' in res['data']:
-                res['data']['total']['ts'] = dt
-                self.stats['kafka-monitor']['fail'].append(res['data']['fail'])
+                current_total = res['data']['fail']['lifetime']
+                total = current_total - self.km_previous_fail
+                self.km_previous_fail = current_total
+                reading = {'ts': dt, 'value': total}
+
+                self.stats['kafka-monitor']['fail'].append(reading)
                 self.stats['kafka-monitor']['fail'] = self.stats['kafka-monitor']['fail'][:10]
 
     def _kafka_stats_poll(self):
@@ -171,12 +183,20 @@ class AdminUIService(object):
             else:
                 dt = datetime.datetime.now()
                 if 'total' in res['data']:
-                    res['data']['total']['ts'] = dt
-                    self.stats['kafka-monitor']['total'].append(res['data']['total'])
+                    current_total = res['data']['total']['lifetime']
+                    total = current_total - self.km_previous_total
+                    self.km_previous_total = current_total
+                    reading = {'ts': dt, 'value': total}
+
+                    self.stats['kafka-monitor']['total'].append(reading)
                     self.stats['kafka-monitor']['total'] = self.stats['kafka-monitor']['total'][:10]
                 if 'fail' in res['data']:
-                    res['data']['total']['ts'] = dt
-                    self.stats['kafka-monitor']['fail'].append(res['data']['fail'])
+                    current_total = res['data']['fail']['lifetime']
+                    total = current_total - self.km_previous_fail
+                    self.km_previous_fail = current_total
+                    reading = {'ts': dt, 'value': total}
+
+                    self.stats['kafka-monitor']['fail'].append(reading)
                     self.stats['kafka-monitor']['fail'] = self.stats['kafka-monitor']['fail'][:10]
 
     def _redis_stats(self):
@@ -193,12 +213,20 @@ class AdminUIService(object):
             self.logger.debug("redis monitor stats got result")
             dt = datetime.datetime.now()
             if 'total' in res['data']:
-                res['data']['total']['ts'] = dt
-                self.stats['redis-monitor']['total'].append(res['data']['total'])
+                current_total = res['data']['total']['lifetime']
+                total = current_total - self.km_previous_total
+                self.km_previous_total = current_total
+                reading = {'ts': dt, 'value': total}
+
+                self.stats['redis-monitor']['total'].append(reading)
                 self.stats['redis-monitor']['total'] = self.stats['redis-monitor']['total'][:10]
             if 'fail' in res['data']:
-                res['data']['total']['ts'] = dt
-                self.stats['redis-monitor']['fail'].append(res['data']['fail'])
+                current_total = res['data']['fail']['lifetime']
+                total = current_total - self.km_previous_fail
+                self.km_previous_fail = current_total
+                reading = {'ts': dt, 'value': total}
+
+                self.stats['redis-monitor']['fail'].append(reading)
                 self.stats['redis-monitor']['fail'] = self.stats['redis-monitor']['fail'][:10]
 
     def _redis_stats_poll(self):
@@ -213,12 +241,20 @@ class AdminUIService(object):
             else:
                 dt = datetime.datetime.now()
                 if 'total' in res['data']:
-                    res['data']['total']['ts'] = dt
-                    self.stats['redis-monitor']['total'].append(res['data']['total'])
+                    current_total = res['data']['total']['lifetime']
+                    total = current_total - self.km_previous_total
+                    self.km_previous_total = current_total
+                    reading = {'ts': dt, 'value': total}
+
+                    self.stats['redis-monitor']['total'].append(reading)
                     self.stats['redis-monitor']['total'] = self.stats['redis-monitor']['total'][:10]
                 if 'fail' in res['data']:
-                    res['data']['total']['ts'] = dt
-                    self.stats['redis-monitor']['fail'].append(res['data']['fail'])
+                    current_total = res['data']['fail']['lifetime']
+                    total = current_total - self.km_previous_fail
+                    self.km_previous_fail = current_total
+                    reading = {'ts': dt, 'value': total}
+
+                    self.stats['redis-monitor']['fail'].append(reading)
                     self.stats['redis-monitor']['fail'] = self.stats['redis-monitor']['fail'][:10]
 
     def _crawler_stats(self):
@@ -345,26 +381,30 @@ class AdminUIService(object):
 
     def kafka(self):
         self.logger.info("'kafka' endpoint called")
-        ts_1 = []
-        total_1 = []
+        tss = []
+        totals = []
         dt_items = []
 
         for item in self.stats['kafka-monitor']['total']:
-            ts_1.append(item['ts'])
-            total_1.append(item['900'])
-            dt_items.append(dict(timestamp=item['ts'], total_requests=item['900']))
+            ts = item['ts']
+            tss.append(ts)
+
+            total = item['value']
+            totals.append(total)
+
+            dt_items.append(dict(timestamp=ts, total_requests=total))
 
         graphs = [
             dict(
                 data=[
                     dict(
-                        x=ts_1,
-                        y=total_1,
+                        x=tss,
+                        y=totals,
                         type='bar'
                     ),
                 ],
                 layout=dict(
-                    title='Total Requests'
+                    title='Total Requests handled by Kafka Monitor'
                 )
             ),
         ]
@@ -382,26 +422,30 @@ class AdminUIService(object):
 
     def redis(self):
         self.logger.info("'redis' endpoint called")
-        ts_1 = []
-        total_1 = []
+        tss = []
+        totals = []
         dt_items = []
 
         for item in self.stats['redis-monitor']['total']:
-            ts_1.append(item['ts'])
-            total_1.append(item['900'])
-            dt_items.append(dict(timestamp=item['ts'], total_requests=item['900']))
+            ts = item['ts']
+            tss.append(ts)
+
+            total = item['value']
+            totals.append(total)
+
+            dt_items.append(dict(timestamp=ts, total_requests=total))
 
         graphs = [
             dict(
                 data=[
                     dict(
-                        x=ts_1,
-                        y=total_1,
+                        x=tss,
+                        y=totals,
                         type='bar'
                     ),
                 ],
                 layout=dict(
-                    title='Total Requests'
+                    title='Total Requests handled by Redis Monitor'
                 )
             ),
         ]
@@ -418,21 +462,25 @@ class AdminUIService(object):
 
     def crawler(self):
         self.logger.info("'crawler' endpoint called")
-        ts_1 = []
-        total_1 = []
+        tss = []
+        totals = []
         dt_items = []
 
         for item in self.stats['queue']['total_backlog']:
-            ts_1.append(item['ts'])
-            total_1.append(item['total_backlog'])
-            dt_items.append(dict(timestamp=item['ts'], total_requests=item['total_backlog']))
+            ts = item['ts']
+            tss.append(ts)
+
+            tb = item['total_backlog']
+            totals.append(tb)
+
+            dt_items.append(dict(timestamp=ts, total_requests=tb))
 
         graphs = [
             dict(
                 data=[
                     dict(
-                        x=ts_1,
-                        y=total_1,
+                        x=tss,
+                        y=totals,
                         type='bar'
                     ),
                 ],

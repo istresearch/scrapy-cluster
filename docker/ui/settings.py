@@ -13,7 +13,7 @@ FLASK_LOGGING_ENABLED = os.getenv('FLASK_LOGGING_ENABLED', True)
 FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
 DEBUG = str2bool(os.getenv('DEBUG', False))
 
-STAT_REQ_FREQ = int(os.getenv('STAT_REQ_FREQ', 910))
+STAT_REQ_FREQ = int(os.getenv('STAT_REQ_FREQ', 60))
 STAT_START_DELAY = int(os.getenv('STAT_START_DELAY', 10))
 
 # logging setup
