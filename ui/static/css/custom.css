@@ -1,0 +1,61 @@
+/* centered columns styles */
+.row-centered {
+    margin:0px auto;
+    width: 2000px;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
+
+/* visual styles */
+body {
+    padding-bottom:40px;
+}
+
+/* centering styles for jsbin */
+html,
+body {
+    width:100%;
+    height:100%;
+}
+html {
+    display:table;
+}
+body {
+    display:table-cell;
+    vertical-align:top;
+}
+
+ul {
+    border: 1px solid #e7e7e7;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #f3f3f3;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: #666;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover:not(.active) {
+    background-color: #e6eeff;
+}
+
+.active {
+    background-color: #4CAF50;
+}

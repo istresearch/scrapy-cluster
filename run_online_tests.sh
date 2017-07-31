@@ -50,3 +50,12 @@ if [ $? -eq 1 ]; then
     echo "rest tests failed"
     exit 1
 fi
+python rest_service.py & export APP_PID=$!
+sleep 5
+cd ../ui
+python tests/online.py -v
+if [ $? -eq 1 ]; then
+    echo "ui tests failed"
+    exit 1
+fi
+kill $APP_PID

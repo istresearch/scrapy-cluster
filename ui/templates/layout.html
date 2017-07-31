@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Scrapy Cluster</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
+</head>
+
+<body>
+<div class="container-fluid">
+<ul>
+  <li><a href="/"><img alt="" src="/static/img/rsz_11logo.png"></a></li>
+  <li style="font-size: 26px"><a href="/">Scrapy Cluster</a></li>
+  <li style="font-size: 22px"><a href="/kafka">Kafka Monitor</a></li>
+  <li style="font-size: 22px"><a href="/redis">Redis Monitor</a></li>
+  <li style="font-size: 22px"><a href="/crawler">Crawler</a></li>
+  <li style="font-size: 26px; float:right"><a href="http://scrapy-cluster.readthedocs.io/en/latest/">Documentation     .</a></li>
+</ul>
+    <h1>  </h1>
+{% block body %}
+
+{% endblock %}
+</div>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+</body>
+
+<footer class="text-center">
+  <!-- D3.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <!-- Plotly.js -->
+  <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+
+  <script type="text/javascript">
+      var graphs = {{graphJSON | safe}};
+      var ids = {{ids | safe}};
+      for(var i in graphs) {
+          Plotly.plot(ids[i], // the ID of the div, created above
+                      graphs[i].data,
+                      graphs[i].layout || {});
+      }
+  </script>
+</footer>
+
+</html>

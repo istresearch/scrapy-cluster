@@ -3,12 +3,18 @@
 # This file houses all default settings for the UI
 # to override please use a custom localsettings.py file
 import os
+
+
 def str2bool(v):
     return str(v).lower() in ('true', '1') if type(v) == str else bool(v)
 
 # Flask configuration
 FLASK_LOGGING_ENABLED = os.getenv('FLASK_LOGGING_ENABLED', True)
 FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
+DEBUG = str2bool(os.getenv('DEBUG', False))
+
+STAT_REQ_FREQ = int(os.getenv('STAT_REQ_FREQ', 60))
+STAT_START_DELAY = int(os.getenv('STAT_START_DELAY', 10))
 
 # logging setup
 LOGGER_NAME = 'ui_service'
@@ -21,9 +27,5 @@ LOG_JSON = str2bool(os.getenv('LOG_JSON', False))
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 # internal configuration
-REST_ENDPOINT = os.getenv('REST_ENDPOINT', "http://rest:5343")
-REQUEST_SO_TIMEOUT_SECS = 6.05 # set timeout slightly larger than a multiple of 3
-REQUEST_READ_TIMEOUT_SECS = 10
-
-# Angular settings are dir /static
-
+REST_HOST = os.getenv('REST_HOST', "http://rest:5343")
+DAEMON_THREAD_JOIN_TIMEOUT = 10

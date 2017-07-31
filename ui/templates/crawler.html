@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{% for id in ids %}
+  <div id="{{id}}"></div>
+{% endfor %}
+
+{{ table }}
+
+{% endblock %}

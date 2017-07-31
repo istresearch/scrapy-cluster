@@ -20,8 +20,7 @@ sudo docker-compose -f travis/docker-compose.test.yml exec kafka_monitor ./run_d
 sudo docker-compose -f travis/docker-compose.test.yml exec redis_monitor ./run_docker_tests.sh
 sudo docker-compose -f travis/docker-compose.test.yml exec crawler ./run_docker_tests.sh
 sudo docker-compose -f travis/docker-compose.test.yml exec rest ./run_docker_tests.sh
-# TODO
-# sudo docker-compose -f travis/docker-compose.test.yml exec ui ./run_docker_tests.sh
+sudo docker-compose -f travis/docker-compose.test.yml exec ui ./run_docker_tests.sh
 
 # spin down compose
 sudo docker-compose -f travis/docker-compose.test.yml down

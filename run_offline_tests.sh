@@ -29,6 +29,12 @@ if [ $? -eq 1 ]; then
     echo "rest tests failed"
     exit 1
 fi
+cd ../ui
+nosetests -v --with-coverage --cover-erase --cover-package=../ui/
+if [ $? -eq 1 ]; then
+    echo "ui tests failed"
+    exit 1
+fi
 cd ../
-coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage rest/.coverage
+coverage combine crawler/.coverage kafka-monitor/.coverage redis-monitor/.coverage utils/.coverage rest/.coverage ui/.coverage
 
