@@ -56,6 +56,7 @@ class ZookeeperMonitor(KafkaBaseMonitor):
         data = None
         try:
             data = self.zoo_client.get(self.path)[0]
+            data = data.decode('utf-8')
         except ZookeeperError:
             e = "Unable to load Zookeeper config"
             self.logger.error(e)
@@ -90,9 +91,9 @@ class ZookeeperMonitor(KafkaBaseMonitor):
             self.logger.warn("Unknown command given to Zookeeper Monitor")
 
         # write the configuration back to zookeeper
-        the_string = yaml.dump(the_dict, default_flow_style=False)
+        the_string = yaml.safe_dump(the_dict, default_flow_style=False)
         try:
-            self.zoo_client.set(self.path, the_string)
+            self.zoo_client.set(self.path, the_string.encode('utf-8'))
         except ZookeeperError:
             e = "Unable to store Zookeeper config"
             self.logger.error(e)

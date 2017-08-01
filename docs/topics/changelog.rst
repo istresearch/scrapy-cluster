@@ -10,7 +10,7 @@ Scrapy Cluster 1.3
 
 Date: ??/??/????
 
-- todo
+- Add Python 3 support
 
 Admin UI
 ^^^^^^^^

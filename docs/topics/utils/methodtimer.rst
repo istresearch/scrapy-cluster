@@ -65,9 +65,9 @@ You can also dynamically adjust how long you would like your method to sleep, by
         # call the newly declared function
         return _hidden(mul_value)
 
-    print timeout(5, 3, "did not finish 2*2", 2)
-    print timeout(3, 5, "did not finish 3*3", 3)
-    print timeout(2, 1, "did not finish 4*4", 4)
+    print(timeout(5, 3, "did not finish 2*2", 2))
+    print(timeout(3, 5, "did not finish 3*3", 3))
+    print(timeout(2, 1, "did not finish 4*4", 4))
 
 Now we have a hidden method underneath our main one that will adjust both its timeout period and return value based on parameters passed into the parent function. In this case, we try to compute the square of ``mul_value`` and return the result.
 

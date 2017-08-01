@@ -14,7 +14,7 @@ Please see the ``requirements.txt`` within each sub project for Pip package depe
 
 Other important components required to run the cluster
 
-- Python 2.7: https://www.python.org/downloads/
+- Python 2.7 or 3.6: https://www.python.org/downloads/
 - Redis: http://redis.io
 - Zookeeper: https://zookeeper.apache.org
 - Kafka: http://kafka.apache.org

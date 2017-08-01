@@ -13,8 +13,17 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-python tests/online.py -v
-if [ $? -eq 1 ]; then
-    echo "integration tests failed"
-    exit 1
+# if 3 parameters passed in, then it's util's test
+if [ $# -eq 3 ]; then
+    python tests/online.py -r $1 -p $2 -z $3
+    if [ $? -eq 1 ]; then
+        echo "integration tests failed"
+        exit 1
+    fi
+else
+    python tests/online.py -v
+    if [ $? -eq 1 ]; then
+        echo "integration tests failed"
+        exit 1
+    fi
 fi

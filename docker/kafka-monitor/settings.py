@@ -42,8 +42,8 @@ LOG_JSON = str2bool(os.getenv('LOG_JSON', False))
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 # stats setup
-STATS_TOTAL = True
-STATS_PLUGINS = True
+STATS_TOTAL = str2bool(os.getenv('STATS_TOTAL', True))
+STATS_PLUGINS = str2bool(os.getenv('STATS_PLUGINS', True))
 STATS_CYCLE = 5
 STATS_DUMP = 60
 # from time variables in scutils.stats_collector class

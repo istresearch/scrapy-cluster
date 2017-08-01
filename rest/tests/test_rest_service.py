@@ -10,6 +10,7 @@ from rest_service import (log_call, error_catch, validate_json,
 import mock
 import json
 import flask
+import six
 
 from kafka.common import OffsetOutOfRangeError
 from kafka.conn import ConnectionStates
@@ -51,13 +52,13 @@ class TestRestService(TestCase):
         self.rest_service.logger = MagicMock()
 
     @mock.patch('os.listdir', MagicMock(return_value=['hey.json']))
-    @mock.patch('__builtin__.open', mock_open(read_data='bibble'), create=True)
+    @mock.patch('six.moves.builtins.open', mock_open(read_data='bibble'), create=True)
     def test_load_schemas_bad(self):
         with self.assertRaises(ValueError):
             self.rest_service._load_schemas()
 
     @mock.patch('os.listdir', MagicMock(return_value=['hey2.json']))
-    @mock.patch('__builtin__.open', mock_open(read_data='{\"stuff\":\"value\"}'), create=True)
+    @mock.patch('six.moves.builtins.open', mock_open(read_data='{\"stuff\":\"value\"}'), create=True)
     def test_load_schemas_bad(self):
         self.rest_service._load_schemas()
         self.assertEquals(self.rest_service.schemas,
@@ -475,7 +476,7 @@ class TestRestService(TestCase):
             self.assertEquals(results, 'data')
 
         # invalid schema
-        data = '{"otherkey": "bad data"}'
+        data = u'{"value": "data here", "otherkey": "bad data"}'
         with self.rest_service.app.test_request_context(data=data,
                                                         content_type='application/json'):
             results = override.test_schema()
@@ -483,11 +484,15 @@ class TestRestService(TestCase):
             self.assertEquals(override.logger.error.call_args[0][0],
                               "Invalid Schema")
 
+            if six.PY3:
+                cause_text = u"Additional properties are not allowed ('otherkey' was unexpected)"
+            else:
+                cause_text = u"Additional properties are not allowed (u'otherkey' was unexpected)"
             d = {
                 u'data': None,
                 u'error': {
                     u'message': u"JSON did not validate against schema.",
-                    u'cause': u"Additional properties are not allowed (u'otherkey' was unexpected)"
+                    u'cause': cause_text
                 },
                 u'status': u'FAILURE'
             }
@@ -588,6 +593,7 @@ class TestRestService(TestCase):
             self.assertEquals(data, d)
             self.assertEquals(results.status_code, 200)
             self.assertFalse(self.rest_service.uuids.has_key('key'))
+
 
         # test with uuid, no response
         time_list = [0, 1, 2, 3, 4, 5, 6]

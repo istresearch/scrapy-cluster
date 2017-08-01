@@ -44,7 +44,7 @@ def main():
     mod = args['moderate']
     queue = args['queue']
 
-    conn = redis.Redis(host=host, port=port)
+    conn = redis.Redis(host=host, port=port, decode_responses=True)
 
     q = RedisPriorityQueue(conn, queue)
     t = RedisThrottledQueue(conn, q, window, num, mod)

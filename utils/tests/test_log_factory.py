@@ -176,22 +176,22 @@ class TestLogCallbacks(TestCase):
         self.assertEqual(1, self.logger.x)
 
     def test_parse_log_level(self):
-        log_range = self.logger.parse_log_level("<=INFO")
+        log_range = self.logger.cb_handler.parse_log_level("<=INFO")
         self.assertEqual([0,1], log_range)
 
-        log_range = self.logger.parse_log_level("<INFO")
+        log_range = self.logger.cb_handler.parse_log_level("<INFO")
         self.assertEqual([0], log_range)
 
-        log_range = self.logger.parse_log_level(">=WARNING")
+        log_range = self.logger.cb_handler.parse_log_level(">=WARNING")
         self.assertEqual([2,3,4], log_range)
 
-        log_range = self.logger.parse_log_level(">WARN")
+        log_range = self.logger.cb_handler.parse_log_level(">WARN")
         self.assertEqual([3,4], log_range)
 
-        log_range = self.logger.parse_log_level("=INFO")
+        log_range = self.logger.cb_handler.parse_log_level("=INFO")
         self.assertEqual([1], log_range)
 
-        log_range = self.logger.parse_log_level("CRITICAL")
+        log_range = self.logger.cb_handler.parse_log_level("CRITICAL")
         self.assertEqual([4], log_range)
 
     def test_register_callback(self):
@@ -212,19 +212,19 @@ class TestLogCallbacks(TestCase):
         self.logger.register_callback('ERROR', add_3)
         self.logger.register_callback('*', add_4)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['DEBUG']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['DEBUG']]
         self.assertEqual([add_2, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['INFO']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['INFO']]
         self.assertEqual([add_1, add_2, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['WARNING']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['WARNING']]
         self.assertEqual([add_1, add_2, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['ERROR']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['ERROR']]
         self.assertEqual([add_1, add_3, add_4], callbacks)
 
-        callbacks = [cb for cb,criteria in self.logger.callbacks['CRITICAL']]
+        callbacks = [cb for cb,criteria in self.logger.cb_handler.callbacks['CRITICAL']]
         self.assertEqual([add_1, add_4], callbacks)
 
     def test_fire_callbacks_basic_1(self):
@@ -244,27 +244,27 @@ class TestLogCallbacks(TestCase):
 
         self.logger.x = 0
         self.logger.log_level = 'DEBUG'
-        self.logger.fire_callbacks('DEBUG')
+        self.logger.cb_handler.fire_callbacks('DEBUG')
         self.assertEqual(2, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'INFO'
-        self.logger.fire_callbacks('INFO')
+        self.logger.cb_handler.fire_callbacks('INFO')
         self.assertEqual(0, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'WARNING'
-        self.logger.fire_callbacks('WARNING')
+        self.logger.cb_handler.fire_callbacks('WARNING')
         self.assertEqual(5, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'ERROR'
-        self.logger.fire_callbacks('ERROR')
+        self.logger.cb_handler.fire_callbacks('ERROR')
         self.assertEqual(5, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'CRITICAL'
-        self.logger.fire_callbacks('CRITICAL')
+        self.logger.cb_handler.fire_callbacks('CRITICAL')
         self.assertEqual(0, self.logger.x)
 
     def test_fire_callbacks_basic_2(self):
@@ -285,27 +285,27 @@ class TestLogCallbacks(TestCase):
 
         self.logger.x = 0
         self.logger.log_level = 'DEBUG'
-        self.logger.fire_callbacks('DEBUG')
+        self.logger.cb_handler.fire_callbacks('DEBUG')
         self.assertEqual(2, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'INFO'
-        self.logger.fire_callbacks('INFO')
+        self.logger.cb_handler.fire_callbacks('INFO')
         self.assertEqual(6, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'WARNING'
-        self.logger.fire_callbacks('WARNING')
+        self.logger.cb_handler.fire_callbacks('WARNING')
         self.assertEqual(-4, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'ERROR'
-        self.logger.fire_callbacks('ERROR')
+        self.logger.cb_handler.fire_callbacks('ERROR')
         self.assertEqual(6, self.logger.x)
 
         self.logger.x = 0
         self.logger.log_level = 'CRITICAL'
-        self.logger.fire_callbacks('CRITICAL')
+        self.logger.cb_handler.fire_callbacks('CRITICAL')
         self.assertEqual(6, self.logger.x)
 
     def test_preserve_data(self):

@@ -202,6 +202,7 @@ class ZookeeperWatcher(object):
         try:
             # grab the file
             result, stat = self.zoo_client.get(path, watch=self.watch_file)
+            result = result.decode('utf-8')
         except ZookeeperError:
             self.set_valid(False)
             self.call_error(self.INVALID_GET)
@@ -243,6 +244,7 @@ class ZookeeperWatcher(object):
             try:
                 conf_string, stat2 = self.zoo_client.get(self.point_path,
                                                     watch=self.watch_pointed)
+                conf_string = conf_string.decode('utf-8')
             except ZookeeperError:
                 self.old_data = ''
                 self.set_valid(False)

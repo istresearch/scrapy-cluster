@@ -395,36 +395,36 @@ class TestZookeeperPlugin(TestCase, RegexFixer):
 
     def test_zk_handle_du(self):
         # domain update
-        s = 'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        s = b'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123","hits":15,"scale":0.9,"window":60}'
-        expected = 'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoz.org:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
+        expected = b'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoz.org:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:domain-update:cnn.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_dr(self):
         # domain remove
-        s = 'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        s = b'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123"}'
-        expected = 'blacklist: []\ndomains: {}\n'
+        expected = b'blacklist: []\ndomains: {}\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:domain-remove:dmoz.org:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_bu(self):
         # blacklist update
-        s = 'blacklist: []\ndomains: {}\n'
+        s = b'blacklist: []\ndomains: {}\n'
         val = '{"uuid":"blah123"}'
-        expected = 'blacklist:\n- bingo.com\ndomains: {}\n'
+        expected = b'blacklist:\n- bingo.com\ndomains: {}\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:blacklist-update:bingo.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_br(self):
         # blacklist remove
-        s = 'blacklist: [bingo.com]\ndomains: {}\n'
+        s = b'blacklist: [bingo.com]\ndomains: {}\n'
         val = '{"uuid":"blah123"}'
-        expected = 'blacklist: []\ndomains: {}\n'
+        expected = b'blacklist: []\ndomains: {}\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:blacklist-remove:bingo.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)

@@ -1,5 +1,9 @@
+.vscode
+
 # Python binaries
 *.pyc
+
+.idea/
 
 # Sphinx
 docs/_build

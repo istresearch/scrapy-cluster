@@ -11,7 +11,7 @@ Requirements
 ------------
 
 - Unix based machine (Linux or OS X)
-- Python 2.7.x
+- Python 2.7 or 3.6
 
 Installation
 ------------

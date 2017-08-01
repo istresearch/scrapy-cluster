@@ -209,7 +209,8 @@ class AbstractCounter(object):
         '''
         if redis_conn is None:
             if host is not None and port is not None:
-                self.redis_conn = redis.Redis(host=host, port=port)
+                self.redis_conn = redis.Redis(host=host, port=port,
+                                              decode_responses=True)
             else:
                 raise Exception("Please specify some form of connection "
                                     "to Redis")
@@ -318,6 +319,12 @@ class ThreadedCounter(AbstractCounter):
         self.thread = Thread(target=self._main_loop)
         self.thread.setDaemon(True)
         self.thread.start()
+
+    def deactivate(self):
+        '''
+        Call to shut down the threaded stats collector without joining; returns immediately
+        '''
+        self.active = False
 
     def stop(self):
         '''
