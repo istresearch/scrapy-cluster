@@ -111,7 +111,8 @@ class KafkaPipeline(object):
             producer = KafkaProducer(bootstrap_servers=settings['KAFKA_HOSTS'],
                                  retries=3,
                                  linger_ms=settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
-                                 buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'])
+                                 buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'],
+                                 value_serializer=lambda m: m.encode('utf-8'))
         except Exception as e:
                 logger.error("Unable to connect to Kafka in Pipeline"\
                     ", raising exit flag.")

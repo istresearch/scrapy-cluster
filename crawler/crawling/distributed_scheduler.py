@@ -282,7 +282,7 @@ class DistributedScheduler(object):
         try:
             obj = urllib.request.urlopen(settings.get('PUBLIC_IP_URL',
                                   'http://ip.42.pl/raw'))
-            results = self.ip_regex.findall(obj.read())
+            results = self.ip_regex.findall(obj.read().decode('utf-8'))
             if len(results) > 0:
                 self.my_ip = results[0]
             else:
@@ -313,7 +313,8 @@ class DistributedScheduler(object):
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
                              port=settings.get('REDIS_PORT'),
-                             db=settings.get('REDIS_DB'))
+                             db=settings.get('REDIS_DB'),
+                             decode_responses=True)
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         hits = settings.get('QUEUE_HITS', 10)

@@ -2,6 +2,12 @@ version: '2'
 # this file is used for travis ci testing, and is built in .travis.yml
 
 services:
+  utils:
+    image: istresearch/scrapy-cluster:utils-test
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
   kafka_monitor:
     image: istresearch/scrapy-cluster:kafka-monitor-test
     depends_on:

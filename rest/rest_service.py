@@ -63,7 +63,7 @@ def error_catch(f):
                                                    True,
                                                    instance.UNKNOWN_ERROR)
             log_dict = deepcopy(ret_dict)
-            log_dict['error']['cause'] = e.message
+            log_dict['error']['cause'] = ""
             log_dict['error']['exception'] = str(e)
             log_dict['error']['ex'] = traceback.format_exc()
             instance.logger.error("Uncaught Exception Thrown", log_dict)
@@ -102,7 +102,7 @@ def validate_schema(schema_name):
             instance = args[0]
             try:
                 instance.validator(instance.schemas[schema_name]).validate(request.get_json())
-            except ValidationError, e:
+            except ValidationError as e:
                 ret_dict = instance._create_ret_object(instance.FAILURE,
                                                        None, True,
                                                        instance.BAD_SCHEMA,
@@ -352,7 +352,8 @@ class RestService(object):
                                   str(self.settings['REDIS_HOST']))
                 self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
                                               port=self.settings['REDIS_PORT'],
-                                              db=self.settings['REDIS_DB'])
+                                              db=self.settings['REDIS_DB'],
+                                              decode_responses=True)
                 self.redis_conn.info()
                 self.redis_connected = True
                 self.logger.info("Successfully connected to redis")

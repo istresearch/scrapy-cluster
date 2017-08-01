@@ -60,7 +60,13 @@ class RedisMonitor(object):
 
         self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'],
-                                      db=self.settings['REDIS_DB'])
+                                      db=self.settings['REDIS_DB'],
+                                      decode_responses=True)
+        # redis_lock needs a redis connection without setting decode_responses
+        # to True
+        self.lock_redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
+                                                 port=self.settings['REDIS_PORT'],
+                                                 db=self.settings['REDIS_DB'])
 
         try:
             self.redis_conn.info()
@@ -182,7 +188,7 @@ class RedisMonitor(object):
         '''
         Returns a lock object, split for testing
         '''
-        return redis_lock.Lock(self.redis_conn, key,
+        return redis_lock.Lock(self.lock_redis_conn, key,
                                expire=self.settings['REDIS_LOCK_EXPIRATION'],
                                auto_renewal=True)
 

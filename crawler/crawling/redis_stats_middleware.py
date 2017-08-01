@@ -41,7 +41,8 @@ class RedisStatsMiddleware(object):
         # set up redis
         self.redis_conn = redis.Redis(host=settings.get('REDIS_HOST'),
             port=settings.get('REDIS_PORT'),
-            db=settings.get('REDIS_DB'))
+            db=settings.get('REDIS_DB'),
+            decode_responses=True)
 
         try:
             self.redis_conn.info()

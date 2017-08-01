@@ -39,7 +39,7 @@ class KafkaBaseMonitor(BaseMonitor):
                                str(brokers))
 
             return KafkaProducer(bootstrap_servers=brokers,
-                                 value_serializer=lambda m: json.dumps(m),
+                                 value_serializer=lambda m: json.dumps(m).encode('utf-8'),
                                  retries=3,
                                  linger_ms=settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
                                  buffer_memory=settings['KAFKA_PRODUCER_BUFFER_BYTES'])

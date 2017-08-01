@@ -46,7 +46,8 @@ class TestLinkSpider(TestCase):
         # set up redis
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'],
-                                      db=self.settings['REDIS_DB'])
+                                      db=self.settings['REDIS_DB'],
+                                      decode_responses=True)
         try:
             self.redis_conn.info()
         except ConnectionError:
@@ -66,7 +67,8 @@ class TestLinkSpider(TestCase):
             group_id="demo-id",
             auto_commit_interval_ms=10,
             consumer_timeout_ms=5000,
-            auto_offset_reset='earliest'
+            auto_offset_reset='earliest',
+            value_deserializer=lambda m: m.decode('utf-8')
         )
         time.sleep(1)
 
