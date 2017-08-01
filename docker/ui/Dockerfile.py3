@@ -1,4 +1,4 @@
-FROM python:2.7
+FROM python:3.6
 MAINTAINER Madison Bahmer <madison.bahmer@istresearch.com>
 
 # os setup
@@ -10,6 +10,7 @@ WORKDIR /usr/src/app
 COPY utils /usr/src/utils
 COPY ui/requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
+RUN rm -rf /usr/src/utils
 
 # move codebase over
 COPY ui /usr/src/app

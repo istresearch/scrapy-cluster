@@ -3,6 +3,7 @@ MAINTAINER Madison Bahmer <madison.bahmer@istresearch.com>
 
 # copy ui own requirements.txt with its dependencies
 COPY ui/requirements.txt /usr/src/app/
+COPY utils /usr/src/utils
 
 # Combine run command to create single intermeiate image layer
 # This MANDATORY because developments dependencies are huge.
@@ -23,6 +24,7 @@ RUN mkdir -p /usr/src/app \
  && apk del build-dependencies
 
 # move codebase over
+RUN rm -rf /usr/src/utils
 COPY ui /usr/src/app
 
 WORKDIR /usr/src/app
