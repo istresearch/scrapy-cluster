@@ -18,6 +18,7 @@ import redis
 import logging
 import json
 import threading
+from six import string_types
 
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.common import KafkaError
@@ -40,7 +41,7 @@ from jsonschema import Draft4Validator, validators
 
 def crossdomain(origin='*', max_age=21600, attach_to_all=True, automatic_options=True):
 
-    if not isinstance(origin, basestring):
+    if not isinstance(origin, string_types):
         origin = ', '.join(origin)
     if isinstance(max_age, timedelta):
         max_age = max_age.total_seconds()

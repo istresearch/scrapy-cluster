@@ -592,7 +592,7 @@ class TestRestService(TestCase):
             data = json.loads(results.data)
             self.assertEquals(data, d)
             self.assertEquals(results.status_code, 200)
-            self.assertFalse(self.rest_service.uuids.has_key('key'))
+            self.assertFalse('key' in self.rest_service.uuids)
 
 
         # test with uuid, no response
@@ -612,7 +612,7 @@ class TestRestService(TestCase):
             data = json.loads(results.data)
             self.assertEquals(data, d)
             self.assertEquals(results.status_code, 200)
-            self.assertTrue(self.rest_service.uuids.has_key('key'))
+            self.assertTrue('key' in self.rest_service.uuids)
             self.assertEquals(self.rest_service.uuids['key'], 'poll')
 
     def test_poll(self):
