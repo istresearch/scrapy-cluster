@@ -487,8 +487,7 @@ class DistributedScheduler(object):
                 # item is a serialized request
                 req = request_from_dict(item)
             else:
-                # item is feeded from outside and is not a serialized request,
-                # parse it manually
+                # item is a feed from outside, parse it manually
                 req = self.request_from_feed(item)
 
             # extra check to add items to request
