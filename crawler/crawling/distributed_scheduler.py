@@ -485,7 +485,7 @@ class DistributedScheduler(object):
                     .format(url=item['url']))
             if 'meta' in item:
                 # item is a serialized request
-                req = request_from_dict(item)
+                req = request_from_dict(item, self.spider)
             else:
                 # item is a feed from outside, parse it manually
                 req = self.request_from_feed(item)
