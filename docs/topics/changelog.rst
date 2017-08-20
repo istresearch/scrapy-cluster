@@ -12,6 +12,11 @@ Date: ??/??/????
 
 - Add Python 3 support
 
+Crawler
+^^^^^^^
+
+- Improved request to dictionary serialization support
+
 Scrapy Cluster 1.2
 ------------------
 
