@@ -472,7 +472,6 @@ class DistributedScheduler(object):
         Logic to handle getting a new url request, from a bunch of
         different queues
         '''
-        self.logger.debug("next_request called")
         t = time.time()
         # update the redis queues every so often
         if t - self.update_time > self.update_interval:
