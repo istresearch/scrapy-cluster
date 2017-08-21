@@ -4,7 +4,11 @@ from scutils.log_factory import LogFactory
 
 class MetaPassthroughMiddleware(object):
 
-    blacklist = ['_splash_processed']
+    blacklist = [
+        '_splash_processed',
+        '_replaced_args',
+        'url'
+    ]
 
     def __init__(self, settings):
         self.setup(settings)

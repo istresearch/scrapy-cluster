@@ -20,6 +20,9 @@ env:
   - docker: 1
     dockerfile_name: Dockerfile.py2alpine
     docker_tag_suffix: dev-alpine
+  - docker: 1
+    dockerfile_name: Dockerfile.py3
+    docker_tag_suffix: dev-py3
 
 install: true
 

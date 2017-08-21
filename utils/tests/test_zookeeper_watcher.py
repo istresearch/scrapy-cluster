@@ -9,7 +9,7 @@ class TestZookeeperWatcher(TestCase):
     def setUp(self):
 
         zoo_client = MagicMock()
-        zoo_client.get = MagicMock(return_value=('data', 'blah'))
+        zoo_client.get = MagicMock(return_value=(b'data', 'blah'))
 
         with patch('scutils.zookeeper_watcher.KazooClient') as k:
             k.return_value = zoo_client

@@ -53,7 +53,7 @@ services:
       - zookeeper
     restart: always
   splash:
-    image: scrapinghub/splash:2.3.2
+    image: scrapinghub/splash:3.0
     ports:
       - 8050:8050
     restart: always

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import scrapy
 
 from scrapy.http import Request
+from scrapy_splash import SplashRequest
 from crawling.spiders.lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 from scrapy.conf import settings
 
@@ -20,7 +21,8 @@ class LinkSpider(RedisSpider):
         super(LinkSpider, self).__init__(*args, **kwargs)
 
     def parse(self, response):
-        self._logger.debug("crawled url {}".format(response.url))
+        final_url = response.url if 'url' not in response.meta else response.meta['url']
+        self._logger.debug("crawled url {}\n{}\n{}".format(final_url, dict(response.meta), response.request.url))
         cur_depth = 0
         if 'curdepth' in response.meta:
             cur_depth = response.meta['curdepth']
@@ -33,8 +35,8 @@ class LinkSpider(RedisSpider):
         item['attrs'] = response.meta['attrs']
 
         # populated from raw HTTP response
-        item["url"] = response.url
-        item["response_url"] = response.url
+        item["url"] = final_url
+        item["response_url"] = final_url
         item["status_code"] = response.status
         item["status_msg"] = "OK"
         item["response_headers"] = self.reconstruct_headers(response)
@@ -62,7 +64,11 @@ class LinkSpider(RedisSpider):
                 the_url = link.url
                 the_url = the_url.replace('\n', '')
                 item["links"].append({"url": the_url, "text": link.text, })
-                req = Request(the_url, callback=self.parse)
+
+                if 'splash' not in response.meta:
+                    req = Request(the_url, callback=self.parse)
+                else:
+                    req = SplashRequest(the_url, callback=self.parse)
 
                 req.meta['priority'] = response.meta['priority'] - 10
                 req.meta['curdepth'] = response.meta['curdepth'] + 1
@@ -71,7 +77,7 @@ class LinkSpider(RedisSpider):
                         response.meta['useragent'] is not None:
                     req.headers['User-Agent'] = response.meta['useragent']
 
-                self._logger.debug("Trying to follow link '{}'".format(req.url))
+                self._logger.debug("Trying to follow link '{}'".format(the_url))
                 yield req
 
         # raw response has been processed, yield to item pipeline

@@ -209,7 +209,8 @@ class AbstractCounter(object):
         '''
         if redis_conn is None:
             if host is not None and port is not None:
-                self.redis_conn = redis.Redis(host=host, port=port)
+                self.redis_conn = redis.Redis(host=host, port=port,
+                                              decode_responses=True)
             else:
                 raise Exception("Please specify some form of connection "
                                     "to Redis")

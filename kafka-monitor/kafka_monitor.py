@@ -123,7 +123,8 @@ class KafkaMonitor(object):
 
         redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                  port=self.settings['REDIS_PORT'],
-                                 db=self.settings.get('REDIS_DB'))
+                                 db=self.settings.get('REDIS_DB'),
+                                 decode_responses=True)
 
         try:
             redis_conn.info()
@@ -455,6 +456,7 @@ class KafkaMonitor(object):
                 self.settings['KAFKA_INCOMING_TOPIC'],
                 group_id=self.settings['KAFKA_GROUP'],
                 bootstrap_servers=brokers,
+                value_deserializer=lambda m: m.decode('utf-8'),
                 consumer_timeout_ms=self.settings['KAFKA_CONSUMER_TIMEOUT'],
                 auto_offset_reset=self.settings['KAFKA_CONSUMER_AUTO_OFFSET_RESET'],
                 auto_commit_interval_ms=self.settings['KAFKA_CONSUMER_COMMIT_INTERVAL_MS'],
@@ -478,7 +480,7 @@ class KafkaMonitor(object):
                                str(brokers))
 
             return KafkaProducer(bootstrap_servers=brokers,
-                                 value_serializer=lambda m: json.dumps(m),
+                                 value_serializer=lambda m: json.dumps(m).encode('utf-8'),
                                  retries=3,
                                  linger_ms=self.settings['KAFKA_PRODUCER_BATCH_LINGER_MS'],
                                  buffer_memory=self.settings['KAFKA_PRODUCER_BUFFER_BYTES'])

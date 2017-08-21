@@ -39,7 +39,7 @@ class Base(object):
         @requires: The object be serializable
         '''
         if self.encoding.__name__ == 'pickle':
-            return self.encoding.dumps(item, protocol=-1)
+            return self.encoding.dumps(item, protocol=-1).decode('latin1')
         else:
             return self.encoding.dumps(item)
 
@@ -47,7 +47,10 @@ class Base(object):
         '''
         Decode an item previously encoded
         '''
-        return self.encoding.loads(encoded_item)
+        if self.encoding.__name__ == 'pickle':
+            return self.encoding.loads(encoded_item.encode('latin1'))
+        else:
+            return self.encoding.loads(encoded_item)
 
     def __len__(self):
         '''

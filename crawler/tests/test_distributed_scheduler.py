@@ -7,6 +7,7 @@ import mock
 from mock import MagicMock
 from crawling.distributed_scheduler import DistributedScheduler
 from scrapy.http import Request
+from scrapy.utils.reqser import request_to_dict
 from scutils.redis_throttled_queue import RedisThrottledQueue
 
 
@@ -139,6 +140,21 @@ class TestDistributedSchedulerFindItem(ThrottleMixin, TestCase):
         self.assertEqual(self.scheduler.find_item(), None) # should also not raise exception
 
 
+class TestDistributedSchedulerRequestFromFeed(ThrottleMixin, TestCase):
+    def test_request_from_feed(self):
+        self.req = self.get_request()
+        feed = {
+            "url": "http://ex.com",
+            "crawlid": "abc123",
+            "appid": "myapp",
+            "spiderid": "link",
+        }
+        out = self.scheduler.request_from_feed(feed)
+        self.assertEquals(out.url, 'http://ex.com')
+        for key in out.meta:
+            self.assertEqual(out.meta[key], self.req.meta[key])
+
+
 class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
 
     @mock.patch('time.time', return_value=5)
@@ -169,12 +185,26 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         except Exception as e:
             self.assertEqual(str(e), "ip")
 
-        # test got item
-        self.scheduler.find_item = MagicMock(
-                                        return_value={"url": "http://ex.com",
-                                                      "crawlid": "abc123",
-                                                      "appid": "myapp",
-                                                      "spiderid": "link"})
+        # test request from feed
+        feed = {
+            "url": "http://ex.com",
+            "crawlid": "abc123",
+            "appid": "myapp",
+            "spiderid": "link",
+        }
+        self.scheduler.find_item = MagicMock(return_value=feed)
+        out = self.scheduler.next_request()
+        self.assertEquals(out.url, 'http://ex.com')
+        for key in out.meta:
+            self.assertEqual(out.meta[key], self.req.meta[key])
+
+        # test request from serialized request
+        exist_req = Request('http://ex.com')
+        exist_item = request_to_dict(exist_req)
+        exist_item["meta"]["crawlid"] = "abc123"
+        exist_item["meta"]["appid"] = "myapp"
+        exist_item["meta"]["spiderid"] = "link"
+        self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEquals(out.url, 'http://ex.com')
         for key in out.meta:

@@ -6,9 +6,8 @@ from past.builtins import basestring
 from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
-from scrapy.utils.python import to_unicode
-from scrapy_splash import SplashRequest
 from scrapy_splash.utils import to_native_str
+from scrapy.utils.reqser import request_to_dict, request_from_dict
 
 import redis
 import random
@@ -284,7 +283,7 @@ class DistributedScheduler(object):
         try:
             obj = urllib.request.urlopen(settings.get('PUBLIC_IP_URL',
                                   'http://ip.42.pl/raw'))
-            results = self.ip_regex.findall(obj.read())
+            results = self.ip_regex.findall(obj.read().decode('utf-8'))
             if len(results) > 0:
                 self.my_ip = results[0]
             else:
@@ -315,7 +314,8 @@ class DistributedScheduler(object):
     def from_settings(cls, settings):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
                              port=settings.get('REDIS_PORT'),
-                             db=settings.get('REDIS_DB'))
+                             db=settings.get('REDIS_DB'),
+                             decode_responses=True)
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         hits = settings.get('QUEUE_HITS', 10)
@@ -329,7 +329,6 @@ class DistributedScheduler(object):
         ip_regex = settings.get('IP_ADDR_REGEX', '.*')
         backlog_blacklist = settings.get('SCHEDULER_BACKLOG_BLACKLIST', True)
         queue_timeout = settings.get('SCHEDULER_QUEUE_TIMEOUT', 3600)
-
 
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
         my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
@@ -393,8 +392,7 @@ class DistributedScheduler(object):
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
             return
-        req_dict = self.request_to_dict(request)
-        #self.logger.debug("request dictionary", req_dict)
+        req_dict = request_to_dict(request, self.spider)
 
         if not self.is_blacklisted(req_dict['meta']['appid'],
                                    req_dict['meta']['crawlid']):
@@ -445,28 +443,6 @@ class DistributedScheduler(object):
                               .format(appid=req_dict['meta']['appid'],
                                       id=req_dict['meta']['crawlid']))
 
-    def request_to_dict(self, request):
-        '''
-        Convert Request object to a dict.
-        modified from scrapy.utils.reqser
-        '''
-        req_dict = {
-            # urls should be safe (safe_string_url)
-            'url': to_unicode(request.url),
-            'method': request.method,
-            'headers': dict(request.headers),
-            'body': request.body,
-            'cookies': request.cookies,
-            'meta': request.meta,
-            '_encoding': request._encoding,
-            'priority': request.priority,
-            'dont_filter': request.dont_filter,
-             #  callback/errback are assumed to be a bound instance of the spider
-            'callback': None if request.callback is None else request.callback.__name__,
-            'errback': None if request.errback is None else request.errback.__name__,
-        }
-        return req_dict
-
     def find_item(self):
         '''
         Finds an item from the throttled queues
@@ -496,6 +472,7 @@ class DistributedScheduler(object):
         Logic to handle getting a new url request, from a bunch of
         different queues
         '''
+        self.logger.debug("next_request called")
         t = time.time()
         # update the redis queues every so often
         if t - self.update_time > self.update_interval:
@@ -513,82 +490,77 @@ class DistributedScheduler(object):
         if item:
             self.logger.debug(u"Found url to crawl {url}" \
                     .format(url=item['url']))
-            #self.logger.debug("item dump", extra=item)
-            try:
-                req = Request(item['url'])
-            except ValueError:
-                # need absolute url
-                # need better url validation here
-                req = Request('http://' + item['url'])
-
-            if 'meta' in item and '_splash_processed' in item['meta']:
-                self.logger.debug("found splash request")
-                # these seems ugly, shouldn't the SplashRequest populate most
-                # of these values for us?
-                req = SplashRequest(item['url'],
-                                    method='POST',
-                                    magic_response=True,
-                                    body=ujson.dumps(item['meta']['splash']['args']),
-                                    headers=item['meta']['splash']['args']['headers'],)
-
-            try:
-                if 'callback' in item and item['callback'] is not None:
-                    req.callback = getattr(self.spider, item['callback'])
-            except AttributeError:
-                self.logger.warn("Unable to find callback method")
-
-            try:
-                if 'errback' in item and item['errback'] is not None:
-                    req.errback = getattr(self.spider, item['errback'])
-            except AttributeError:
-                self.logger.warn("Unable to find errback method")
 
             if 'meta' in item:
-                item = item['meta']
+                # item is a serialized request
+                req = request_from_dict(item, self.spider)
+            else:
+                # item is a feed from outside, parse it manually
+                req = self.request_from_feed(item)
 
-            # defaults not in schema
-            if 'curdepth' not in item:
-                item['curdepth'] = 0
-            if "retry_times" not in item:
-                item['retry_times'] = 0
-
-            for key in list(item.keys()):
-                req.meta[key] = item[key]
-
-            # consider possible splash requests
-            if 'splash' in req.meta:
-                if req.meta['splash'] is None:
-                    self.logger.debug("splash key not in use, deleting")
-                    del req.meta['splash']
-                else:
-                    # logic/defaults for splash request
-                    self.logger.debug("splash in use")
-                    req.meta['splash']['endpoint'] = 'render.html' # set render endpoint
-
-                    if 'args' not in req.meta['splash']:
-                        req.meta['splash']['args'] = {}
-                    if 'headers' not in req.meta['splash']['args']:
-                        req.meta['splash']['args']['headers'] = {}
-                    req.meta['splash']['args']['headers']['content-type'] = 'application/json' # set content type
-
-                    # when maxdepth > 0, we need to modify the passed through
-                    # splash meta to process the correct url
-                    if not isinstance(req, SplashRequest):
-                        req.meta['splash']['args']['url'] = to_native_str(req.url)
+            req = self._ensure_splash_setup(req)
 
             # extra check to add items to request
-            if 'useragent' in item and item['useragent'] is not None:
-                req.headers['User-Agent'] = item['useragent']
-            if 'cookie' in item and item['cookie'] is not None:
-                if isinstance(item['cookie'], dict):
-                    req.cookies = item['cookie']
-                elif isinstance(item['cookie'], basestring):
-                    req.cookies = self.parse_cookie(item['cookie'])
+            if 'useragent' in req.meta and req.meta['useragent'] is not None:
+                req.headers['User-Agent'] = req.meta['useragent']
 
-            #self.logger.debug("finished generating request", self.request_to_dict(req))
+            #self.logger.debug("finished generating request {}".format(type(req)), request_to_dict(req, self.spider))
             return req
 
         return None
+
+    def _ensure_splash_setup(self, req):
+        """Tries to ensure the proper variables are set for
+        splash crawling
+        """
+        if 'splash' in req.meta:
+            if req.meta['splash'] is None:
+                self.logger.debug("splash key not in use, deleting")
+                del req.meta['splash']
+            else:
+                # logic/defaults for splash request
+                self.logger.debug("splash in use")
+                if 'endpoint' not in req.meta['splash']:
+                    req.meta['splash']['endpoint'] = 'render.html'
+                if 'args' not in req.meta['splash']:
+                    req.meta['splash']['args'] = {}
+                if 'headers' not in req.meta['splash']['args']:
+                    req.meta['splash']['args']['headers'] = {}
+                    req.meta['splash']['args']['headers']['content-type'] = 'application/json' # set content type
+
+                # correct unicode error
+                if 'url' in req.meta['splash']['args']:
+                    req.meta['splash']['args']['url'] = to_native_str(req.meta['splash']['args']['url'])
+        else:
+            self.logger.debug("no splash usage detected")
+
+        return req
+
+    def request_from_feed(self, item):
+        try:
+            req = Request(item['url'])
+        except ValueError:
+            # need absolute url
+            # need better url validation here
+            req = Request('http://' + item['url'])
+
+        # defaults not in schema
+        if 'curdepth' not in item:
+            item['curdepth'] = 0
+        if "retry_times" not in item:
+            item['retry_times'] = 0
+
+        for key in list(item.keys()):
+            req.meta[key] = item[key]
+
+        # extra check to add items to request
+        if 'cookie' in item and item['cookie'] is not None:
+            if isinstance(item['cookie'], dict):
+                req.cookies = item['cookie']
+            elif isinstance(item['cookie'], basestring):
+                req.cookies = self.parse_cookie(item['cookie'])
+
+        return req
 
     def parse_cookie(self, string):
         '''
