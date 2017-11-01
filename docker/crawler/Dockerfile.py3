@@ -15,10 +15,10 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # install requirements
-COPY utils /usr/src/utils
-COPY crawler/requirements.txt /usr/src/app/
+COPY utils /usr/src/app/utils
+COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
-RUN rm -rf /usr/src/utils
+RUN rm -rf /usr/src/app/utils
 
 # move codebase over
 COPY crawler /usr/src/app
