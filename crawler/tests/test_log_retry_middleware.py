@@ -26,7 +26,7 @@ class TestLogRetryMiddlewareStats(TestCase):
 
         # test nothing
         self.lrm._setup_stats_status_codes()
-        self.assertEquals([str(x) for x in self.lrm.stats_dict.keys()], ['lifetime'])
+        self.assertEqual([str(x) for x in self.lrm.stats_dict.keys()], ['lifetime'])
 
         # test good/bad rolling stats
         self.lrm.stats_dict = {}
@@ -43,7 +43,7 @@ class TestLogRetryMiddlewareStats(TestCase):
 
         # check that both keys are set up
         self.lrm._setup_stats_status_codes()
-        self.assertEquals(
+        self.assertEqual(
             sorted([str(x) for x in self.lrm.stats_dict.keys()]),
             sorted(good))
 
@@ -51,12 +51,12 @@ class TestLogRetryMiddlewareStats(TestCase):
 
         for time_key in self.lrm.stats_dict:
             if time_key == 0:
-                self.assertEquals(
+                self.assertEqual(
                     self.lrm.stats_dict[0].key,
                     '{k}:lifetime'.format(k=k1)
                     )
             else:
-                self.assertEquals(
+                self.assertEqual(
                     self.lrm.stats_dict[time_key].key,
                     '{k}:{t}'.format(k=k1, t=time_key)
                     )

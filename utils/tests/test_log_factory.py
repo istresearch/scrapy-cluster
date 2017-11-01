@@ -313,8 +313,8 @@ class TestLogCallbacks(TestCase):
         extras = {"key": "value", 'a': [1, 2, 3]}
 
         def cb(log_message=None, log_extra=None):
-            self.assertEquals(log_message, message)
-            self.assertEquals(log_extra, extras)
+            self.assertEqual(log_message, message)
+            self.assertEqual(log_extra, extras)
 
         self.logger.register_callback('>DEBUG', cb)
         self.logger.log_level = 'INFO'

@@ -30,16 +30,16 @@ class TestBase(TestCase):
         q = Base(MagicMock(), 'key', pickle)
         # python pickling is different between versions
         data = pickle.dumps('cool', protocol=-1).decode('latin1')
-        self.assertEquals(q._encode_item('cool'), data)
+        self.assertEqual(q._encode_item('cool'), data)
         q2 = Base(MagicMock(), 'key', ujson)
-        self.assertEquals(q2._encode_item('cool2'), '"cool2"')
+        self.assertEqual(q2._encode_item('cool2'), '"cool2"')
 
     def test_decode(self):
         q = Base(MagicMock(), 'key', pickle)
-        self.assertEquals(q._decode_item(u"\x80\x02U\x04coolq\x00."), 'cool')
+        self.assertEqual(q._decode_item(u"\x80\x02U\x04coolq\x00."), 'cool')
 
         q2 = Base(MagicMock(), 'key', ujson)
-        self.assertEquals(q2._decode_item('"cool2"'), 'cool2')
+        self.assertEqual(q2._decode_item('"cool2"'), 'cool2')
 
     def test_len(self):
         with self.assertRaises(NotImplementedError):
@@ -79,7 +79,7 @@ class TestRedisQueue(QueueMixin, TestCase):
     def test_pop(self):
         self.assertTrue(hasattr(self.queue, 'pop'))
         self.queue.server.rpop = MagicMock(return_value='"stuff"')
-        self.assertEquals(self.queue.pop(), "stuff")
+        self.assertEqual(self.queue.pop(), "stuff")
 
 
 class TestRedisPriorityQueue(QueueMixin, TestCase):
@@ -99,7 +99,7 @@ class TestRedisPriorityQueue(QueueMixin, TestCase):
         m = MagicMock()
         m.execute = MagicMock(return_value=[{}, 60])
         self.queue.server.pipeline = MagicMock(return_value=m)
-        self.assertEquals(self.queue.pop(), None)
+        self.assertEqual(self.queue.pop(), None)
 
 
 class TestRedisStack(QueueMixin, TestCase):
@@ -117,4 +117,4 @@ class TestRedisStack(QueueMixin, TestCase):
     def test_pop(self):
         self.assertTrue(hasattr(self.queue, 'pop'))
         self.queue.server.lpop = MagicMock(return_value='"stuff"')
-        self.assertEquals(self.queue.pop(), "stuff")
+        self.assertEqual(self.queue.pop(), "stuff")

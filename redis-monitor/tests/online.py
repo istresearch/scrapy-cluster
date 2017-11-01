@@ -93,7 +93,7 @@ class TestRedisMonitor(TestCase):
         self.redis_monitor._process_plugin(plugin)
 
         # ensure the key is gone
-        self.assertEquals(self.redis_monitor.redis_conn.get(key), None)
+        self.assertEqual(self.redis_monitor.redis_conn.get(key), None)
         self.redis_monitor.close()
         sleep(10)
         # now test the message was sent to kafka
@@ -109,10 +109,10 @@ class TestRedisMonitor(TestCase):
             pass
         else:
             the_dict = json.loads(m.value)
-            self.assertEquals(success, the_dict)
+            self.assertEqual(success, the_dict)
             message_count += 1
 
-        self.assertEquals(message_count, 1)
+        self.assertEqual(message_count, 1)
 
     def tearDown(self):
         # if for some reason the tests fail, we end up falling behind on

@@ -25,12 +25,12 @@ class TestRedisStatsMiddleware(TestCase):
         # test nothing
         spider_name = 'link'
         self.rsm._setup_stats_status_codes(spider_name)
-        self.assertEquals(list(self.rsm.stats_dict[spider_name]['status_codes'].keys()), [])
+        self.assertEqual(list(self.rsm.stats_dict[spider_name]['status_codes'].keys()), [])
 
         # test status codes only
         self.rsm.settings['STATS_RESPONSE_CODES'] = [200, 403]
         self.rsm._setup_stats_status_codes(spider_name)
-        self.assertEquals(
+        self.assertEqual(
             sorted(self.rsm.stats_dict[spider_name]['status_codes'].keys()),
             sorted([200, 403]))
         self.assertEqual(list(self.rsm.stats_dict[spider_name]['status_codes'][200].keys()),
@@ -53,10 +53,10 @@ class TestRedisStatsMiddleware(TestCase):
 
         # check that both keys are set up
         self.rsm._setup_stats_status_codes(spider_name)
-        self.assertEquals(
+        self.assertEqual(
             sorted([str(x) for x in self.rsm.stats_dict[spider_name]['status_codes'][200].keys()]),
             sorted(good))
-        self.assertEquals(
+        self.assertEqual(
             sorted([str(x) for x in self.rsm.stats_dict[spider_name]['status_codes'][403].keys()]),
             sorted(good))
 
@@ -65,24 +65,24 @@ class TestRedisStatsMiddleware(TestCase):
 
         for time_key in self.rsm.stats_dict[spider_name]['status_codes'][200]:
             if time_key == 0:
-                self.assertEquals(
+                self.assertEqual(
                     self.rsm.stats_dict[spider_name]['status_codes'][200][0].key,
                     '{k}:lifetime'.format(k=k1)
                     )
             else:
-                self.assertEquals(
+                self.assertEqual(
                     self.rsm.stats_dict[spider_name]['status_codes'][200][time_key].key,
                     '{k}:{t}'.format(k=k1, t=time_key)
                     )
 
         for time_key in self.rsm.stats_dict[spider_name]['status_codes'][403]:
             if time_key == 0:
-                self.assertEquals(
+                self.assertEqual(
                     self.rsm.stats_dict[spider_name]['status_codes'][403][0].key,
                     '{k}:lifetime'.format(k=k2)
                     )
             else:
-                self.assertEquals(
+                self.assertEqual(
                     self.rsm.stats_dict[spider_name]['status_codes'][403][time_key].key,
                     '{k}:{t}'.format(k=k2, t=time_key)
                     )
@@ -141,6 +141,6 @@ class TestRedisStatsMiddleware(TestCase):
                 self.rsm.process_spider_input(response, spider)
 
         # 4 calls for link, 4 calls for wandering
-        self.assertEquals(fake_stats.increment.call_count, 8)
+        self.assertEqual(fake_stats.increment.call_count, 8)
 
 
