@@ -101,7 +101,7 @@ class TestLinkSpider(TestCase):
                     and the_dict['crawlid'] == 'abc12345':
                 message_count += 1
 
-        self.assertEquals(message_count, 1)
+        self.assertEqual(message_count, 1)
 
     def tearDown(self):
         keys = self.redis_conn.keys('stats:crawler:*:test-spider:*')

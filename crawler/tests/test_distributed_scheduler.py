@@ -60,7 +60,7 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
 
         # test request already seen
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=True)
-        self.assertEquals(self.scheduler.enqueue_request(self.req), None)
+        self.assertEqual(self.scheduler.enqueue_request(self.req), None)
 
         # test request not expiring and queue seen
         self.scheduler.queue_keys = ['link:ex.com:queue']
@@ -150,7 +150,7 @@ class TestDistributedSchedulerRequestFromFeed(ThrottleMixin, TestCase):
             "spiderid": "link",
         }
         out = self.scheduler.request_from_feed(feed)
-        self.assertEquals(out.url, 'http://ex.com')
+        self.assertEqual(out.url, 'http://ex.com')
         for key in out.meta:
             self.assertEqual(out.meta[key], self.req.meta[key])
 
@@ -194,7 +194,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         }
         self.scheduler.find_item = MagicMock(return_value=feed)
         out = self.scheduler.next_request()
-        self.assertEquals(out.url, 'http://ex.com')
+        self.assertEqual(out.url, 'http://ex.com')
         for key in out.meta:
             self.assertEqual(out.meta[key], self.req.meta[key])
 
@@ -206,13 +206,13 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         exist_item["meta"]["spiderid"] = "link"
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
-        self.assertEquals(out.url, 'http://ex.com')
+        self.assertEqual(out.url, 'http://ex.com')
         for key in out.meta:
             self.assertEqual(out.meta[key], self.req.meta[key])
 
         # test didn't get item
         self.scheduler.find_item = MagicMock(return_value=None)
-        self.assertEquals(self.scheduler.next_request(), None)
+        self.assertEqual(self.scheduler.next_request(), None)
 
 
 class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):

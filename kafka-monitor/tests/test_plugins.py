@@ -56,7 +56,7 @@ class TestPlugins(TestCase):
             handler.handle(valid)
             self.fail("Action not called")
         except AssertionError as e:
-            self.assertEquals("added", str(e))
+            self.assertEqual("added", str(e))
 
         # check timeout is added
         handler.redis_conn.zadd = MagicMock()
@@ -66,7 +66,7 @@ class TestPlugins(TestCase):
             handler.handle(valid)
             self.fail("Expires not called")
         except AssertionError as e:
-            self.assertEquals("expires", str(e))
+            self.assertEqual("expires", str(e))
 
     def test_action_handler(self):
         handler = ActionHandler()
@@ -85,7 +85,7 @@ class TestPlugins(TestCase):
             handler.handle(valid)
             self.fail("Added not called")
         except AssertionError as e:
-            self.assertEquals("added", str(e))
+            self.assertEqual("added", str(e))
 
     def test_stats_handler(self):
         handler = StatsHandler()
@@ -102,7 +102,7 @@ class TestPlugins(TestCase):
             handler.handle(valid)
             self.fail("Added not called")
         except AssertionError as e:
-            self.assertEquals("added", str(e))
+            self.assertEqual("added", str(e))
 
     def test_zookeeper_handler(self):
         handler = ZookeeperHandler()
@@ -123,7 +123,7 @@ class TestPlugins(TestCase):
             handler.handle(valid)
             self.fail("Added not called")
         except AssertionError as e:
-            self.assertEquals("added", str(e))
+            self.assertEqual("added", str(e))
 
     def test_bad_plugins(self):
         class ForgotSchema(BaseHandler):

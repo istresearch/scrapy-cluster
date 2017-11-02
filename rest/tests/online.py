@@ -39,7 +39,7 @@ class TestRestService(TestCase):
         r = requests.get('http://127.0.0.1:{p}'.format(p=self.port_number))
         results = r.json()
 
-        self.assertEquals(results['node_health'], 'GREEN')
+        self.assertEqual(results['node_health'], 'GREEN')
 
     def tearDown(self):
         self.rest_service.close()

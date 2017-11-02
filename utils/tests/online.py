@@ -405,10 +405,10 @@ class TestZookeeperWatcher(TestCase):
                                                ensure=False,
                                                valid_init=True)
 
-        self.assertEquals(self.zoo_watcher.get_file_contents(), self.file_data)
-        self.assertEquals(pointer_zoo_watcher.get_file_contents(),
+        self.assertEqual(self.zoo_watcher.get_file_contents(), self.file_data)
+        self.assertEqual(pointer_zoo_watcher.get_file_contents(),
                           self.file_data)
-        self.assertEquals(pointer_zoo_watcher.get_file_contents(True),
+        self.assertEqual(pointer_zoo_watcher.get_file_contents(True),
                           self.pointer_data)
 
         pointer_zoo_watcher.close()
