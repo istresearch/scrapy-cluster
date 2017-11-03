@@ -220,7 +220,7 @@ class TestDistributedSchedulerChangeConfig(ThrottleMixin, TestCase):
     def test_change_config(self):
         good_string = ""\
           "domains:\n"\
-          "  dmoz.org:\n"\
+          "  dmoztools.net:\n"\
           "      window: 60\n"\
           "      hits: 60\n"\
           "      scale: 1.0\n"\

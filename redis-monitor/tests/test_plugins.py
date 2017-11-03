@@ -322,7 +322,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
                                                 'link:istresearch.com:queue',
                                                 'link:yellowpages.com:queue',
                                                 'link:cnn.com:queue',
-                                                'wandering:dmoz.org:queue',
+                                                'wandering:dmoztools.net:queue',
                                                 'wandering:craigslist.org:queue',
                                                 ])
         results = [5, 10, 11, 1, 3]
@@ -349,7 +349,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
                     'spider_backlog': 4,
                     'num_domains': 2,
                     'domains': [
-                        {'domain': 'dmoz.org', 'backlog': 1},
+                        {'domain': 'dmoztools.net', 'backlog': 1},
                         {'domain': 'craigslist.org', 'backlog': 3},
                     ]
                 }
@@ -395,20 +395,20 @@ class TestZookeeperPlugin(TestCase, RegexFixer):
 
     def test_zk_handle_du(self):
         # domain update
-        s = b'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        s = b'blacklist: []\ndomains:\n  dmoztools.net: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123","hits":15,"scale":0.9,"window":60}'
-        expected = b'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoz.org:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
+        expected = b'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoztools.net:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:domain-update:cnn.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_dr(self):
         # domain remove
-        s = b'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        s = b'blacklist: []\ndomains:\n  dmoztools.net: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123"}'
         expected = b'blacklist: []\ndomains: {}\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
-        self.plugin.handle(key="zk:domain-remove:dmoz.org:testapp", value=val)
+        self.plugin.handle(key="zk:domain-remove:dmoztools.net:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_bu(self):
