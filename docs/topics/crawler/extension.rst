@@ -199,7 +199,7 @@ Then, feed your cluster.
 
 ::
 
-    python kafka_monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"test123456", "spiderid":"wandering"}'
+    python kafka_monitor.py feed '{"url": "http://dmoztools.net", "appid":"testapp", "crawlid":"test123456", "spiderid":"wandering"}'
 
 If you are looking at your ``demo.crawled_firehose`` Kafka Topic using the ``kafkadump.py`` script, you will begin to see output like so...
 
@@ -208,8 +208,8 @@ If you are looking at your ``demo.crawled_firehose`` Kafka Topic using the ``kaf
     {
         "body": <omitted>,
         "crawlid": "test123456",
-        "response_url": "http://www.dmoz.org/",
-        "url": "http://www.dmoz.org/",
+        "response_url": "http://www.dmoztools.net/",
+        "url": "http://www.dmoztools.net/",
         "status_code": 200,
         "status_msg": "OK",
         "appid": "testapp",
@@ -228,8 +228,8 @@ If you are looking at your ``demo.crawled_firehose`` Kafka Topic using the ``kaf
     {
         "body": <omitted>,
         "crawlid": "test123456",
-        "response_url": "http://www.dmoz.org/Computers/Hardware/",
-        "url": "http://www.dmoz.org/Computers/Hardware/",
+        "response_url": "http://www.dmoztools.net/Computers/Hardware/",
+        "url": "http://www.dmoztools.net/Computers/Hardware/",
         "status_code": 200,
         "status_msg": "OK",
         "appid": "testapp",
