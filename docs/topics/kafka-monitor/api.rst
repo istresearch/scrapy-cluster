@@ -74,9 +74,9 @@ Kafka Request:
 
     ::
 
-        $ python kafka_monitor.py feed '{"url": "http://www.dmoz.org/", "appid":"testapp", "crawlid":"abc123", "maxdepth":2, "priority":90}'
+        $ python kafka_monitor.py feed '{"url": "http://www.dmoztools.net/", "appid":"testapp", "crawlid":"abc123", "maxdepth":2, "priority":90}'
 
-    - Submits a dmoz.org crawl spidering 2 levels deep with a high priority
+    - Submits a dmoztools.net crawl spidering 2 levels deep with a high priority
 
     ::
 
@@ -899,7 +899,7 @@ Zookeeper Request:
 
     ::
 
-        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-update", "domain":"dmoz.org", "hits":60, "window":60, "scale":0.9}'
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-update", "domain":"dmoztools.net", "hits":60, "window":60, "scale":0.9}'
 
 Response from Kafka:
 
@@ -907,7 +907,7 @@ Response from Kafka:
 
         {
             "action": "domain-update",
-            "domain": "dmoz.org",
+            "domain": "dmoztools.net",
             "server_time": 1464402128,
             "uuid": "abc123",
             "appid": "madisonTest"
@@ -923,7 +923,7 @@ Zookeeper Request:
 
     ::
 
-        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-remove", "domain":"dmoz.org"}'
+        $ python kafka_monitor.py feed '{"uuid":"abc123", "appid":"madisonTest", "action":"domain-remove", "domain":"dmoztools.net"}'
 
 Response from Kafka:
 
@@ -931,7 +931,7 @@ Response from Kafka:
 
         {
             "action": "domain-remove",
-            "domain": "dmoz.org",
+            "domain": "dmoztools.net",
             "server_time": 1464402146,
             "uuid": "abc123",
             "appid": "madisonTest"
