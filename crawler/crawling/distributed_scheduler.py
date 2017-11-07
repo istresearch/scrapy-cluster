@@ -82,7 +82,7 @@ class DistributedScheduler(object):
         self.ip_update_interval = ip_refresh
         self.add_type = add_type
         self.add_ip = add_ip
-        self.item_retires = retries
+        self.item_retries = retries
         self.logger = logger
         self.ip_regex = re.compile(ip_regex)
         self.backlog_blacklist = backlog_blacklist
