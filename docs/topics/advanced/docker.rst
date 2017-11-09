@@ -160,6 +160,17 @@ You can ensure everything started up via:
                           /usr/sbin/sshd  ...                             p, 22/tcp, 2888/tcp,
                                                                           3888/tcp
 
+In the unfortunate case that elasticsearch is not running and the following message shows up into the logs
+
+::
+
+  ERROR: bootstrap checks failed max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+
+you might have to edit the vm.max_map_count variable in /etc/sysctl.conf or issue the following command:
+
+::
+
+  $ sysctl -w vm.max_map_count=262144
 
 From here, please continue to the :ref:`Kibana <elk_kibana>` portion of the :doc:`ELK <integration>` integration guide.
 
