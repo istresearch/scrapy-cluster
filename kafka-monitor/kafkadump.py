@@ -126,7 +126,9 @@ def main():
                     val = message.value
                     try:
                         item = json.loads(val)
-                        if args['decode_base64'] and 'body' in item:
+                        if args['decode_base64'] and 'body' in item and 'encoding' in item:
+                            item['body'] = base64.b64decode(item['body']).decode(item['encoding'])
+                        elif args['decode_base64'] and 'body' in item:
                             item['body'] = base64.b64decode(item['body'])
 
                         if args['no_body'] and 'body' in item:

@@ -181,7 +181,9 @@ class KafkaPipeline(object):
             prefix = self.topic_prefix
 
             try:
-                if self.use_base64:
+                if self.use_base64 and 'encoding' in datum:
+                    datum['body'] = base64.b64encode(bytes(datum['body']))
+                elif self.use_base64:
                     datum['body'] = base64.b64encode(bytes(datum['body'], 'utf-8'))
                 message = ujson.dumps(datum, sort_keys=True)
             except:
