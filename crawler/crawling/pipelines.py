@@ -181,10 +181,13 @@ class KafkaPipeline(object):
             prefix = self.topic_prefix
 
             try:
-                if self.use_base64 and 'encoding' in datum:
-                    datum['body'] = base64.b64encode(bytes(datum['body']))
-                elif self.use_base64:
-                    datum['body'] = base64.b64encode(bytes(datum['body'], 'utf-8'))
+                if self.use_base64:
+                    if isinstance(datum['body'], str):
+                        datum['body'] = bytes(datum['body'], datum['encoding'])
+                    datum['body'] = base64.b64encode(datum['body'])
+                elif 'encoding' in datum and 'utf-8' != datum['encoding'] and datum['encoding']:
+                    datum['body'] = datum['body'].decode(datum['encoding'])
+
                 message = ujson.dumps(datum, sort_keys=True)
             except:
                 message = 'json failed to parse'
