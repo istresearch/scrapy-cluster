@@ -131,8 +131,11 @@ def main():
                     val = message.value
                     try:
                         item = json.loads(val)
+                        # Get the encoding. If it's not a key of item, return utf-8.
+                        encoding = item.get('encoding', 'utf-8')
+
                         if args['decode_base64'] and 'body' in item:
-                            item['body'] = base64.b64decode(item['body']).decode(item['encoding'])
+                            item['body'] = base64.b64decode(item['body']).decode(encoding)
 
                         if args['no_body'] and 'body' in item:
                             del item['body']
