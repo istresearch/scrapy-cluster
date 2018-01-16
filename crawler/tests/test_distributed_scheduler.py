@@ -20,7 +20,8 @@ class ThrottleMixin(object):
     def setUp(self, u, z):
         self.scheduler = DistributedScheduler(MagicMock(), False, 60, 10, 3,
                                               MagicMock(), 10, 60, False, 60,
-                                              False, False, '.*', True, 3600)
+                                              False, False, '.*', True, 3600,
+                                              None, 600)
         self.scheduler.open(MagicMock())
         self.scheduler.my_ip = 'ip'
         self.scheduler.spider.name = 'link'
@@ -62,11 +63,16 @@ class TestDistributedSchedulerEnqueueRequest(ThrottleMixin, TestCase):
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=True)
         self.assertEqual(self.scheduler.enqueue_request(self.req), None)
 
+        # test page limit reached
+        self.scheduler.page_per_domain_filter = MagicMock(return_value=True)
+        self.assertEqual(self.scheduler.enqueue_request(self.req), None)
+
         # test request not expiring and queue seen
         self.scheduler.queue_keys = ['link:ex.com:queue']
         self.extract = MagicMock(return_value={"domain": 'ex', "suffix": 'com'})
         self.scheduler.is_blacklisted = MagicMock(return_value=False)
         self.scheduler.dupefilter.request_seen = MagicMock(return_value=False)
+        self.scheduler.page_per_domain_filter.request_page_limit_reached = MagicMock(return_value=False)
         self.scheduler.queue_dict['link:ex.com:queue'] = [MagicMock(), 0]
         self.scheduler.queue_dict['link:ex.com:queue'][0].push = MagicMock(
                                                     side_effect=Exception("1"))

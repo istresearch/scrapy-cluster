@@ -148,6 +148,18 @@ Default: ``600``
 
 Number of seconds to keep **crawlid** specific duplication filters around after the latest crawl with that id has been conducted. Putting this setting too low may allow crawl jobs to crawl the same page due to the duplication filter being wiped out.
 
+**PAGE_PER_DOMAIN_LIMIT**
+
+Default: ``None``
+
+Number of pages allowed to be crawled per **spider, domain and crawlid** used together as a composite key. When this limit is reached, the crawling for this composite key is stopped until the timeout specified with **PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached.
+
+**PAGE_PER_DOMAIN_LIMIT_TIMEOUT**
+
+Default: ``600``
+
+Number of seconds to keep **spider, domain and crawlid** specific page limit filtering. Putting this setting too low may allow crawl jobs to crawl more pages than the limit specified with **PAGE_PER_DOMAIN_LIMIT**  due to the filter being wiped out.
+
 **SCHEDULER_IP_REFRESH**
 
 Default: ``60``
