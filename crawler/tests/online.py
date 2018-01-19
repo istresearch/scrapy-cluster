@@ -35,7 +35,7 @@ class CustomSpider(LinkSpider):
 class TestLinkSpider(TestCase):
 
     example_feed = "{\"allowed_domains\":null,\"allow_regex\":null,\""\
-        "crawlid\":\"abc12345\",\"url\":\"istresearch.com\",\"expires\":0,\""\
+        "crawlid\":\"abc12345\",\"url\":\"http://dmoztools.net/\",\"expires\":0,\""\
         "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
         "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
         "test-link\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":0}"
@@ -75,7 +75,7 @@ class TestLinkSpider(TestCase):
         d = runner.crawl(CustomSpider)
         d.addBoth(lambda _: reactor.stop())
         # add crawl to redis
-        key = "test-spider:istresearch.com:queue"
+        key = "test-spider:dmoztools.net:queue"
         self.redis_conn.zadd(key, self.example_feed, -99)
 
         # run the spider, give 20 seconds to see the url, crawl it,
