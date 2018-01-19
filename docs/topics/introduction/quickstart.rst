@@ -431,7 +431,7 @@ Which ever setup you chose, every process within should stay running for the rem
 
 ::
 
-    python kafka_monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"abc123"}'
+    python kafka_monitor.py feed '{"url": "http://dmoztools.net", "appid":"testapp", "crawlid":"abc123"}'
 
 You will see the following output on the command line for that successful request:
 
@@ -439,7 +439,7 @@ You will see the following output on the command line for that successful reques
 
     2015-12-22 15:45:37,457 [kafka-monitor] INFO: Feeding JSON into demo.incoming
     {
-        "url": "http://istresearch.com",
+        "url": "http://dmoztools.net",
         "crawlid": "abc123",
         "appid": "testapp"
     }
