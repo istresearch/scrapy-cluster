@@ -5,6 +5,15 @@ Change Log
 
 This page serves to document any changes made between releases.
 
+Scrapy Cluster 1.2.1
+--------------------
+
+Date: 01/19/2018
+
+- Fixes unit test syntax for link spider
+
+- Fixes docker version upgrade on Travis for continuous integration tests
+
 Scrapy Cluster 1.2
 ------------------
 
