@@ -208,7 +208,7 @@ class LogObject(object):
         if self.level_dict['DEBUG'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "DEBUG")
             self._write_message(message, extras)
-            self.cb_handler.fire_callbacks('DEBUG', message, extra)
+            self.cb_handler.fire_callbacks('DEBUG', message, extras)
 
     def info(self, message, extra={}):
         '''
@@ -220,7 +220,7 @@ class LogObject(object):
         if self.level_dict['INFO'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "INFO")
             self._write_message(message, extras)
-            self.cb_handler.fire_callbacks('INFO', message, extra)
+            self.cb_handler.fire_callbacks('INFO', message, extras)
 
     def warn(self, message, extra={}):
         '''
@@ -241,7 +241,7 @@ class LogObject(object):
         if self.level_dict['WARNING'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "WARNING")
             self._write_message(message, extras)
-            self.cb_handler.fire_callbacks('WARNING', message, extra)
+            self.cb_handler.fire_callbacks('WARNING', message, extras)
 
     def error(self, message, extra={}):
         '''
@@ -253,7 +253,7 @@ class LogObject(object):
         if self.level_dict['ERROR'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "ERROR")
             self._write_message(message, extras)
-            self.cb_handler.fire_callbacks('ERROR', message, extra)
+            self.cb_handler.fire_callbacks('ERROR', message, extras)
 
     def critical(self, message, extra={}):
         '''
@@ -265,7 +265,7 @@ class LogObject(object):
         if self.level_dict['CRITICAL'] >= self.level_dict[self.log_level]:
             extras = self.add_extras(extra, "CRITICAL")
             self._write_message(message, extras)
-            self.cb_handler.fire_callbacks('CRITICAL', message, extra)
+            self.cb_handler.fire_callbacks('CRITICAL', message, extras)
 
     def _write_message(self, message, extra):
         '''
