@@ -39,7 +39,7 @@ if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ 
     sudo docker rmi istresearch/scrapy-cluster:rest-test
 
     # log into docker
-    sudo docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+    sudo docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
     # push new containers
     sudo docker push istresearch/scrapy-cluster

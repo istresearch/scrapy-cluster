@@ -51,10 +51,10 @@ To set up a pre-canned Scrapy Cluster test environment, make sure you have the l
 
 ## Documentation
 
-Please check out the official [Scrapy Cluster 1.2 documentation](http://scrapy-cluster.readthedocs.org/en/latest/) for more information on how everything works!
+Please check out the official [Scrapy Cluster 1.2.1 documentation](http://scrapy-cluster.readthedocs.org/en/latest/) for more information on how everything works!
 
 ## Branches
 
-The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.2`.
+The `master` branch of this repository contains the latest stable release code for `Scrapy Cluster 1.2.1`.
 
 The `dev` branch contains bleeding edge code and is currently working towards [Scrapy Cluster 1.3](https://github.com/istresearch/scrapy-cluster/milestone/3). Please note that not everything may be documented, finished, tested, or finalized but we are happy to help guide those who are interested.
