@@ -372,7 +372,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 500)
 
@@ -381,7 +381,7 @@ class TestRestService(TestCase):
             override.logger.error.reset_mock()
             results = override.test_error2()
             self.assertFalse(override.logger.error.called)
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, 'test data')
             self.assertEqual(results[1], 200)
 
@@ -390,7 +390,7 @@ class TestRestService(TestCase):
             override.logger.error.reset_mock()
             results = override.test_error3()
             self.assertFalse(override.logger.error.called)
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, 'test data')
             self.assertEqual(results[1], 109)
 
@@ -414,7 +414,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 400)
 
@@ -434,7 +434,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 400)
 
@@ -496,7 +496,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 400)
 
@@ -514,7 +514,7 @@ class TestRestService(TestCase):
                 "my_id": 'a908',
                 "node_health": 'RED'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
 
     def test_feed(self):
@@ -533,7 +533,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 500)
 
@@ -553,7 +553,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 500)
 
@@ -567,7 +567,7 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 200)
 
@@ -589,7 +589,7 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 200)
             self.assertFalse('key' in self.rest_service.uuids)
@@ -608,7 +608,7 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 200)
             self.assertTrue('key' in self.rest_service.uuids)
@@ -634,7 +634,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 500)
 
@@ -650,7 +650,7 @@ class TestRestService(TestCase):
                 u'error': None,
                 u'status': u'SUCCESS'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 200)
 
@@ -667,7 +667,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 404)
 
@@ -689,7 +689,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 500)
 
@@ -709,7 +709,7 @@ class TestRestService(TestCase):
                 },
                 u'status': u'FAILURE'
             }
-            data = json.loads(results[0].data)
+            data = json.loads(results[0].data.decode('utf-8'))
             self.assertEqual(data, d)
             self.assertEqual(results[1], 500)
 
