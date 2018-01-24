@@ -402,14 +402,34 @@ class DistributedScheduler(object):
         '''
         Pushes a request from the spider into the proper throttled queue
         '''
+
+        # An individual crawling request of a domain's page
+        req_dict = request_to_dict(request, self.spider)
+
+        # # # # # # # # # # # # # # # # # # Page Limit Filter # # # # # # # # # # # # # # #
+
+        # A maxpages setting of 0 means that there is no page limit override.
+        # Globally disabling page_per_domain_filter
+        # with a page_per_domain_limit == None is always honoured!
+        # If there is an override, pass it to the filter method.
+        _page_limit_override = None
+        if req_dict['meta']['maxpages'] > 0:
+            _page_limit_override = req_dict['meta']['maxpages']
+
+        if self.page_per_domain_limit and self.page_per_domain_filter.request_page_limit_reached(
+                    request=request,
+                    spider=self.spider,
+                    page_limit_override=_page_limit_override):
+            self.logger.debug("Request {0} reached domain's page limit of {1}".format(
+                    request.url,
+                    _page_limit_override if _page_limit_override else self.page_per_domain_limit))
+            return
+
+        # # # # # # # # # # # # # # # # # # Duplicate link Filter # # # # # # # # # # # # # # #
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
             return
-        if self.page_per_domain_limit and self.page_per_domain_filter.request_page_limit_reached(request, self.spider):
-            self.logger.debug("Request {0} reached domain's page limit".format(request.url))
-            return
-        req_dict = request_to_dict(request, self.spider)
-
+        # # # # # # # # # # # # # # # # # # Blacklist Filter # # # # # # # # # # # # # # #
         if not self.is_blacklisted(req_dict['meta']['appid'],
                                    req_dict['meta']['crawlid']):
             # grab the tld of the request

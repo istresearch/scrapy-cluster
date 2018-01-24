@@ -25,3 +25,17 @@ class TestRedisPagePerDomainFilter(TestCase):
         # unsuccessfully added
         self.limit.server.incr = MagicMock(return_value=5)
         self.assertTrue(self.limit.request_page_limit_reached(req, None))
+
+    def test_page_per_domain_filter_override(self):
+        req = Request('http://example.com')
+        req.meta['crawlid'] = "abc123"
+
+        self.limit.server.expire = MagicMock()
+
+        # successfully added
+        self.limit.server.incr = MagicMock(return_value=6)
+        self.assertFalse(self.limit.request_page_limit_reached(req, None, 7))
+
+        # unsuccessfully added
+        self.limit.server.incr = MagicMock(return_value=4)
+        self.assertTrue(self.limit.request_page_limit_reached(req, None, 3))

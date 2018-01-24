@@ -152,7 +152,7 @@ Number of seconds to keep **crawlid** specific duplication filters around after 
 
 Default: ``None``
 
-Number of pages allowed to be crawled per **spider, domain and crawlid** used together as a composite key. When this limit is reached, the crawling for this composite key is stopped until the timeout specified with **PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached.
+Limit the number of pages allowed to be crawled per **spider, domain and crawlid** used together as a composite key. When not ``None`` it enables page limit filtering. When this limit is reached, the crawling for this composite key is stopped until the timeout specified with **PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached. It can be overridden per individual domain with the option **maxdepth** when submitting a crawl request for that domain.
 
 **PAGE_PER_DOMAIN_LIMIT_TIMEOUT**
 

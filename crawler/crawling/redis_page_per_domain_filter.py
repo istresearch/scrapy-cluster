@@ -26,7 +26,7 @@ class RFPagePerDomainFilter(BaseDupeFilter):
         # set up tldextract
         self.extract = tldextract.TLDExtract()
 
-    def request_page_limit_reached(self, request, spider):
+    def request_page_limit_reached(self, request, spider, page_limit_override=None):
         # Collect items composing the redis key
         # grab the tld of the request
         req_dict = request_to_dict(request, spider)
@@ -39,13 +39,16 @@ class RFPagePerDomainFilter(BaseDupeFilter):
         # Compose the redis key
         composite_key = self.key_start + ':' + domain + ':' + crawl_id
 
+        # Page limit
+        _page_limit = page_limit_override if page_limit_override else self.page_limit
+
         # Add new key if it doesn't exist
         if not self.server.exists(composite_key):
             self.server.set(composite_key, 0)
 
         # Stop incrementing the key when the limit is reached
         page_count = int(self.server.get(composite_key))
-        if page_count >= self.page_limit:
+        if page_count >= _page_limit:
             return True
 
         # Increment key
@@ -53,7 +56,7 @@ class RFPagePerDomainFilter(BaseDupeFilter):
         # Expire key
         self.server.expire(composite_key, self.timeout)
 
-        return page_count >= self.page_limit
+        return page_count >= _page_limit
 
     def close(self, reason):
         '''

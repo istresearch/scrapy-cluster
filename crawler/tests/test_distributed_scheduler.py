@@ -44,6 +44,7 @@ class ThrottleMixin(object):
         req.meta["deny_extensions"] = None
         req.meta['curdepth'] = 0
         req.meta["maxdepth"] = 0
+        req.meta["maxpages"] = 0
         req.meta['priority'] = 0
         req.meta['retry_times'] = 0
         req.meta['expires'] = 0
