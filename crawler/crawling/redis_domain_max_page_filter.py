@@ -73,4 +73,3 @@ class RFDomainMaxPageFilter(BaseDupeFilter):
         The page number per domain has a TTL so you shouldn't clear it
         '''
         pass
-        #self.server.delete(self.key)
