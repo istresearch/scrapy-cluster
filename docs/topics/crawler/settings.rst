@@ -148,17 +148,17 @@ Default: ``600``
 
 Number of seconds to keep **crawlid** specific duplication filters around after the latest crawl with that id has been conducted. Putting this setting too low may allow crawl jobs to crawl the same page due to the duplication filter being wiped out.
 
-**PAGE_PER_DOMAIN_LIMIT**
+**GLOBAL_PAGE_PER_DOMAIN_LIMIT**
 
 Default: ``None``
 
-Limit the number of pages allowed to be crawled per **spider, domain and crawlid** used together as a composite key. When not ``None`` it enables page limit filtering. When this limit is reached, the crawling for this composite key is stopped until the timeout specified with **PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached. It can be overridden per individual domain with the option **maxdepth** when submitting a crawl request for that domain.
+Hard upper limit of the number of pages allowed to be scraped per **spider, domain and crawlid** used together as a composite key. When not ``None`` it enables page limit filtering cluster wide. When this limit is reached, the scraping for this composite key is stopped until the timeout specified with **GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached. It can only be overridden downwards (ie. scrape less than this limit) by the crawler's Kafka API argument domain_max_pages.
 
-**PAGE_PER_DOMAIN_LIMIT_TIMEOUT**
+**GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT**
 
 Default: ``600``
 
-Number of seconds to keep **spider, domain and crawlid** specific page limit filtering. Putting this setting too low may allow crawl jobs to crawl more pages than the limit specified with **PAGE_PER_DOMAIN_LIMIT**  due to the filter being wiped out.
+Number of seconds to keep **spider, domain and crawlid** specific page limit filtering. Putting this setting too low may allow new crawl jobs to scrape more pages than the limit specified with **GLOBAL_PAGE_PER_DOMAIN_LIMIT**  due to the filter being wiped out.
 
 **SCHEDULER_IP_REFRESH**
 

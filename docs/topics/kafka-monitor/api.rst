@@ -43,7 +43,7 @@ The crawl API defines the type of crawl you wish to have the cluster execute. Th
 
 - **maxdepth:** The depth at which to continue to crawl new links found on pages
 
-- **maxpages:** Override the number of pages to crawl. Enforced when **PAGE_PER_DOMAIN_LIMIT** is not None thus page limit filtering is enabled.
+- **domain_max_pages:** Set the maximum number of pages to scrape per domain.
 
 - **priority:** The priority of which to given to the url to be crawled. The Spiders will crawl the highest priorities first.
 

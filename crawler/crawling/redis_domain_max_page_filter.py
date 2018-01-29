@@ -4,29 +4,31 @@ from scrapy.dupefilters import BaseDupeFilter
 from scrapy.utils.reqser import request_to_dict
 
 
-class RFPagePerDomainFilter(BaseDupeFilter):
+class RFDomainMaxPageFilter(BaseDupeFilter):
     '''
-    Redis-based request number filter
+    Redis-based max page filter.
+    This filter is applied per domain.
+    Using this filter the maximum number of pages crawled
+    for a particular domain is bounded.
     '''
 
-    def __init__(self, server, key, page_limit, timeout):
+    def __init__(self, server, key, timeout):
         '''
         Initialize page number filter
 
         @param server: the redis connection
         @param key: the key to store the fingerprints
-        @param page_limit: the number of pages that when reached stops the particular domain crawl
+
         @param timeout: number of seconds a given key will remain once idle
         '''
         self.server = server
-        # key_start equals: self.spider.name + ':pagecountfilter'
+        # key_start equals: self.spider.name + ':domain_max_page_filter'
         self.key_start = key
-        self.page_limit = page_limit
         self.timeout = timeout
         # set up tldextract
         self.extract = tldextract.TLDExtract()
 
-    def request_page_limit_reached(self, request, spider, page_limit_override=None):
+    def request_page_limit_reached(self, request, spider):
         # Collect items composing the redis key
         # grab the tld of the request
         req_dict = request_to_dict(request, spider)
@@ -34,13 +36,13 @@ class RFPagePerDomainFilter(BaseDupeFilter):
         domain = "{d}.{s}".format(d=ex_res.domain, s=ex_res.suffix)
 
         # grab the crawl id
-        crawl_id = request.meta['crawlid']
+        crawl_id = req_dict['meta']['crawlid']
+
+        # domain max page limit
+        pagelimit = req_dict['meta']['domain_max_pages']
 
         # Compose the redis key
         composite_key = self.key_start + ':' + domain + ':' + crawl_id
-
-        # Page limit
-        _page_limit = page_limit_override if page_limit_override else self.page_limit
 
         # Add new key if it doesn't exist
         if not self.server.exists(composite_key):
@@ -48,15 +50,17 @@ class RFPagePerDomainFilter(BaseDupeFilter):
 
         # Stop incrementing the key when the limit is reached
         page_count = int(self.server.get(composite_key))
-        if page_count >= _page_limit:
+        if page_count >= pagelimit:
+            # Prevent key expiration while the crawl continues by updating the expiration time
+            self.server.expire(composite_key, self.timeout)
             return True
 
         # Increment key
         page_count = int(self.server.incr(composite_key))
-        # Expire key
+        # Set key expiration
         self.server.expire(composite_key, self.timeout)
 
-        return page_count >= _page_limit
+        return page_count >= pagelimit
 
     def close(self, reason):
         '''
