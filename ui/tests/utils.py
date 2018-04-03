@@ -1,5 +1,11 @@
+import sys
+from os import path
+
 from selenium import webdriver
-from .settings import *
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
+from settings import *
 
 def get_webdriver():
     print("called")
