@@ -18,6 +18,8 @@ from threading import Thread
 
 
 from selenium import webdriver
+import chromedriver_binary
+
 from settings import *
 from utils import  *
 
