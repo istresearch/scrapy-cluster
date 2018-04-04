@@ -3,11 +3,6 @@
 ## Usage 
 `pip install -r requirements.txt`
 
-## to run tests
-
-`ui_test.sh`
-
-
 ## Settings
 Update the settings.py file 
 
