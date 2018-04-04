@@ -1,8 +1,4 @@
 
-# Scrapy Cluster UI URL
-
-UI_URL='http://localhost:5000/'
-
 #WebDriver type Chrome|Firefox
 
 WEBDRIVER_TYPE='Chrome'
