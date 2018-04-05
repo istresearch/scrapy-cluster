@@ -30,13 +30,13 @@ class TestZookeeperWatcher(TestCase):
         self.zoo_watcher.old_data = 'old_data'
 
         self.zoo_watcher.pointer = False
-        self.assertEquals(self.zoo_watcher.get_file_contents(), 'old_data')
+        self.assertEqual(self.zoo_watcher.get_file_contents(), 'old_data')
 
         self.zoo_watcher.pointer = True
-        self.assertEquals(self.zoo_watcher.get_file_contents(), 'old_data')
+        self.assertEqual(self.zoo_watcher.get_file_contents(), 'old_data')
 
         self.zoo_watcher.pointer = True
-        self.assertEquals(self.zoo_watcher.get_file_contents(True), 'old_pointed')
+        self.assertEqual(self.zoo_watcher.get_file_contents(True), 'old_pointed')
 
     def test_compare_pointer(self):
         self.zoo_watcher.old_pointed = '/path1'

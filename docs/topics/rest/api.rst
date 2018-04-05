@@ -156,7 +156,7 @@ Feed a crawl request
 
 ::
 
-    $ curl scdev:5343/feed -H "Content-Type: application/json" -d '{"url":"istresearch.com", "appid":"madisonTest", "crawlid":"abc123"}'
+    $ curl scdev:5343/feed -H "Content-Type: application/json" -d '{"url":"http://dmoztools.net", "appid":"madisonTest", "crawlid":"abc123"}'
 
 Feed a Stats request
 

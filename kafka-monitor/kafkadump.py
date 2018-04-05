@@ -10,6 +10,7 @@ import traceback
 import time
 import argparse
 import base64
+import six
 
 from scutils.settings_wrapper import SettingsWrapper
 from scutils.log_factory import LogFactory
@@ -56,6 +57,10 @@ def main():
                              required=False, const=True, default=False,
                              help="Do not include the raw html 'body' key in"
                              " the json dump of the topic")
+    dump_parser.add_argument('-jb', '--just-body', action='store_const',
+                             required=False, const=True, default=False,
+                             help="Just print the raw html 'body' key in"
+                                  " the json dump of the topic")
     dump_parser.add_argument('-p', '--pretty', action='store_const',
                              required=False, const=True, default=False,
                              help="Pretty print the json objects consumed")
@@ -126,8 +131,11 @@ def main():
                     val = message.value
                     try:
                         item = json.loads(val)
+                        # Get the encoding. If it's not a key of item, return utf-8.
+                        encoding = item.get('encoding', 'utf-8')
+
                         if args['decode_base64'] and 'body' in item:
-                            item['body'] = base64.b64decode(item['body'])
+                            item['body'] = base64.b64decode(item['body']).decode(encoding)
 
                         if args['no_body'] and 'body' in item:
                             del item['body']
@@ -138,6 +146,11 @@ def main():
 
                     if args['pretty']:
                         print(json.dumps(item, indent=4))
+                    elif args['just_body']:
+                        if six.PY2:
+                            print(item['body'].encode('utf-8'))
+                        else:
+                            print(item['body'])
                     else:
                         print(item)
                     num_records = num_records + 1

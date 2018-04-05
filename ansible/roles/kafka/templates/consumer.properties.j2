@@ -17,7 +17,7 @@
 # Zookeeper connection string
 # comma separated host:port pairs, each corresponding to a zk
 # server. e.g. "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002"
-zookeeper.connect=127.0.0.1:2181
+zookeeper.connect={% for host in zookeeper_host_list %}{{ host }}:{{ zookeeper_client_port|default(2181) }}{% if not loop.last %},{% endif %}{% endfor %}
 
 # timeout in ms for connecting to zookeeper
 zookeeper.connection.timeout.ms=6000

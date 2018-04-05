@@ -33,13 +33,13 @@ class TestMetaPassthroughMiddleware(TestCase):
 
         for item in self.mpm.process_spider_output(a, test_list, MagicMock()):
             if isinstance(item, Request):
-                self.assertEquals(a.meta, item.meta)
+                self.assertEqual(a.meta, item.meta)
             yield_count += 1
 
-        self.assertEquals(yield_count, 3)
+        self.assertEqual(yield_count, 3)
 
         # 1 debug for the method, 1 debug for the request
-        self.assertEquals(self.mpm.logger.debug.call_count, 2)
+        self.assertEqual(self.mpm.logger.debug.call_count, 2)
 
         # test meta unchanged if already exists
         r = Request('http://aol.com')
@@ -47,6 +47,6 @@ class TestMetaPassthroughMiddleware(TestCase):
 
         for item in self.mpm.process_spider_output(a, [r], MagicMock()):
             # key1 value1 did not pass through, since it was already set
-            self.assertEquals(item.meta['key1'], 'othervalue')
+            self.assertEqual(item.meta['key1'], 'othervalue')
             # key2 was not set, therefor it passed through
-            self.assertEquals(item.meta['key2'], 'value2')
+            self.assertEqual(item.meta['key2'], 'value2')

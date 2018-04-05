@@ -459,7 +459,7 @@ class RestService(object):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000)
     def _create_producer(self):
-        """Tries to establish a Kafka consumer connection"""
+        """Tries to establish a Kafka producer connection"""
         if not self.closed:
             try:
                 self.logger.debug("Creating new kafka producer using brokers: " +

@@ -394,7 +394,7 @@ At this point you should have a Scrapy Cluster setup that has been tested and ap
 
 .. note:: You can append ``&`` to the end of the following commands to run them in the background, but we recommend you open different terminal windows to first get a feel of how the cluster operates.
 
-The following commands outline what you would run in a traditional environment. If using a container based solution these commands are ran when you run the container itself.
+The following commands outline what you would run in a traditional environment. If using a container based solution these commands are run when you run the container itself.
 
 **Bare Bones:**
 
@@ -465,13 +465,13 @@ Which ever setup you chose, every process within should stay running for the rem
 
 .. note:: If you chose to set the Rest service up, this section may also be performed via the :doc:`../rest/index` endpoint. You just need to ensure the JSON identified in the following section is properly fed into the :ref:`feed <feed_endpoint>` rest endpoint.
 
-*The follwing commands can be ran from the command line, whether that is on the machine itself or inside the Kafka Monitor container depends on the setup chosen above.*
+*The following commands can be run from the command line, whether that is on the machine itself or inside the Kafka Monitor container depends on the setup chosen above.*
 
 1) We now need to feed the cluster a crawl request. This is done via the same Kafka Monitor python script, but with different command line arguements.
 
 ::
 
-    python kafka_monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"abc123"}'
+    python kafka_monitor.py feed '{"url": "http://dmoztools.net", "appid":"testapp", "crawlid":"abc123"}'
 
 You will see the following output on the command line for that successful request:
 
@@ -479,7 +479,7 @@ You will see the following output on the command line for that successful reques
 
     2015-12-22 15:45:37,457 [kafka-monitor] INFO: Feeding JSON into demo.incoming
     {
-        "url": "http://istresearch.com",
+        "url": "http://dmoztools.net",
         "crawlid": "abc123",
         "appid": "testapp"
     }
@@ -500,7 +500,7 @@ Crawl Request:
 
 ::
 
-    python kafka_monitor.py feed '{"url": "http://dmoz.org", "appid":"testapp", "crawlid":"abc1234", "maxdepth":1}'
+    python kafka_monitor.py feed '{"url": "http://dmoztools.net", "appid":"testapp", "crawlid":"abc1234", "maxdepth":1}'
 
 Now send an ``info`` action request to see what is going on with the
 crawl:
@@ -518,7 +518,7 @@ The following things will occur for this action request:
 
   ::
 
-      {u'server_time': 1450817666, u'crawlid': u'abc1234', u'total_pending': 25, u'total_domains': 2, u'spiderid': u'link', u'appid': u'testapp', u'domains': {u'twitter.com': {u'low_priority': -9, u'high_priority': -9, u'total': 1}, u'dmoz.org': {u'low_priority': -9, u'high_priority': -9, u'total': 24}}, u'uuid': u'someuuid'}
+      {u'server_time': 1450817666, u'crawlid': u'abc1234', u'total_pending': 25, u'total_domains': 2, u'spiderid': u'link', u'appid': u'testapp', u'domains': {u'twitter.com': {u'low_priority': -9, u'high_priority': -9, u'total': 1}, u'dmoztools.net': {u'low_priority': -9, u'high_priority': -9, u'total': 24}}, u'uuid': u'someuuid'}
 
 In this case we had 25 urls pending in the queue, so yours may be slightly different.
 
