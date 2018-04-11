@@ -16,16 +16,16 @@
   tags: common
   when: ansible_os_family == "Debian"
 
-- name: Install EPEL repo.
-  yum:
-    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
-    state: present
-  register: result
-  until: '"failed" not in result'
-  retries: 5
-  delay: 10
-  tags: common
-  when: ansible_os_family == "RedHat"
+# - name: Install EPEL repo.
+#   yum:
+#     name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+#     state: present
+#   register: result
+#   until: '"failed" not in result'
+#   retries: 5
+#   delay: 10
+#   tags: common
+#   when: ansible_os_family == "RedHat"
 
 - name: Import EPEL GPG key.
   rpm_key:
