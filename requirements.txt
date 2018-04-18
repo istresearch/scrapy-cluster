@@ -52,3 +52,5 @@ zope.interface==4.4.2 # Updated from 4.3.3
 # Generated with piprot 0.9.7
 plotly==2.0.12
 flask_table==0.4.1
+selenium==3.11.0
+chromedriver-binary
