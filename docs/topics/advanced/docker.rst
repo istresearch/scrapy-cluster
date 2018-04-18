@@ -160,6 +160,18 @@ You can ensure everything started up via:
                           /usr/sbin/sshd  ...                             p, 22/tcp, 2888/tcp,
                                                                           3888/tcp
 
+TIP
+
+In the unfortunate case that elasticsearch is not running and the following message shows up into the logs:
+
+::
+
+  ERROR: bootstrap checks failed max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+
+you have to edit the virtual memory settings of the machine you are running docker onto. 
+
+For more info about the needed edits you can follow the link to the `official Elasticsearch documentation <https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html>`_ .
+
 
 From here, please continue to the :ref:`Kibana <elk_kibana>` portion of the :doc:`ELK <integration>` integration guide.
 

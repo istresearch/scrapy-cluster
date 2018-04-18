@@ -309,12 +309,14 @@ class TestLogCallbacks(TestCase):
         self.assertEqual(6, self.logger.x)
 
     def test_preserve_data(self):
+        self.logger._get_time = MagicMock(return_value='2015-11-12T10:11:12.0Z')
         message = "THIS IS A TEST"
         extras = {"key": "value", 'a': [1, 2, 3]}
+        extras_add = self.logger.add_extras(extras, 'INFO')
 
         def cb(log_message=None, log_extra=None):
-            self.assertEquals(log_message, message)
-            self.assertEquals(log_extra, extras)
+            self.assertEqual(log_message, message)
+            self.assertEqual(log_extra, extras_add)
 
         self.logger.register_callback('>DEBUG', cb)
         self.logger.log_level = 'INFO'

@@ -7,6 +7,7 @@ from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
 from scrapy.utils.python import to_unicode
+from scrapy.utils.reqser import request_to_dict, request_from_dict
 
 import redis
 import random
@@ -81,7 +82,7 @@ class DistributedScheduler(object):
         self.ip_update_interval = ip_refresh
         self.add_type = add_type
         self.add_ip = add_ip
-        self.item_retires = retries
+        self.item_retries = retries
         self.logger = logger
         self.ip_regex = re.compile(ip_regex)
         self.backlog_blacklist = backlog_blacklist
@@ -391,7 +392,7 @@ class DistributedScheduler(object):
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
             return
-        req_dict = self.request_to_dict(request)
+        req_dict = request_to_dict(request, self.spider)
 
         if not self.is_blacklisted(req_dict['meta']['appid'],
                                    req_dict['meta']['crawlid']):
@@ -435,28 +436,6 @@ class DistributedScheduler(object):
             self.logger.debug("Crawlid: '{id}' Appid: '{appid}' blacklisted"
                               .format(appid=req_dict['meta']['appid'],
                                       id=req_dict['meta']['crawlid']))
-
-    def request_to_dict(self, request):
-        '''
-        Convert Request object to a dict.
-        modified from scrapy.utils.reqser
-        '''
-        req_dict = {
-            # urls should be safe (safe_string_url)
-            'url': to_unicode(request.url),
-            'method': request.method,
-            'headers': dict(request.headers),
-            'body': request.body,
-            'cookies': request.cookies,
-            'meta': request.meta,
-            '_encoding': request._encoding,
-            'priority': request.priority,
-            'dont_filter': request.dont_filter,
-             #  callback/errback are assumed to be a bound instance of the spider
-            'callback': None if request.callback is None else request.callback.__name__,
-            'errback': None if request.errback is None else request.errback.__name__,
-        }
-        return req_dict
 
     def find_item(self):
         '''
@@ -504,49 +483,45 @@ class DistributedScheduler(object):
         if item:
             self.logger.debug(u"Found url to crawl {url}" \
                     .format(url=item['url']))
-            try:
-                req = Request(item['url'])
-            except ValueError:
-                # need absolute url
-                # need better url validation here
-                req = Request('http://' + item['url'])
-
-            try:
-                if 'callback' in item and item['callback'] is not None:
-                    req.callback = getattr(self.spider, item['callback'])
-            except AttributeError:
-                self.logger.warn("Unable to find callback method")
-
-            try:
-                if 'errback' in item and item['errback'] is not None:
-                    req.errback = getattr(self.spider, item['errback'])
-            except AttributeError:
-                self.logger.warn("Unable to find errback method")
-
             if 'meta' in item:
-                item = item['meta']
-
-            # defaults not in schema
-            if 'curdepth' not in item:
-                item['curdepth'] = 0
-            if "retry_times" not in item:
-                item['retry_times'] = 0
-
-            for key in list(item.keys()):
-                req.meta[key] = item[key]
+                # item is a serialized request
+                req = request_from_dict(item, self.spider)
+            else:
+                # item is a feed from outside, parse it manually
+                req = self.request_from_feed(item)
 
             # extra check to add items to request
-            if 'useragent' in item and item['useragent'] is not None:
-                req.headers['User-Agent'] = item['useragent']
-            if 'cookie' in item and item['cookie'] is not None:
-                if isinstance(item['cookie'], dict):
-                    req.cookies = item['cookie']
-                elif isinstance(item['cookie'], basestring):
-                    req.cookies = self.parse_cookie(item['cookie'])
+            if 'useragent' in req.meta and req.meta['useragent'] is not None:
+                req.headers['User-Agent'] = req.meta['useragent']
 
             return req
 
         return None
+
+    def request_from_feed(self, item):
+        try:
+            req = Request(item['url'])
+        except ValueError:
+            # need absolute url
+            # need better url validation here
+            req = Request('http://' + item['url'])
+
+        # defaults not in schema
+        if 'curdepth' not in item:
+            item['curdepth'] = 0
+        if "retry_times" not in item:
+            item['retry_times'] = 0
+
+        for key in list(item.keys()):
+            req.meta[key] = item[key]
+
+        # extra check to add items to request
+        if 'cookie' in item and item['cookie'] is not None:
+            if isinstance(item['cookie'], dict):
+                req.cookies = item['cookie']
+            elif isinstance(item['cookie'], basestring):
+                req.cookies = self.parse_cookie(item['cookie'])
+        return req
 
     def parse_cookie(self, string):
         '''

@@ -8,8 +8,6 @@ HOST='localhost'
 PORT=6379
 ZOOKEEPER_HOST='localhost:2181'
 
-export PYTHONPATH='.'
-
 if [ $# -ne 3 ]
   then
     echo "---- Running utils online test with redis on localhost:6379 and zookeeper on localhost:2181"
@@ -52,12 +50,3 @@ if [ $? -eq 1 ]; then
     echo "rest tests failed"
     exit 1
 fi
-python rest_service.py & export APP_PID=$!
-sleep 5
-cd ../ui
-python tests/online.py -v
-if [ $? -eq 1 ]; then
-    echo "ui tests failed"
-    exit 1
-fi
-kill $APP_PID

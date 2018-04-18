@@ -33,7 +33,7 @@ JSON Object feeder into your desired Kafka Topic. This takes a valid JSON object
 
 ::
 
-    $ python kafka_monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
+    $ python kafka_monitor.py feed '{"url": "http://dmoztools.net", "appid":"testapp", "crawlid":"ABC123"}'
 
 The command line feed is very slow and should not be used in production. Instead, you should write your own continuously running application to feed Kafka the desired API requests that you require.
 
@@ -89,10 +89,10 @@ Feed an item
 
 ::
 
-    $ python kafka_monitor.py feed '{"url": "http://istresearch.com", "appid":"testapp", "crawlid":"ABC123"}'
+    $ python kafka_monitor.py feed '{"url": "http://dmoztools.net", "appid":"testapp", "crawlid":"ABC123"}'
     2016-01-05 15:14:44,829 [kafka-monitor] INFO: Feeding JSON into demo.incoming
     {
-        "url": "http://istresearch.com",
+        "url": "http://dmoztools.net",
         "crawlid": "ABC123",
         "appid": "testapp"
     }
@@ -116,8 +116,8 @@ If you have a :ref:`Crawler <crawler>` running, you should see the html come thr
         "response_headers": {
             <headers omitted>
         },
-        "response_url": "http://istresearch.com",
-        "url": "http://istresearch.com",
+        "response_url": "http://dmoztools.net",
+        "url": "http://dmoztools.net",
         "status_code": 200,
         "status_msg": "OK",
         "appid": "testapp",

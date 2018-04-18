@@ -40,6 +40,7 @@ class LinkSpider(RedisSpider):
         item["response_headers"] = self.reconstruct_headers(response)
         item["request_headers"] = response.request.headers
         item["body"] = response.body
+        item["encoding"] = response.encoding
         item["links"] = []
 
         # determine whether to continue spidering

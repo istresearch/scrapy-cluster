@@ -12,10 +12,31 @@ Date: ??/??/????
 
 - Add Python 3 support
 
-Admin UI
-^^^^^^^^
+- Fixed assert deprecations in unit tests
 
-- new component that allows for browser based interaction with the Scrapy Cluster
+- Corrected Ansible host list for zookeeper
+
+- Minor documentation changes/updates
+
+Crawler
+^^^^^^^
+
+- Improved request to dictionary serialization support
+
+- Updated item encoding serialization
+
+Rest
+^^^^
+
+- Corrected Kafka environment variable
+
+Utils
+^^^^^
+
+- Fixed LogFactory callback with correct extras dictionary
+
+- Adds quicker shutdown to ThreadedCounter object
+
 
 Scrapy Cluster 1.2
 ------------------
@@ -130,7 +151,7 @@ Redis Monitor Changes
 - Added Stats Collection
 
 Crawler Changes
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 - Upgraded Crawler to be compatible with Scrapy 1.0
 
@@ -151,7 +172,7 @@ Crawler Changes
 - Added example Wandering Spider
 
 Scrapy Cluster 1.0
----------------------
+------------------
 
 Date: 5/21/2015
 
