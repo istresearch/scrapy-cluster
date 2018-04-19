@@ -53,3 +53,18 @@
     - libxslt-devel
   tags: common
   when: ansible_os_family == "RedHat"
+  
+- name: "apt | ensure Google linux signing key present"
+  apt_key: url=https://dl-ssl.google.com/linux/linux_signing_key.pub state=present
+
+- name: "apt | ensure Google chrome repo present"
+  apt_repository:
+    repo: "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main"
+    filename: "google-chrome"
+    state: present
+    update_cache: yes
+
+- name: "apt | ensure Google chrome present"
+  apt:
+    name: "{{ chrome_package }}"
+    state: present
