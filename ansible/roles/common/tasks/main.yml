@@ -54,36 +54,10 @@
   tags: common
   when: ansible_os_family == "RedHat"
   
-- name: download google key
-  command: >
-    wget -O /root/google.pub https://dl.google.com/linux/linux_signing_key.pub
-  args:
-    creates: /root/google.pub
-  sudo: yes
-  register: result_download_key
-  until: result_download_key|success
+
+- name: downloading and installing chrome file
+  shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+  yum: name=google-chrome-stable_current_x86_64.rpm
+  when: ansible_os_family == "RedHat"
   
-- name: add google key to apt-key
-  apt_key: file=/root/google.pub
-  sudo: yes
-
-- name: google sources.list
-  template: >
-    src=google-chrome.list.j2
-    dest=/etc/apt/sources.list.d/google-chrome.list
-    force=no
-  register: sources_list_result
-  sudo: yes
-
-- name: apt-get update
-  apt: update_cache=true cache_valid_time=0
-  when: sources_list_result.changed
-  register: result_aptget_update
-  until: result_aptget_update|success
-  sudo: yes
-
-- name: Install google-chrome
-  apt: name=google-chrome-stable
-  sudo: yes
-  register: result_install_chrome
-  until: result_install_chrome|success
+ 
