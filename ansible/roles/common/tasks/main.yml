@@ -55,8 +55,11 @@
   when: ansible_os_family == "RedHat"
   
 
-- name: downloading and installing chrome file
+- name: downloading chrome rpm file
   shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+  when: ansible_os_family == "RedHat"
+ 
+- name: installing chrome file
   yum: name=google-chrome-stable_current_x86_64.rpm
   when: ansible_os_family == "RedHat"
   
