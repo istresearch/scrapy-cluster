@@ -54,6 +54,10 @@
   tags: common
   when: ansible_os_family == "RedHat"
   
+- name: downloading wget rpm file
+  yum:
+    name: wget
+    state: present
 
 - name: downloading chrome rpm file
   shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
