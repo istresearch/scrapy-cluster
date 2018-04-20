@@ -16,11 +16,11 @@
   tags: common
   when: ansible_os_family == "Debian"
   
-- name: Install the package "wget"
+- name: downloading wget deb file
   apt:
     name: wget
     state: present
-   when: ansible_os_family == "Debian"
+  when: ansible_os_family == "Debian"
 
 - name: downloading chrome deb file
   shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
