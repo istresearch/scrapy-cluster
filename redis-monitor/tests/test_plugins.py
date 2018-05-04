@@ -73,9 +73,9 @@ class TestInfoPlugin(TestCase, RegexFixer):
 
     def test_info_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'info:stuff:stuff'), ['info:stuff:stuff'])
-        self.assertEquals(re.findall(regex, 'info:stuff:stuff:stuff'), ['info:stuff:stuff:stuff'])
-        self.assertEquals(re.findall(regex, 'info:stuff'), [])
+        self.assertEqual(re.findall(regex, 'info:stuff:stuff'), ['info:stuff:stuff'])
+        self.assertEqual(re.findall(regex, 'info:stuff:stuff:stuff'), ['info:stuff:stuff:stuff'])
+        self.assertEqual(re.findall(regex, 'info:stuff'), [])
 
     def test_info_get_bin(self):
         v1 = "stuff"
@@ -83,7 +83,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
         v2 = 200
         self.plugin.redis_conn.zscan_iter = MagicMock(return_value=[(v1, v2)])
         ret_val = self.plugin._get_bin('key')
-        self.assertEquals(ret_val, {-200: ['stuff']})
+        self.assertEqual(ret_val, {-200: ['stuff']})
 
     def test_info_get_crawlid(self):
         master = {}
@@ -124,7 +124,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
             'uuid': 'ABC123'
         }
 
-        self.assertEquals(result, success)
+        self.assertEqual(result, success)
 
     def test_info_get_appid(self):
         master = {}
@@ -165,7 +165,7 @@ class TestInfoPlugin(TestCase, RegexFixer):
                     'expires': 10
                 }}}
 
-        self.assertEquals(result, success)
+        self.assertEqual(result, success)
 
 
 class TestStopPlugin(TestCase, RegexFixer):
@@ -176,11 +176,11 @@ class TestStopPlugin(TestCase, RegexFixer):
 
     def test_stop_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'stop:spider:app:crawl'),
+        self.assertEqual(re.findall(regex, 'stop:spider:app:crawl'),
                           ['stop:spider:app:crawl'])
-        self.assertEquals(re.findall(regex, 'stop:spider:app'),
+        self.assertEqual(re.findall(regex, 'stop:spider:app'),
                           ['stop:spider:app'])
-        self.assertEquals(re.findall(regex, 'stop:stuff'), [])
+        self.assertEqual(re.findall(regex, 'stop:stuff'), [])
 
     def test_stop_monitor_mini_purge(self):
         self.plugin.redis_conn.scan_iter = MagicMock(return_value=['link:istresearch.com:queue'])
@@ -189,7 +189,7 @@ class TestStopPlugin(TestCase, RegexFixer):
             ['{"crawlid":"crawl", "appid":"foo"}'],
         ])
 
-        self.assertEquals(self.plugin._mini_purge("link", "app", "crawl"), 1)
+        self.assertEqual(self.plugin._mini_purge("link", "app", "crawl"), 1)
 
 
 class TestExpirePlugin(TestCase, RegexFixer):
@@ -200,9 +200,9 @@ class TestExpirePlugin(TestCase, RegexFixer):
 
     def test_stop_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'timeout:blah1:blah2:bla3'),
+        self.assertEqual(re.findall(regex, 'timeout:blah1:blah2:bla3'),
                           ['timeout:blah1:blah2:bla3'])
-        self.assertEquals(re.findall(regex, 'timeout:blah1:blah2'), [])
+        self.assertEqual(re.findall(regex, 'timeout:blah1:blah2'), [])
 
     def test_expire_monitor_time(self):
         # if the stop monitor passes then this is just testing whether
@@ -222,7 +222,7 @@ class TestExpirePlugin(TestCase, RegexFixer):
                 self.plugin.handle("key:stuff:blah:blah", 4)
             self.fail("Expire not called")
         except BaseException as e:
-            self.assertEquals("throw once", str(e))
+            self.assertEqual("throw once", str(e))
 
 class TestStatsPlugin(TestCase, RegexFixer):
     def setUp(self):
@@ -233,16 +233,16 @@ class TestStatsPlugin(TestCase, RegexFixer):
 
     def test_stats_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'statsrequest:crawler:testApp'),
+        self.assertEqual(re.findall(regex, 'statsrequest:crawler:testApp'),
                           ['statsrequest:crawler:testApp'])
-        self.assertEquals(re.findall(regex, 'statsrequest:crawler'), [])
+        self.assertEqual(re.findall(regex, 'statsrequest:crawler'), [])
 
     def _assert_thrown(self, key, equals):
         try:
             self.plugin.handle(key, 'blah')
             self.fail(equals + " exception not thrown")
         except Exception as e:
-            self.assertEquals(equals, str(e))
+            self.assertEqual(equals, str(e))
 
     def test_stats_handle(self):
         # trying to make sure that everything is called
@@ -291,7 +291,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
                 }
             }
         }
-        self.assertEquals(result, good)
+        self.assertEqual(result, good)
 
     def test_stats_get_machine(self):
         # tests stats on three different machines, with different spiders
@@ -313,7 +313,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
                 'host3': {'200': {'86400': 5}}
             }
         }
-        self.assertEquals(result, good)
+        self.assertEqual(result, good)
 
     def test_stats_get_queue(self):
         # tests stats on three different machines, with different spiders
@@ -322,7 +322,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
                                                 'link:istresearch.com:queue',
                                                 'link:yellowpages.com:queue',
                                                 'link:cnn.com:queue',
-                                                'wandering:dmoz.org:queue',
+                                                'wandering:dmoztools.net:queue',
                                                 'wandering:craigslist.org:queue',
                                                 ])
         results = [5, 10, 11, 1, 3]
@@ -349,13 +349,13 @@ class TestStatsPlugin(TestCase, RegexFixer):
                     'spider_backlog': 4,
                     'num_domains': 2,
                     'domains': [
-                        {'domain': 'dmoz.org', 'backlog': 1},
+                        {'domain': 'dmoztools.net', 'backlog': 1},
                         {'domain': 'craigslist.org', 'backlog': 3},
                     ]
                 }
             }
         }
-        self.assertEquals(result, good)
+        self.assertEqual(result, good)
 
     def test_stats_get_plugin(self):
         self.plugin.redis_conn.keys = MagicMock(return_value=[
@@ -374,7 +374,7 @@ class TestStatsPlugin(TestCase, RegexFixer):
             "total": {"lifetime": 5, "3600": 5},
             "fail": {"68000": 5, "3600": 5}
         }
-        self.assertEquals(result, good)
+        self.assertEqual(result, good)
 
 class TestZookeeperPlugin(TestCase, RegexFixer):
     def setUp(self):
@@ -389,26 +389,26 @@ class TestZookeeperPlugin(TestCase, RegexFixer):
 
     def test_zk_regex(self):
         regex = self.fix_re(self.plugin.regex)
-        self.assertEquals(re.findall(regex, 'zk:blah1:blah2:bla3'),
+        self.assertEqual(re.findall(regex, 'zk:blah1:blah2:bla3'),
                           ['zk:blah1:blah2:bla3'])
-        self.assertEquals(re.findall(regex, 'zk:blah1:blah2'), [])
+        self.assertEqual(re.findall(regex, 'zk:blah1:blah2'), [])
 
     def test_zk_handle_du(self):
         # domain update
-        s = b'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        s = b'blacklist: []\ndomains:\n  dmoztools.net: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123","hits":15,"scale":0.9,"window":60}'
-        expected = b'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoz.org:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
+        expected = b'blacklist: []\ndomains:\n  cnn.com:\n    hits: 15\n    scale: 0.9\n    window: 60\n  dmoztools.net:\n    hits: 60\n    scale: 1.0\n    window: 60\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
         self.plugin.handle(key="zk:domain-update:cnn.com:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_dr(self):
         # domain remove
-        s = b'blacklist: []\ndomains:\n  dmoz.org: {hits: 60, scale: 1.0, window: 60}\n'
+        s = b'blacklist: []\ndomains:\n  dmoztools.net: {hits: 60, scale: 1.0, window: 60}\n'
         val = '{"uuid":"blah123"}'
         expected = b'blacklist: []\ndomains: {}\n'
         self.plugin.zoo_client.get = MagicMock(return_value=(s,))
-        self.plugin.handle(key="zk:domain-remove:dmoz.org:testapp", value=val)
+        self.plugin.handle(key="zk:domain-remove:dmoztools.net:testapp", value=val)
         self.plugin.zoo_client.set.assert_called_once_with("/some/path", expected)
 
     def test_zk_handle_bu(self):

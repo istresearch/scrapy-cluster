@@ -64,7 +64,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_plugin(plugin)
             self.fail("Info not called")
         except BaseException as e:
-            self.assertEquals("info", str(e))
+            self.assertEqual("info", str(e))
 
         # action
         try:
@@ -72,7 +72,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_plugin(plugin)
             self.fail("Stop not called")
         except BaseException as e:
-            self.assertEquals("stop", str(e))
+            self.assertEqual("stop", str(e))
 
         # expire
         try:
@@ -80,7 +80,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_plugin(plugin)
             self.fail("Expire not called")
         except BaseException as e:
-            self.assertEquals("expire", str(e))
+            self.assertEqual("expire", str(e))
 
         # test that an exception within a handle method is caught
         self.redis_monitor._process_failures = MagicMock()
@@ -158,13 +158,13 @@ class TestRedisMonitor(TestCase):
             'ZookeeperMonitor'
         ]
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(self.redis_monitor.stats_dict['plugins'].keys()),
             sorted(defaults))
 
         for key in self.redis_monitor.plugins_dict:
             plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
-            self.assertEquals(
+            self.assertEqual(
                 list(self.redis_monitor.stats_dict['plugins'][plugin_name].keys()),
                 ['lifetime'])
 
@@ -183,13 +183,13 @@ class TestRedisMonitor(TestCase):
 
         self.redis_monitor._setup_stats_plugins()
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(self.redis_monitor.stats_dict['plugins'].keys()),
             sorted(defaults))
 
         for key in self.redis_monitor.plugins_dict:
             plugin_name = self.redis_monitor.plugins_dict[key]['instance'].__class__.__name__
-            self.assertEquals(
+            self.assertEqual(
                 sorted([str(x) for x in self.redis_monitor.stats_dict['plugins'][plugin_name].keys()]),
                 sorted(good))
 
@@ -197,12 +197,12 @@ class TestRedisMonitor(TestCase):
             k1 = 'stats:redis-monitor:{p}'.format(p=plugin_key)
             for time_key in self.redis_monitor.stats_dict['plugins'][plugin_key]:
                 if time_key == 0:
-                    self.assertEquals(
+                    self.assertEqual(
                         self.redis_monitor.stats_dict['plugins'][plugin_key][0].key,
                         '{k}:lifetime'.format(k=k1)
                         )
                 else:
-                    self.assertEquals(
+                    self.assertEqual(
                         self.redis_monitor.stats_dict['plugins'][plugin_key][time_key].key,
                         '{k}:{t}'.format(k=k1, t=time_key)
                         )
@@ -216,7 +216,7 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._main_loop()
             self.fail("_process_plugin not called")
         except BaseException as e:
-            self.assertEquals("normal", str(e))
+            self.assertEqual("normal", str(e))
 
     def test_precondition(self):
         self.redis_monitor.stats_dict = {}
@@ -235,12 +235,12 @@ class TestRedisMonitor(TestCase):
             self.redis_monitor._process_key_val(instance, key, value)
             self.fail('handler not called')
         except BaseException as e:
-            self.assertEquals('handler', str(e))
+            self.assertEqual('handler', str(e))
 
     def test_get_fail_key(self):
         key = 'test'
         result = 'lock:test:failures'
-        self.assertEquals(self.redis_monitor._get_fail_key(key), result)
+        self.assertEqual(self.redis_monitor._get_fail_key(key), result)
 
     def test_process_failures(self):
         self.redis_monitor.settings = {'RETRY_FAILURES':True,

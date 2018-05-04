@@ -61,6 +61,3 @@ docker-compose.override.yml
 
 # backup files
 *.bak
-
-# IDE stuff
-.idea

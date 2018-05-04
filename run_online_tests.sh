@@ -8,8 +8,6 @@ HOST='localhost'
 PORT=6379
 ZOOKEEPER_HOST='localhost:2181'
 
-export PYTHONPATH='.'
-
 if [ $# -ne 3 ]
   then
     echo "---- Running utils online test with redis on localhost:6379 and zookeeper on localhost:2181"

@@ -15,17 +15,33 @@
     - libxslt1-dev
   tags: common
   when: ansible_os_family == "Debian"
-
-- name: Install EPEL repo.
-  yum:
-    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+  
+- name: downloading wget deb file
+  apt:
+    name: wget
     state: present
-  register: result
-  until: '"failed" not in result'
-  retries: 5
-  delay: 10
-  tags: common
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family == "Debian"
+
+- name: downloading chrome deb file
+  shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  when: ansible_os_family == "Debian"
+ 
+- name: installing chrome file
+  dpkg_selections:
+    name: google-chrome-stable_current_amd64.deb
+    selection: install
+  when: ansible_os_family == "Debian"
+
+# - name: Install EPEL repo.
+#   yum:
+#     name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+#     state: present
+#   register: result
+#   until: '"failed" not in result'
+#   retries: 5
+#   delay: 10
+#   tags: common
+#   when: ansible_os_family == "RedHat"
 
 - name: Import EPEL GPG key.
   rpm_key:
@@ -53,3 +69,19 @@
     - libxslt-devel
   tags: common
   when: ansible_os_family == "RedHat"
+  
+- name: downloading wget rpm file
+  yum:
+    name: wget
+    state: present
+  when: ansible_os_family == "RedHat"
+  
+- name: downloading chrome rpm file
+  shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+  when: ansible_os_family == "RedHat"
+ 
+- name: installing chrome file
+  yum: name=google-chrome-stable_current_x86_64.rpm
+  when: ansible_os_family == "RedHat"
+  
+ 

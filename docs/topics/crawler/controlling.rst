@@ -141,7 +141,7 @@ To utilize the different throttle mechanisms you can alter the following setting
 Combining Domain Queues and Throttling
 --------------------------------------
 
-At the core of Scrapy Cluster is a Redis priority queue that holds all of the requests for a particular spider type and domain, like ``link:dmoz.org:queue``. The configured throttle determines when an individual Scrapy process can receive a new request from the Redis Queues. Only when the throttle says that it is "ok" will the Spider be returned a link to process.
+At the core of Scrapy Cluster is a Redis priority queue that holds all of the requests for a particular spider type and domain, like ``link:dmoztools.net:queue``. The configured throttle determines when an individual Scrapy process can receive a new request from the Redis Queues. Only when the throttle says that it is "ok" will the Spider be returned a link to process.
 
 This results in Spiders across the cluster continually polling all available domain queues for new requests, but only receiving requests when the throttle mechanism indicates that the request limit has not gone beyond the max desired configuration. Because the throttle coordination is conducted via Redis, it is not reliant on any one Scrapy process to determine whether the cluster can or can't crawl a particular domain.
 

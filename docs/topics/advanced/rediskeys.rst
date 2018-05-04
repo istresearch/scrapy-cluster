@@ -69,6 +69,6 @@ If you run the integration tests, there may be temporary Redis keys created that
 
 - **cluster:test** - Used when testing the Kafka Monitor can act and set a key in Redis
 
-- **test-spider:istresearch.com:queue** - Used when testing the crawler installation can interact with Redis and Kafka
+- **test-spider:dmoztools.net:queue** - Used when testing the crawler installation can interact with Redis and Kafka
 
 - **stats:crawler:<hostname>:test-spider:<window>** - Automatically created and destoryed during crawler testing by the stats collection mechanism settings.

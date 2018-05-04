@@ -46,6 +46,7 @@ class WanderingSpider(RedisSpider):
         item["response_headers"] = self.reconstruct_headers(response)
         item["request_headers"] = response.request.headers
         item["body"] = response.body
+        item["encoding"] = response.encoding
         item["links"] = []
         # we want to know how far our spider gets
         if item['attrs'] is None:
