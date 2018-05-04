@@ -34,7 +34,13 @@ WORKDIR /usr/src/app
 # Install Google Chrome
 RUN apk -U --no-cache \
 	--allow-untrusted add \
-    chromium 
+    chromium \
+	chromium-chromedriver
+	
+RUN wget "https://chromedriver.storage.googleapis.com/2.36/chromedriver_linux64.zip" &&\
+    busybox unzip chromedriver_linux64.zip &&\
+    chmod a+x chromedriver &&\
+    mv chromedriver /usr/bin/
 
 ENV CHROME_BIN=/usr/bin/chromium-browser
 ENV CHROME_PATH=/usr/lib/chromium/
