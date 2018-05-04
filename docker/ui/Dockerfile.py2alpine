@@ -30,10 +30,6 @@ COPY ui /usr/src/app
 WORKDIR /usr/src/app
 
 
-# Update apk repositories
-RUN echo "http://dl-2.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories
-RUN echo "http://dl-2.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
-RUN echo "http://dl-2.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
 # Install Google Chrome
 RUN apk -U --no-cache \
