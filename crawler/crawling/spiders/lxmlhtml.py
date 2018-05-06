@@ -24,6 +24,10 @@ class CustomParser(LxmlParserLinkExtractor):
         for el, attr, attr_val in self._iter_links(selector.root):
             # pseudo lxml.html.HtmlElement.make_links_absolute(base_url)
             try:
+                # Remove leading and trailing white spaces
+                # https://www.w3.org/TR/2014/REC-html5-20141028/infrastructure.html#strip-leading-and-trailing-whitespace
+                attr_val = attr_val.strip()
+                # Join base url and collected link
                 attr_val = urljoin(base_url, attr_val)
             except ValueError:
                 continue # skipping bogus links
