@@ -38,8 +38,8 @@
 
 - name: setup Ubuntu supervisord service script
   copy:
-    src=supervisord_ubuntu
-    dest=/etc/init.d/supervisord
+    src=supervisord_ubuntu_systemd_service
+    dest=/etc/systemd/system/supervisord.service
     owner=root
     group=root
     mode=0755
@@ -62,6 +62,12 @@
 - name: reload supervisor
   shell: "supervisorctl reload"
   tags: supervisord
+  when: ansible_os_family == "RedHat"
+
+- name: reload supervisor
+  shell: "systemctl reload supervisord.service"
+  tags: supervisord
+  when: ansible_os_family == "Debian"
 
 - name: set up sc alias
   lineinfile: dest="/root/.bashrc" line="alias sc='supervisorctl'"
