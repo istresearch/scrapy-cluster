@@ -18,7 +18,7 @@ env:
     distribution: ubuntu
     version: 16.04
     init: /bin/systemd
-    run_opts: ""
+    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
   - docker: 1
     dockerfile_name: Dockerfile
     docker_tag_suffix: dev
