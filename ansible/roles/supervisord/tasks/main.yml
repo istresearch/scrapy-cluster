@@ -22,7 +22,7 @@
   tags: supervisord
 
 # BEGIN Init
-- name: setup CentOS supervisord service script
+- name: setup CentOS supervisord service script (init)
   copy:
     src=supervisord_centos
     dest=/etc/init.d/supervisord
@@ -54,7 +54,7 @@
   tags: supervisord
   when: ansible_os_family == "Debian" and ansible_service_mgr == "systemd"
 
-- name: setup RedHat supervisord service script (systemd)
+- name: setup CentOS supervisord service script (systemd)
   copy:
     src=supervisord_centos_systemd_service
     dest=/etc/systemd/system/supervisord.service
@@ -70,17 +70,21 @@
   tags: supervisord
   when: ansible_os_family == "RedHat"
 
-- name: ensure supervisord is enabled
-  service:
-    name: supervisord
-    enabled: yes
-  tags: supervisord
-
-- name: ensure supervisord is running
+- name: ensure supervisord is running and is enabled (init)
   service:
     name: supervisord
     state: started
+    enabled: yes
   tags: supervisord
+  when: ansible_service_mgr != "systemd"
+
+- name: ensure supervisord is running and is enabled (systemd)
+  systemd:
+    name: supervisord
+    state: started
+    enabled: yes
+  tags: supervisord
+  when: ansible_service_mgr == "systemd"
 
 - name: reload supervisor (init)
   shell: "supervisorctl reload"
@@ -88,7 +92,9 @@
   when: ansible_service_mgr != "systemd"
 
 - name: reload supervisor (systemd)
-  shell: "systemctl reload supervisord.service"
+  systemd:
+    name: supervisord
+    state: reloaded
   tags: supervisord
   when: ansible_service_mgr == "systemd"
 
