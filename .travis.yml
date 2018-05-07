@@ -17,7 +17,7 @@ env:
   - ubuntu: 1
     distribution: ubuntu
     version: 16.04
-    init: /bin/systemctl
+    init: /bin/systemd
     run_opts: ""
   - docker: 1
     dockerfile_name: Dockerfile
