@@ -36,7 +36,17 @@
   tags: supervisord
   when: ansible_os_family == "RedHat"
 
-- name: setup Ubuntu supervisord service script
+- name: setup Ubuntu supervisord service script (init)
+  copy:
+    src=supervisord_ubuntu
+    dest=/etc/init.d/supervisord
+    owner=root
+    group=root
+    mode=0755
+  tags: supervisord
+  when: ansible_os_family == "Debian" and ansible_service_mgr != "systemd"
+
+- name: setup Ubuntu supervisord service script (systemd)
   copy:
     src=supervisord_ubuntu_systemd_service
     dest=/etc/systemd/system/supervisord.service
@@ -44,7 +54,7 @@
     group=root
     mode=0755
   tags: supervisord
-  when: ansible_os_family == "Debian"
+  when: ansible_os_family == "Debian" and ansible_service_mgr == "systemd"
 
 - name: ensure supervisord is enabled
   service:
@@ -59,15 +69,15 @@
     state: started
   tags: supervisord
 
-- name: reload supervisor
+- name: reload supervisor (init)
   shell: "supervisorctl reload"
   tags: supervisord
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family != "Debian" or ansible_service_mgr != "systemd"
 
-- name: reload supervisor
+- name: reload supervisor (systemd)
   shell: "systemctl reload supervisord.service"
   tags: supervisord
-  when: ansible_os_family == "Debian"
+  when: ansible_os_family == "Debian" and ansible_service_mgr == "systemd"
 
 - name: set up sc alias
   lineinfile: dest="/root/.bashrc" line="alias sc='supervisorctl'"
