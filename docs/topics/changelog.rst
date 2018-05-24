@@ -25,6 +25,8 @@ Crawler
 
 - Updated item encoding serialization
 
+- Added ability to do per-domain crawl limits
+
 Rest
 ^^^^
 
