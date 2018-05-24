@@ -8,6 +8,7 @@ from builtins import next
 import unittest
 from unittest import TestCase
 import time
+import datetime
 
 import sys
 from os import path
@@ -39,6 +40,12 @@ class TestLinkSpider(TestCase):
         "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
         "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
         "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":0, \"domain_max_pages\":0}"
+
+    example_feed_max = "{\"allowed_domains\":[\"dmoztools.net\"],\"allow_regex\":null,\""\
+        "crawlid\":\"abc1234567\",\"url\":\"http://dmoztools.net/\",\"expires\":0,\""\
+        "ts\":1461549923.7956631184,\"priority\":100,\"deny_regex\":null,\""\
+        "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
+        "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":3, \"domain_max_pages\":4}"
 
     def setUp(self):
         self.settings = get_project_settings()
@@ -78,9 +85,10 @@ class TestLinkSpider(TestCase):
         d.addBoth(lambda _: reactor.stop())
         # add crawl to redis
         key = "test-spider:dmoztools.net:queue"
-        self.redis_conn.zadd(key, self.example_feed, -99)
+        self.redis_conn.zadd(key, self.example_feed, -80)
+        self.redis_conn.zadd(key, self.example_feed_max, -90)
 
-        # run the spider, give 20 seconds to see the url, crawl it,
+        # run the spider, give 20 seconds to see the urls and crawl them
         # and send to kafka. Then we kill the reactor
         def thread_func():
             time.sleep(20)
@@ -91,17 +99,31 @@ class TestLinkSpider(TestCase):
         reactor.run()
 
         message_count = 0
-        m = next(self.consumer)
+        max_message_count = 0
 
-        if m is None:
-            pass
-        else:
-            the_dict = json.loads(m.value)
-            if the_dict is not None and the_dict['appid'] == 'test' \
-                    and the_dict['crawlid'] == 'abc12345':
-                message_count += 1
+        start_time = datetime.datetime.now()
+        # give the consumer 30 seconds to consume all pages
+        while (datetime.datetime.now() - start_time).total_seconds() < 15:
+            try:
+                m = None
+                m = next(self.consumer)
+            except StopIteration as e:
+                pass
+
+            if m is None:
+                pass
+            else:
+                the_dict = json.loads(m.value)
+                if the_dict is not None:
+                    if the_dict['appid'] == 'test' \
+                            and the_dict['crawlid'] == 'abc1234567':
+                        max_message_count += 1
+                    elif the_dict['appid'] == 'test' \
+                            and the_dict['crawlid'] == 'abc12345':
+                        message_count += 1
 
         self.assertEqual(message_count, 1)
+        self.assertEqual(max_message_count, 4)
 
     def tearDown(self):
         keys = self.redis_conn.keys('stats:crawler:*:test-spider:*')
