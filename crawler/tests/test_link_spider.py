@@ -28,6 +28,7 @@ class TestLinkSpider(TestCase):
         item["deny_extensions"] = None
         item['curdepth'] = 0
         item["maxdepth"] = 1
+        item["domain_max_pages"] = None
         item['priority'] = 0
         item['retry_times'] = 0
         item['expires'] = 0
