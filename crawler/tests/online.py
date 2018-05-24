@@ -43,7 +43,7 @@ class TestLinkSpider(TestCase):
 
     example_feed_max = "{\"allowed_domains\":[\"dmoztools.net\"],\"allow_regex\":null,\""\
         "crawlid\":\"abc1234567\",\"url\":\"http://dmoztools.net/\",\"expires\":0,\""\
-        "ts\":1461549923.7956631184,\"priority\":100,\"deny_regex\":null,\""\
+        "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
         "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
         "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":3, \"domain_max_pages\":4}"
 
@@ -91,7 +91,7 @@ class TestLinkSpider(TestCase):
         # run the spider, give 20 seconds to see the urls and crawl them
         # and send to kafka. Then we kill the reactor
         def thread_func():
-            time.sleep(20)
+            time.sleep(35)
             reactor.stop()
 
         thread = threading.Thread(target=thread_func)
@@ -102,8 +102,8 @@ class TestLinkSpider(TestCase):
         max_message_count = 0
 
         start_time = datetime.datetime.now()
-        # give the consumer 30 seconds to consume all pages
-        while (datetime.datetime.now() - start_time).total_seconds() < 15:
+        # give the consumer 35 seconds to consume all pages
+        while (datetime.datetime.now() - start_time).total_seconds() < 35:
             try:
                 m = None
                 m = next(self.consumer)
