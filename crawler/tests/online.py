@@ -38,7 +38,7 @@ class TestLinkSpider(TestCase):
         "crawlid\":\"abc12345\",\"url\":\"http://dmoztools.net/\",\"expires\":0,\""\
         "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
         "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
-        "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":0}"
+        "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":0, \"domain_max_pages\":0}"
 
     def setUp(self):
         self.settings = get_project_settings()

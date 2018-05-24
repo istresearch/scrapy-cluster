@@ -30,6 +30,12 @@
             "maximum": 3,
             "default": 0
         },
+        "domain_max_pages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2000,
+            "default": null
+        },
         "allowed_domains": {
             "type": "array",
             "uniqueItems": true,

@@ -43,6 +43,8 @@ The crawl API defines the type of crawl you wish to have the cluster execute. Th
 
 - **maxdepth:** The depth at which to continue to crawl new links found on pages
 
+- **domain_max_pages:** Set the maximum number of pages to scrape per domain.
+
 - **priority:** The priority of which to given to the url to be crawled. The Spiders will crawl the highest priorities first.
 
 - **allowed_domains:** A list of domains that the crawl should stay within. For example, putting ``[ "cnn.com" ]`` will only continue to crawl links of that domain.

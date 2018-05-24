@@ -23,6 +23,8 @@ import re
 import ujson
 
 from crawling.redis_dupefilter import RFPDupeFilter
+from crawling.redis_global_page_per_domain_filter import RFGlobalPagePerDomainFilter
+from crawling.redis_domain_max_page_filter import RFDomainMaxPageFilter
 from kazoo.handlers.threading import KazooTimeoutError
 
 from scutils.zookeeper_watcher import ZookeeperWatcher
@@ -43,6 +45,8 @@ class DistributedScheduler(object):
     queue_keys = None # the list of current queues
     queue_class = None # the class to use for the queue
     dupefilter = None # the redis dupefilter
+    global_page_per_domain_filter = None  # the global redis page per domain filter, applied to all domains.
+    domain_max_page_filter = None  # the individual domain's redis max page filter.
     update_time = 0 # the last time the queues were updated
     update_ip_time = 0 # the last time the ip was updated
     update_interval = 0 # how often to update the queues
@@ -67,7 +71,8 @@ class DistributedScheduler(object):
 
     def __init__(self, server, persist, update_int, timeout, retries, logger,
                  hits, window, mod, ip_refresh, add_type, add_ip, ip_regex,
-                 backlog_blacklist, queue_timeout):
+                 backlog_blacklist, queue_timeout, global_page_per_domain_limit,
+                 global_page_per_domain_limit_timeout, domain_max_page_timeout):
         '''
         Initialize the scheduler
         '''
@@ -87,6 +92,9 @@ class DistributedScheduler(object):
         self.ip_regex = re.compile(ip_regex)
         self.backlog_blacklist = backlog_blacklist
         self.queue_timeout = queue_timeout
+        self.global_page_per_domain_limit = global_page_per_domain_limit
+        self.global_page_per_domain_limit_timeout = global_page_per_domain_limit_timeout
+        self.domain_max_page_timeout = domain_max_page_timeout
 
         # set up tldextract
         self.extract = tldextract.TLDExtract()
@@ -349,9 +357,14 @@ class DistributedScheduler(object):
                                          bytes=my_bytes,
                                          backups=my_backups)
 
+        global_page_per_domain_limit = settings.get('GLOBAL_PAGE_PER_DOMAIN_LIMIT', None)
+        global_page_per_domain_limit_timeout = settings.get('GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT', 600)
+        domain_max_page_timeout = settings.get('DOMAIN_MAX_PAGE_TIMEOUT', 600)
+
         return cls(server, persist, up_int, timeout, retries, logger, hits,
                    window, mod, ip_refresh, add_type, add_ip, ip_regex,
-                   backlog_blacklist, queue_timeout)
+                   backlog_blacklist, queue_timeout, global_page_per_domain_limit,
+                   global_page_per_domain_limit_timeout, domain_max_page_timeout)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -365,12 +378,21 @@ class DistributedScheduler(object):
         self.dupefilter = RFPDupeFilter(self.redis_conn,
                                         self.spider.name + ':dupefilter',
                                         self.rfp_timeout)
+        self.global_page_per_domain_filter = RFGlobalPagePerDomainFilter(self.redis_conn,
+                                                                         self.spider.name + ':global_page_count_filter',
+                                                                         self.global_page_per_domain_limit,
+                                                                         self.global_page_per_domain_limit_timeout)
+        self.domain_max_page_filter = RFDomainMaxPageFilter(self.redis_conn,
+                                                            self.spider.name + ':domain_max_page_filter',
+                                                            self.domain_max_page_timeout)
 
     def close(self, reason):
         self.logger.info("Closing Spider", {'spiderid':self.spider.name})
         if not self.persist:
             self.logger.warning("Clearing crawl queues")
             self.dupefilter.clear()
+            self.global_page_per_domain_filter.clear()
+            self.domain_max_page_filter.clear()
             for key in self.queue_keys:
                 self.queue_dict[key][0].clear()
 
@@ -389,11 +411,36 @@ class DistributedScheduler(object):
         '''
         Pushes a request from the spider into the proper throttled queue
         '''
+
+        # # # # # # # # # # # # # # # # # # Duplicate link Filter # # # # # # # # # # # # # # #
         if not request.dont_filter and self.dupefilter.request_seen(request):
             self.logger.debug("Request not added back to redis")
             return
+
+        # An individual crawling request of a domain's page
         req_dict = request_to_dict(request, self.spider)
 
+        # # # # # # # # # # # # # # # # # # Page Limit Filters # # # # # # # # # # # # # # #
+        # Max page filter per individual domain
+        if req_dict['meta']['domain_max_pages'] and self.domain_max_page_filter.request_page_limit_reached(
+                request=request,
+                spider=self.spider):
+            self.logger.debug("Request {0} reached domain's page limit of {1}".format(
+                request.url,
+                req_dict['meta']['domain_max_pages']))
+            return
+
+        # Global - cluster wide - max page filter
+        if self.global_page_per_domain_limit and self.global_page_per_domain_filter.request_page_limit_reached(
+                    request=request,
+                    spider=self.spider):
+            self.logger.debug("Request {0} reached global page limit of {1}".format(
+                    request.url,
+                    self.global_page_per_domain_limit))
+            return
+
+
+        # # # # # # # # # # # # # # # # # # Blacklist Filter # # # # # # # # # # # # # # #
         if not self.is_blacklisted(req_dict['meta']['appid'],
                                    req_dict['meta']['crawlid']):
             # grab the tld of the request
