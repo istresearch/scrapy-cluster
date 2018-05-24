@@ -90,8 +90,10 @@ class TestLinkSpider(TestCase):
 
         # run the spider, give 20 seconds to see the urls and crawl them
         # and send to kafka. Then we kill the reactor
+        total_time = 60
+
         def thread_func():
-            time.sleep(35)
+            time.sleep(total_time)
             reactor.stop()
 
         thread = threading.Thread(target=thread_func)
@@ -102,8 +104,8 @@ class TestLinkSpider(TestCase):
         max_message_count = 0
 
         start_time = datetime.datetime.now()
-        # give the consumer 35 seconds to consume all pages
-        while (datetime.datetime.now() - start_time).total_seconds() < 35:
+        # give the consumer X seconds to consume all pages
+        while (datetime.datetime.now() - start_time).total_seconds() < total_time:
             try:
                 m = None
                 m = next(self.consumer)
