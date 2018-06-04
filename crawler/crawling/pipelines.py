@@ -162,12 +162,12 @@ class KafkaPipeline(object):
         self.logger.info("Sent page to Kafka", item)
 
 
-    def _kafka_failure(self, item, spider, response):
+    def _kafka_failure(self, item, spider, exception):
         '''
         Callback for failed send
         '''
         item['success'] = False
-        item['exception'] = traceback.format_exc()
+        item['exception'] = exception if exception else traceback.format_exc()
         item['spiderid'] = spider.name
         item = self._clean_item(item)
         self.logger.error("Failed to send page to Kafka", item)
