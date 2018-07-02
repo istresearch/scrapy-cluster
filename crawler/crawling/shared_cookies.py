@@ -4,10 +4,9 @@ import pickle
 from scrapy.downloadermiddlewares.cookies import CookiesMiddleware
 
 
-class CustomCookiesMiddleware(CookiesMiddleware):
+class SharedCookiesMiddleware(CookiesMiddleware):
     '''
-    Custom Cookies Middleware to pass our required cookies along but not
-    persist between calls
+    Shared Cookies Middleware to share same cookies between crawl Nodes.
     '''
 
     def __init__(self, debug=True, server=None):
