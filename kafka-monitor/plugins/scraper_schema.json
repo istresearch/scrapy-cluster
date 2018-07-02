@@ -78,10 +78,18 @@
             "maxLength": 1000,
             "default": null
         },
+        "headers": {
+            "type":"object",
+            "default": null
+        },
         "cookie": {
             "type": "string",
             "minLength": 3,
             "maxLength": 1000,
+            "default": null
+        },
+        "cookies": {
+            "type" : "object",
             "default": null
         },
         "attrs": {
