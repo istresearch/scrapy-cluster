@@ -205,12 +205,14 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
             "crawlid": "abc123",
             "appid": "myapp",
             "spiderid": "link",
+            "useragent": "useragent",
             "headers": {
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,ima/webp,/;q=0.8",
                 "Accept-Encoding": "gzip, deflate",
                 "X-Requested-With": "dmoztools.net",
                 "User-Agent": "My Custom User Agent"
             },
+            "cookie" : "ajs_user_id=null; ajs_group_id=null;",
             "cookies": {
                 "device_id": "1",
                 "app_token": "guid"
