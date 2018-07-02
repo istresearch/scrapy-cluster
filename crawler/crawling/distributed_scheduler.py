@@ -564,8 +564,9 @@ class DistributedScheduler(object):
 
         # extra check to add items to request
         if 'headers' in item and item['headers'] is not None:
-            for key, value in item['headers'].iteritems():
-                req.headers[key] = value
+            if isinstance(item['headers'], dict):
+                for key, value in item['headers'].iteritems():
+                    req.headers[key] = value
 
         if 'cookie' in item and item['cookie'] is not None:
             if isinstance(item['cookie'], basestring):
