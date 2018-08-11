@@ -31,6 +31,7 @@ services:
       - "5343:5343"
   redis:
     image: redis
+#    command: redis-server --requirepass redispassword
     ports:
       - "6379"
     restart: always

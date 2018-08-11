@@ -62,6 +62,7 @@ class LogRetryMiddleware(object):
             self.redis_conn = redis.Redis(host=self.settings.get('REDIS_HOST'),
                                           port=self.settings.get('REDIS_PORT'),
                                           db=settings.get('REDIS_DB'),
+                                          password=self.settings.get('REDIS_PASSWORD'),
                                           decode_responses=True)
 
             try:

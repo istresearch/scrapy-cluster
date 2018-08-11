@@ -5,6 +5,7 @@
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
+REDIS_PASSWORD = None
 
 # Kafka server information
 KAFKA_HOSTS = ['localhost:9092']

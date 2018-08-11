@@ -123,7 +123,7 @@ You can use any of the three classes in the following way, you just need to have
     >>> import redis
     >>> import ujson
     >>> from scutils.redis_queue import RedisStack
-    >>> redis_conn = redis.Redis(host='scdev', port=6379, decode_responses=True)
+    >>> redis_conn = redis.Redis(host='scdev', port=6379, password=None, decode_responses=True)
     >>> queue = RedisStack(redis_conn, "stack_key", encoding=ujson))
     >>> queue.push('item1')
     >>> queue.push(['my', 'array', 'here'])
@@ -153,6 +153,8 @@ In this example lets create a simple script that changes what type of Queue we u
                             help="The Redis host ip")
         parser.add_argument('-rp', '--redis-port', action='store', default='6379',
                             help="The Redis port")
+        parser.add_argument('-rP', '--redis-password', action='store', default=None,
+                            help="The Redis password")
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-q', '--queue', action='store_true', help="Use a RedisQueue")
         group.add_argument('-s', '--stack', action='store_true',
@@ -164,7 +166,8 @@ In this example lets create a simple script that changes what type of Queue we u
 
         host = args['redis_host']
         port = args['redis_port']
-        redis_conn = redis.Redis(host=host, port=port, decode_responses=True)
+        password = args['redis_password']
+        redis_conn = redis.Redis(host=host, port=port, password=password, decode_responses=True)
 
         if args['queue']:
             queue = RedisQueue(redis_conn, "my_key")

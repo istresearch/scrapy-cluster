@@ -25,12 +25,16 @@ def main():
                         help="The input Redis port")
     parser.add_argument('-id', '--input-redis-db', action='store', default='0',
                         help="The input Redis db")
+    parser.add_argument('-iP', '--input-redis-password', action='store', default=None,
+                        help="The input Redis password")
     parser.add_argument('-or', '--output-redis-host', action='store', required=False,
                         help="The output Redis host ip, defaults to input", default=None)
     parser.add_argument('-op', '--output-redis-port', action='store', default=None,
                         help="The output Redis port, defaults to input")
     parser.add_argument('-od', '--output-redis-db', action='store', default=None,
                         help="The output Redis db, defaults to input")
+    parser.add_argument('-oP', '--output-redis-password', action='store', default=None,
+                        help="The output Redis password")
     parser.add_argument('-sv', '--start-version', action='store', type=float,
                         help="The current cluster version", required=True,
                         choices=[1.0, 1.1])
@@ -58,9 +62,11 @@ def main():
     irh = args['input_redis_host']
     irp = args['input_redis_port']
     ird = args['input_redis_db']
+    irP = args['input_redis_password']
     orh = args['output_redis_host'] if args['output_redis_host'] is not None else irh
     orp = args['output_redis_port'] if args['output_redis_port'] is not None else irp
     ord = args['output_redis_db'] if args['output_redis_db'] is not None else ird
+    orP = args['output_redis_password']
 
     def vprint(s, v=0):
         if v <= args['verbosity']:
@@ -113,8 +119,8 @@ def main():
             sys.exit(0)
 
     start_time = time.time()
-    i_redis_conn = redis.Redis(host=irh, port=irp, db=ird)
-    o_redis_conn = redis.Redis(host=orh, port=orp, db=ord)
+    i_redis_conn = redis.Redis(host=irh, port=irp, db=ird, password=irP)
+    o_redis_conn = redis.Redis(host=orh, port=orp, db=ord, password=orP)
 
     try:
         # Upgrade 1.0 to 1.1
