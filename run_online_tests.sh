@@ -24,10 +24,8 @@ fi
 
 cd utils
 if [ $PASSWORD != 'None' ]; then
-    echo 'jelszoval'
     python tests/online.py -r $HOST -p $PORT -P $PASSWORD -z $ZOOKEEPER_HOST
 else
-    echo 'jelszo nelkul'
     python tests/online.py -r $HOST -p $PORT -z $ZOOKEEPER_HOST
 fi
 if [ $? -eq 1 ]; then
