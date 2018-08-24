@@ -139,6 +139,8 @@ This will pull the latest stable images from Docker hub and build your scraping 
 
 At time of writing, there is no Docker container to interface and run all of the tests within your compose-based cluster. Instead, if you wish to run the unit and integration tests plese see the following steps.
 
+.. note:: If you want to switch to python3, just modify ``docker-compose.yml`` to change kafka_monitor, redis_monitor, crawler and rest image to python3's tag like kafka-monitor-dev-py3. You can find all available tag in `DockerHub Tags <https://hub.docker.com/r/istresearch/scrapy-cluster/tags/>`_
+
 4) To run the integration tests, get into the bash shell on any of the containers.
 
   Kafka monitor
