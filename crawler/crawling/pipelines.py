@@ -149,7 +149,6 @@ class KafkaPipeline(object):
         del item_copy['status_msg']
         item_copy['action'] = 'ack'
         item_copy['logger'] = self.logger.name
-        item_copy
 
         return item_copy
 
