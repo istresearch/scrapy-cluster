@@ -1,7 +1,7 @@
 attrs==18.1.0  # Updated from 17.2.0
 cffi==1.11.5  # Updated from 1.10.0
 ConcurrentLogHandler==0.9.1
-cryptography==2.2.2  # Updated from 2.0.3
+cryptography==2.3
 cssselect==1.0.3  # Updated from 1.0.1
 enum34==1.1.6
 funcsigs==1.0.2
