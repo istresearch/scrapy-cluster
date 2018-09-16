@@ -152,7 +152,7 @@ Number of seconds to keep **crawlid** specific duplication filters around after 
 
 Default: ``None``
 
-Hard upper limit of the number of pages allowed to be scraped per **spider, domain and crawlid** used together as a composite key. When not ``None`` it enables page limit filtering for jobs sharing the same **spider and crawlid** . When this limit is reached, the scraping for this composite key is stopped until the timeout specified with **GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached. It can only be overridden downwards (ie. scrape less than this limit) by the crawler's Kafka API argument domain_max_pages.
+Hard upper limit of the number of pages allowed to be scraped per **spider, domain and crawlid** used together as a composite key for all(!) crawling jobs. When not ``None``, all Crawl API requests grouped by the same **spiderid and crawlid** will impose this limit for each passed domain, individually. When this limit is reached, the scraping for this composite key is stopped until the timeout specified with **GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT** is reached. It can only be overridden downwards (ie. scrape less than this limit) by the crawler's Kafka API argument domain_max_pages. Used instead of the **domain_max_pages** Kafka Crawl API property when you want to set the same limit for all domains and all crawling jobs.
 
 **GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT**
 

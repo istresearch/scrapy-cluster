@@ -7,9 +7,17 @@ from scrapy.utils.reqser import request_to_dict
 class RFGlobalPagePerDomainFilter(BaseDupeFilter):
     '''
     Redis-based request number filter
-    When this filter is enabled all crawl jobs sharing the same spider and crawlid
-    have GLOBAL_PAGE_PER_DOMAIN_LIMIT as a hard limit
-    of the max pages they are allowed to crawl.
+    When this filter is enabled, all crawl jobs have GLOBAL_PAGE_PER_DOMAIN_LIMIT as a hard limit
+    of the max pages they are allowed to crawl for each individual spiderid+domain+crawlid combination.
+    For example:
+        spiderid = "spid_1"
+        crawlid = "crawl_1"
+        domains = ['domain1.test', 'domain2.test']
+        GLOBAL_PAGE_PER_DOMAIN_LIMIT = 100
+    then the crawler will fetch at most 100 pages of domain1.test and 100 pages of domain2.test.
+
+    For each different spiderid or crawlid used, the domains will be crawled again for at most 100 pages each.
+
     Used when you don't want to pass domain_max_pages to all the individual CRAWL API requests.
     By default this filter is not enabled.
     '''
