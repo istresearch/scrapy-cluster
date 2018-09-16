@@ -7,10 +7,10 @@ from scrapy.utils.reqser import request_to_dict
 class RFGlobalPagePerDomainFilter(BaseDupeFilter):
     '''
     Redis-based request number filter
-    This filter is applied cluster wide.
-    When this filter is enabled all crawl jobs
+    When this filter is enabled all crawl jobs sharing the same spider and crawlid
     have GLOBAL_PAGE_PER_DOMAIN_LIMIT as a hard limit
     of the max pages they are allowed to crawl.
+    Used when you don't want to pass domain_max_pages to all the individual CRAWL API requests.
     By default this filter is not enabled.
     '''
 
