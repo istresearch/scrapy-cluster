@@ -334,17 +334,30 @@ class ThreadedCounter(AbstractCounter):
         self.thread.join()
 
     def _main_loop(self):
-        '''
-        Main loop for the stats collector
-        '''
+        """
+        Main loop for the stats collector.
+        Calls _do_thread_work that cleans up Redis sorted sets containing stats.
+        """
         while self.active:
-            self.expire()
+            self._do_thread_work()
+        self._clean_up()
+
+    def _do_thread_work(self):
+        """
+        Clean up Redis sorted sets containing stats.
+        Runs inside a thread and communicates with Redis.
+        Must be resilient to errors otherwise stats accumulate indefinitely.
+        """
+        try:  # Prevent thread from dying in case of Redis connectivity problems
+            self.expire()  # Requires operational Redis connection
             if self.roll and self.is_expired():
                 self.start_time = self.start_time + self.window
                 self._set_key()
-            self.purge_old()
+            self.purge_old()  # Requires operational Redis connection
+        except redis.RedisError:
+            pass
+        finally:
             time.sleep(self.cycle_time)
-        self._clean_up()
 
     def _clean_up(self):
         '''
