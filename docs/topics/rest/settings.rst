@@ -71,6 +71,12 @@ Default: ``0``
 
 The Redis database to use when connecting to the ``REDIS_HOST``.
 
+**REDIS_PASSWORD**
+
+Default: ``None``
+
+The password to use when connecting to the ``REDIS_HOST``.
+
 Kafka
 -----
 

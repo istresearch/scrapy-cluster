@@ -57,6 +57,7 @@ services:
     ports:
       - "6379"
     restart: always
+    # command: redis-server --requirepass redispassword
   zookeeper:
     image: zookeeper
     ports:

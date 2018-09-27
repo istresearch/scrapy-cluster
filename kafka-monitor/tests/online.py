@@ -60,6 +60,7 @@ class TestKafkaMonitor(TestCase):
             host=self.kafka_monitor.settings['REDIS_HOST'],
             port=self.kafka_monitor.settings['REDIS_PORT'],
             db=self.kafka_monitor.settings['REDIS_DB'],
+            password=self.kafka_monitor.settings['REDIS_PASSWORD'],
             decode_responses=True)
 
     def test_feed(self):

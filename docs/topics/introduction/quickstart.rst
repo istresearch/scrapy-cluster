@@ -237,6 +237,7 @@ Add the following to your new custom local settings.
 
     # Here, 'scdev' is the host with Kafka and Redis
     REDIS_HOST = 'scdev'
+    REDIS_PASSWORD = None
     KAFKA_HOSTS = 'scdev:9092'
 
 It is recommended you use this 'local' override instead of altering the default ``settings.py`` file, in order to preserve the original configuration the cluster comes with in case something goes wrong, or the original settings need updated.
@@ -271,6 +272,7 @@ Add the following to your new custom local settings.
 
     # Here, 'scdev' is the host with Kafka and Redis
     REDIS_HOST = 'scdev'
+    REDIS_PASSWORD = None
     KAFKA_HOSTS = 'scdev:9092'
 
 8) Run the online integration tests
@@ -303,6 +305,7 @@ Add the following fields to override the defaults
 
     # Here, 'scdev' is the host with Kafka, Redis, and Zookeeper
     REDIS_HOST = 'scdev'
+    REDIS_PASSWORD = None
     KAFKA_HOSTS = 'scdev:9092'
     ZOOKEEPER_HOSTS = 'scdev:2181'
 
@@ -339,6 +342,7 @@ Add the following fields to override the defaults
 
     # Here, 'scdev' is the host with Kafka and Redis
     REDIS_HOST = 'scdev'
+    REDIS_PASSWORD = None
     KAFKA_HOSTS = 'scdev:9092'
 
 12) Run the online integration tests to see if the rest service works.
