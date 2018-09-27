@@ -22,9 +22,10 @@ For all upgrades you should use the ``migrate.py`` script at the root level of t
 
   $ python migrate.py -h
   usage: migrate.py [-h] -ir INPUT_REDIS_HOST [-ip INPUT_REDIS_PORT]
-                    [-id INPUT_REDIS_DB] [-or OUTPUT_REDIS_HOST]
-                    [-op OUTPUT_REDIS_PORT] [-od OUTPUT_REDIS_DB] -sv {1.0,1.1}
-                    -ev {1.1,1.2} [-v {0,1,2}] [-y]
+                    [-id INPUT_REDIS_DB] [-iP INPUT_REDIS_PASSWORD]
+                    [-or OUTPUT_REDIS_HOST] [-op OUTPUT_REDIS_PORT]
+                    [-od OUTPUT_REDIS_DB] [-oP OUTPUT_REDIS_PASSWORD]
+                    -sv {1.0,1.1} -ev {1.1,1.2} [-v {0,1,2}] [-y]
 
   Scrapy Cluster Migration script. Use to upgrade any part of Scrapy Cluster.
   Not recommended for use while your cluster is running.
@@ -37,12 +38,16 @@ For all upgrades you should use the ``migrate.py`` script at the root level of t
                           The input Redis port
     -id INPUT_REDIS_DB, --input-redis-db INPUT_REDIS_DB
                           The input Redis db
+    -iP INPUT_REDIS_PASSWORD, --input-redis-password INPUT_REDIS_PASSWORD
+                          The input Redis password
     -or OUTPUT_REDIS_HOST, --output-redis-host OUTPUT_REDIS_HOST
                           The output Redis host ip, defaults to input
     -op OUTPUT_REDIS_PORT, --output-redis-port OUTPUT_REDIS_PORT
                           The output Redis port, defaults to input
     -od OUTPUT_REDIS_DB, --output-redis-db OUTPUT_REDIS_DB
                           The output Redis db, defaults to input
+    -oP OUTPUT_REDIS_PASSWORD, --output-redis-password OUTPUT_REDIS_PASSWORD
+                          The output Redis password
     -sv {1.0,1.1}, --start-version {1.0,1.1}
                           The current cluster version
     -ev {1.1,1.2}, --end-version {1.1,1.2}

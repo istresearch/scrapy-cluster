@@ -431,13 +431,15 @@ if __name__ == '__main__':
                         default='localhost', help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
+    parser.add_argument('-P', '--redis-password', action='store', default=None,
+                        help="The Redis password")
     parser.add_argument('-z', '--zoo-keeper', action='store',
                         default='localhost:2181',
                         help="The Zookeeper connection <host>:<port>")
 
     args = vars(parser.parse_args())
     redis_conn = redis.Redis(host=args['redis_host'], port=args['redis_port'],
-                             decode_responses=True)
+                             password=args['redis_password'], decode_responses=True)
 
     # build testing suite
     suite = unittest.TestSuite()

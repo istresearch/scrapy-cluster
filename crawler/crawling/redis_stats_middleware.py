@@ -42,6 +42,7 @@ class RedisStatsMiddleware(object):
         self.redis_conn = redis.Redis(host=settings.get('REDIS_HOST'),
             port=settings.get('REDIS_PORT'),
             db=settings.get('REDIS_DB'),
+            password=settings.get('REDIS_PASSWORD'),
             decode_responses=True)
 
         try:

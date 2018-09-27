@@ -26,6 +26,8 @@ def main():
                         help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
+    parser.add_argument('-P', '--redis-password', action='store', default=None,
+                        help="The Redis password")
     parser.add_argument('-m', '--moderate', action='store_const', const=True,
                         default=False, help="Moderate the outbound Queue")
     parser.add_argument('-w', '--window', action='store', default=60,
@@ -41,10 +43,11 @@ def main():
     num = int(args['num_hits'])
     host = args['redis_host']
     port = args['redis_port']
+    password = args['redis_password']
     mod = args['moderate']
     queue = args['queue']
 
-    conn = redis.Redis(host=host, port=port, decode_responses=True)
+    conn = redis.Redis(host=host, port=port, password=password, decode_responses=True)
 
     q = RedisPriorityQueue(conn, queue)
     t = RedisThrottledQueue(conn, q, window, num, mod)

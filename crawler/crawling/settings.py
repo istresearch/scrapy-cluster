@@ -5,10 +5,11 @@ from __future__ import absolute_import
 # Scrapy Cluster Settings
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
-# Specify the host and port to use when connecting to Redis.
+# Specify the host, port and password to use when connecting to Redis.
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 REDIS_DB = 0
+REDIS_PASSWORD = None
 
 # Kafka server information
 KAFKA_HOSTS = ['localhost:9092']

@@ -6,22 +6,28 @@
 
 HOST='localhost'
 PORT=6379
+PASSWORD='None'
 ZOOKEEPER_HOST='localhost:2181'
 
-if [ $# -ne 3 ]
+if [ $# -ne 4 ]
   then
-    echo "---- Running utils online test with redis on localhost:6379 and zookeeper on localhost:2181"
+    echo "---- Running utils online test with redis on localhost:6379 with password: None and zookeeper on localhost:2181"
     echo "Other usage:"
-    echo "    ./bundle.sh <utils_redis_host> <utils_redis_port> <utils_zookeeper_host>"
+    echo "    ./bundle.sh <utils_redis_host> <utils_redis_port> <utils_redis_password> <utils_zookeeper_host>"
 else
     echo "---- Using custom redis and zookeeper host and port for utils online test"
     HOST=$1
     PORT=$2
-    ZOOKEEPER_HOST=$3
+    PASSWORD=$3
+    ZOOKEEPER_HOST=$4
 fi
 
 cd utils
-python tests/online.py -r $HOST -p $PORT -z $ZOOKEEPER_HOST
+if [ $PASSWORD != 'None' ]; then
+    python tests/online.py -r $HOST -p $PORT -P $PASSWORD -z $ZOOKEEPER_HOST
+else
+    python tests/online.py -r $HOST -p $PORT -z $ZOOKEEPER_HOST
+fi
 if [ $? -eq 1 ]; then
     echo "utils tests failed"
     exit 1

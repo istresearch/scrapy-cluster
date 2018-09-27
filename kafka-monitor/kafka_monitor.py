@@ -124,6 +124,7 @@ class KafkaMonitor(object):
         redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                  port=self.settings['REDIS_PORT'],
                                  db=self.settings.get('REDIS_DB'),
+                                 password=self.settings['REDIS_PASSWORD'],
                                  decode_responses=True)
 
         try:

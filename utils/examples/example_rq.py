@@ -10,6 +10,8 @@ def main():
                         help="The Redis host ip")
     parser.add_argument('-rp', '--redis-port', action='store', default='6379',
                         help="The Redis port")
+    parser.add_argument('-rP', '--redis-password', action='store', default=None,
+                        help="The Redis password")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-q', '--queue', action='store_true', help="Use a RedisQueue")
     group.add_argument('-s', '--stack', action='store_true',
@@ -21,7 +23,8 @@ def main():
 
     host = args['redis_host']
     port = args['redis_port']
-    redis_conn = redis.Redis(host=host, port=port, decode_responses=True)
+    password = args['redis_password']
+    redis_conn = redis.Redis(host=host, port=port, password=password, decode_responses=True)
 
     if args['queue']:
         queue = RedisQueue(redis_conn, "my_key")

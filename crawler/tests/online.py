@@ -54,6 +54,7 @@ class TestLinkSpider(TestCase):
         self.redis_conn = redis.Redis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'],
                                       db=self.settings['REDIS_DB'],
+                                      password=self.settings['REDIS_PASSWORD'],
                                       decode_responses=True)
         try:
             self.redis_conn.info()
