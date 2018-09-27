@@ -5,6 +5,7 @@
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
+REDIS_PASSWORD = None
 
 KAFKA_HOSTS = 'localhost:9092'
 KAFKA_TOPIC_PREFIX = 'demo'

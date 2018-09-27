@@ -62,11 +62,13 @@ class TestRedisMonitor(TestCase):
             host=self.redis_monitor.settings['REDIS_HOST'],
             port=self.redis_monitor.settings['REDIS_PORT'],
             db=self.redis_monitor.settings['REDIS_DB'],
+            password=self.redis_monitor.settings['REDIS_PASSWORD'],
             decode_responses=True)
         self.redis_monitor.lock_redis_conn = redis.Redis(
             host=self.redis_monitor.settings['REDIS_HOST'],
             port=self.redis_monitor.settings['REDIS_PORT'],
-            db=self.redis_monitor.settings['REDIS_DB'])
+            db=self.redis_monitor.settings['REDIS_DB'],
+            password=self.redis_monitor.settings['REDIS_PASSWORD'])
 
         self.redis_monitor._load_plugins()
         self.redis_monitor.stats_dict = {}

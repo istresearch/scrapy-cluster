@@ -10,10 +10,11 @@ def str2bool(v):
 # Scrapy Cluster Settings
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
-# Specify the host and port to use when connecting to Redis.
+# Specify the host, port and password to use when connecting to Redis.
 REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 REDIS_DB = int(os.getenv('REDIS_DB', 0))
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
 
 # Kafka server information
 KAFKA_HOSTS = [x.strip() for x in os.getenv('KAFKA_HOSTS', 'kafka:9092').split(',')]

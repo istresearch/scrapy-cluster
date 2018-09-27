@@ -323,6 +323,7 @@ class DistributedScheduler(object):
         server = redis.Redis(host=settings.get('REDIS_HOST'),
                              port=settings.get('REDIS_PORT'),
                              db=settings.get('REDIS_DB'),
+                             password=settings.get('REDIS_PASSWORD'),
                              decode_responses=True)
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)

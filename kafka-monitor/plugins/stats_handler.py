@@ -16,6 +16,7 @@ class StatsHandler(BaseHandler):
         self.redis_conn = redis.Redis(host=settings['REDIS_HOST'],
                                       port=settings['REDIS_PORT'],
                                       db=settings.get('REDIS_DB'),
+                                      password=settings['REDIS_PASSWORD'],
                                       decode_responses=True)
 
         try:

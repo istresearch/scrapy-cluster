@@ -13,6 +13,8 @@ parser.add_argument('-r', '--redis-host', action='store', required=True,
                     help="The Redis host ip")
 parser.add_argument('-p', '--redis-port', action='store', default='6379',
                     help="The Redis port")
+parser.add_argument('-P', '--redis-password', action='store', default=None,
+                    help="The Redis password")
 
 args = vars(parser.parse_args())
 
@@ -21,11 +23,13 @@ the_window = StatsCollector.SECONDS_1_MINUTE
 if args['rolling_window']:
     counter = StatsCollector.get_rolling_time_window(host=args['redis_host'],
                                                      port=args['redis_port'],
+                                                     password=args['redis_password'],
                                                      window=the_window,
                                                      cycle_time=1)
 else:
     counter = StatsCollector.get_time_window(host=args['redis_host'],
                                                      port=args['redis_port'],
+                                                     password=args['redis_password'],
                                                      window=the_window,
                                                      keep_max=3)
 

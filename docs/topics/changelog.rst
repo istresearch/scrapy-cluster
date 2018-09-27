@@ -12,6 +12,8 @@ Date: ??/??/????
 
 - Add Python 3 support
 
+- Add Redis password support
+
 - Fixed assert deprecations in unit tests
 
 - Corrected Ansible host list for zookeeper

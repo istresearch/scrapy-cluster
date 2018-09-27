@@ -61,12 +61,14 @@ class RedisMonitor(object):
         self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
                                       port=self.settings['REDIS_PORT'],
                                       db=self.settings['REDIS_DB'],
+                                      password=self.settings['REDIS_PASSWORD'],
                                       decode_responses=True)
         # redis_lock needs a redis connection without setting decode_responses
         # to True
         self.lock_redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
                                                  port=self.settings['REDIS_PORT'],
-                                                 db=self.settings['REDIS_DB'])
+                                                 db=self.settings['REDIS_DB'],
+                                                 password=self.settings['REDIS_PASSWORD'])
 
         try:
             self.redis_conn.info()

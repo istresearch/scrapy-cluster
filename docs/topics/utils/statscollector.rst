@@ -46,14 +46,15 @@ You should use the following static class methods to generate your counter objec
     :var SECONDS_1_WEEK:  The number of seconds in 1 week
     :var SECONDS_30_DAY:  The number of seconds in 30 days
 
-    .. method:: get_time_window(redis_conn=None, host='localhost', port=6379, key='time_window_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
+    .. method:: get_time_window(redis_conn=None, host='localhost', port=6379, password=None, key='time_window_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
 
         Generates a new TimeWindow Counter.
         Useful for collecting number of hits generated between certain times
 
-        :param redis_conn: A premade redis connection (overrides host and port)
+        :param redis_conn: A premade redis connection (overrides host, port and password)
         :param str host: the redis host
         :param int port: the redis port
+        :param str password: the redis password
         :param str key: the key for your stats collection
         :param int cycle_time: how often to check for expiring counts
         :param int start_time: the time to start valid collection
@@ -62,27 +63,29 @@ You should use the following static class methods to generate your counter objec
         :param bool keep_max: If rolling the static window, the max number of prior windows to keep
         :returns: A :class:`TimeWindow` counter object.
 
-    .. method:: get_rolling_time_window(redis_conn=None, host='localhost', port=6379, key='rolling_time_window_counter', cycle_time=5, window=SECONDS_1_HOUR)
+    .. method:: get_rolling_time_window(redis_conn=None, host='localhost', port=6379, password=None, key='rolling_time_window_counter', cycle_time=5, window=SECONDS_1_HOUR)
 
         Generates a new RollingTimeWindow.
         Useful for collect data about the number of hits in the past X seconds
 
-        :param redis_conn: A premade redis connection (overrides host and port)
+        :param redis_conn: A premade redis connection (overrides host, port and password)
         :param str host: the redis host
         :param int port: the redis port
+        :param str password: the redis password
         :param str key: the key for your stats collection
         :param int cycle_time: how often to check for expiring counts
         :param int window: the number of seconds behind now() to keep data for
         :returns: A :class:`RollingTimeWindow` counter object.
 
-    .. method:: get_counter(redis_conn=None, host='localhost', port=6379, key='counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12, start_at=0)
+    .. method:: get_counter(redis_conn=None, host='localhost', port=6379, password=None, key='counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12, start_at=0)
 
         Generate a new Counter.
         Useful for generic distributed counters
 
-        :param redis_conn: A premade redis connection (overrides host and port)
+        :param redis_conn: A premade redis connection (overrides host, port and password)
         :param str host: the redis host
         :param int port: the redis port
+        :param str password: the redis password
         :param str key: the key for your stats collection
         :param int cycle_time: how often to check for expiring counts
         :param int start_time: the time to start valid collection
@@ -92,14 +95,15 @@ You should use the following static class methods to generate your counter objec
         :param int start_at: The integer to start counting at
         :returns: A :class:`Counter` object.
 
-    .. method:: get_unique_counter(redis_conn=None, host='localhost', port=6379, key='unique_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
+    .. method:: get_unique_counter(redis_conn=None, host='localhost', port=6379, password=None, key='unique_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
 
         Generate a new UniqueCounter.
         Useful for exactly counting unique objects
 
-        :param redis_conn: A premade redis connection (overrides host and port)
+        :param redis_conn: A premade redis connection (overrides host, port and password)
         :param str host: the redis host
         :param int port: the redis port
+        :param str password: the redis password
         :param str key: the key for your stats collection
         :param int cycle_time: how often to check for expiring counts
         :param int start_time: the time to start valid collection
@@ -108,14 +112,15 @@ You should use the following static class methods to generate your counter objec
         :param int keep_max: If rolling the static window, the max number of prior windows to keep
         :returns: A :class:`UniqueCounter` object.
 
-    .. method:: get_hll_counter(redis_conn=None, host='localhost', port=6379, key='hyperloglog_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
+    .. method:: get_hll_counter(redis_conn=None, host='localhost', port=6379, password=None, key='hyperloglog_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
 
         Generate a new HyperLogLogCounter.
         Useful for approximating extremely large counts of unique items
 
-        :param redis_conn: A premade redis connection (overrides host and port)
+        :param redis_conn: A premade redis connection (overrides host, port and password)
         :param str host: the redis host
         :param int port: the redis port
+        :param str password: the redis password
         :param str key: the key for your stats collection
         :param int cycle_time: how often to check for expiring counts
         :param int start_time: the time to start valid collection
@@ -124,14 +129,15 @@ You should use the following static class methods to generate your counter objec
         :param int keep_max: If rolling the static window, the max number of prior windows to keep
         :returns: A :class:`HyperLogLogCounter` object.
 
-    .. method:: get_bitmap_counter(redis_conn=None, host='localhost', port=6379, key='bitmap_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
+    .. method:: get_bitmap_counter(redis_conn=None, host='localhost', port=6379, password=None, key='bitmap_counter', cycle_time=5, start_time=None, window=SECONDS_1_HOUR, roll=True, keep_max=12)
 
         Generate a new BitMapCounter.
         Useful for creating different bitsets about users/items that have unique indices.
 
-        :param redis_conn: A premade redis connection (overrides host and port)
+        :param redis_conn: A premade redis connection (overrides host, port and password)
         :param str host: the redis host
         :param int port: the redis port
+        :param str password: the redis password
         :param str key: the key for your stats collection
         :param int cycle_time: how often to check for expiring counts
         :param int start_time: the time to start valid collection
@@ -301,6 +307,8 @@ In this example we are going count the number of times a user presses the Space 
                         help="The Redis host ip")
     parser.add_argument('-p', '--redis-port', action='store', default='6379',
                         help="The Redis port")
+    parser.add_argument('-P', '--redis-password', action='store', default=None,
+                        help="The Redis password")
 
     args = vars(parser.parse_args())
 
@@ -309,11 +317,13 @@ In this example we are going count the number of times a user presses the Space 
     if args['rolling_window']:
         counter = StatsCollector.get_rolling_time_window(host=args['redis_host'],
                                                          port=args['redis_port'],
+                                                         password=args['redis_password'],
                                                          window=the_window,
                                                          cycle_time=1)
     else:
         counter = StatsCollector.get_time_window(host=args['redis_host'],
                                                          port=args['redis_port'],
+                                                         password=args['redis_password'],
                                                          window=the_window,
                                                          keep_max=3)
 
