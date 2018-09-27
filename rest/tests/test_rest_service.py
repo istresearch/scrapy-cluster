@@ -14,6 +14,7 @@ import six
 
 from kafka.common import OffsetOutOfRangeError
 from kafka.conn import ConnectionStates
+from kafka.common import KafkaError
 from redis.exceptions import ConnectionError
 
 class Override(RestService):
@@ -337,7 +338,11 @@ class TestRestService(TestCase):
         # test bad
         self.rest_service._spawn_kafka_connection_thread = MagicMock()
         self.rest_service.logger.error = MagicMock()
-        self.rest_service.producer.send = MagicMock(side_effect=Exception)
+
+        bad_future = MagicMock()
+        bad_future.get = MagicMock(side_effect=KafkaError)
+
+        self.rest_service.producer.send = MagicMock(return_value=bad_future)
         self.assertFalse(self.rest_service._feed_to_kafka({}))
         self.assertTrue(self.rest_service.logger.error.called)
         self.assertTrue(self.rest_service._spawn_kafka_connection_thread.called)

@@ -544,26 +544,21 @@ class RestService(object):
         :param json_item: The json item to send
         :returns: A boolean indicating whther the data was sent successfully or not
         """
-        @MethodTimer.timeout(self.settings['KAFKA_FEED_TIMEOUT'], False)
-        def _feed(json_item):
-            try:
-                self.logger.debug("Sending json to kafka at " +
-                                  str(self.settings['KAFKA_PRODUCER_TOPIC']))
-                future = self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
-                                   json_item)
-                future.add_callback(self._kafka_success)
-                future.add_errback(self._kafka_failure)
+        self.logger.debug("Sending json to kafka at " +
+                          str(self.settings['KAFKA_PRODUCER_TOPIC']))
+        future = self.producer.send(self.settings['KAFKA_PRODUCER_TOPIC'],
+                           json_item)
+        future.add_callback(self._kafka_success)
+        future.add_errback(self._kafka_failure)
 
-                self.producer.flush()
+        try:
+            record_metadata = future.get(timeout=self.settings['KAFKA_FEED_TIMEOUT'])
+        except KafkaError:
+            self.logger.error("Lost connection to Kafka")
+            self._spawn_kafka_connection_thread()
+            return False
 
-                return True
-
-            except Exception as e:
-                self.logger.error("Lost connection to Kafka")
-                self._spawn_kafka_connection_thread()
-                return False
-
-        return _feed(json_item)
+        return True
 
     # Routes --------------------
 
