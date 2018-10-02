@@ -564,11 +564,19 @@ class DistributedScheduler(object):
             req.meta[key] = item[key]
 
         # extra check to add items to request
+        if 'headers' in item and item['headers'] is not None:
+            if isinstance(item['headers'], dict):
+                for key, value in item['headers'].items():
+                    req.headers[key] = value
+
         if 'cookie' in item and item['cookie'] is not None:
-            if isinstance(item['cookie'], dict):
-                req.cookies = item['cookie']
-            elif isinstance(item['cookie'], basestring):
+            if isinstance(item['cookie'], basestring):
                 req.cookies = self.parse_cookie(item['cookie'])
+
+        if 'cookies' in item and item['cookies'] is not None:
+            if isinstance(item['cookies'], dict):
+                req.cookies = item['cookies']
+
         return req
 
     def parse_cookie(self, string):

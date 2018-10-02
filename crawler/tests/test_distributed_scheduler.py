@@ -50,6 +50,8 @@ class ThrottleMixin(object):
         req.meta['expires'] = 0
         req.meta['useragent'] = None
         req.meta['cookie'] = None
+        req.meta['cookies'] = None
+        req.meta['headers'] = None
 
         return req
 
@@ -203,12 +205,23 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
             "crawlid": "abc123",
             "appid": "myapp",
             "spiderid": "link",
+            "useragent": "useragent",
+            "headers": {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,ima/webp,/;q=0.8",
+                "Accept-Encoding": "gzip, deflate",
+                "X-Requested-With": "dmoztools.net",
+                "User-Agent": "My Custom User Agent"
+            },
+            "cookie" : "ajs_user_id=null; ajs_group_id=null;",
+            "cookies": {
+                "device_id": "1",
+                "app_token": "guid"
+            }
         }
+
         self.scheduler.find_item = MagicMock(return_value=feed)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')
-        for key in out.meta:
-            self.assertEqual(out.meta[key], self.req.meta[key])
 
         # test request from serialized request
         exist_req = Request('http://ex.com')
@@ -216,11 +229,20 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         exist_item["meta"]["crawlid"] = "abc123"
         exist_item["meta"]["appid"] = "myapp"
         exist_item["meta"]["spiderid"] = "link"
+        exist_item["meta"]["cookies"] = {
+                "device_id": "1",
+                "app_token": "guid"
+            }
+        exist_item["meta"]["headers"] = {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,ima/webp,/;q=0.8",
+                "Accept-Encoding": "gzip, deflate",
+                "X-Requested-With": "dmoztools.net",
+                "User-Agent": "My Custom User Agent"
+            }
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')
-        for key in out.meta:
-            self.assertEqual(out.meta[key], self.req.meta[key])
+
 
         # test didn't get item
         self.scheduler.find_item = MagicMock(return_value=None)
