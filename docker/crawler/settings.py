@@ -23,7 +23,8 @@ KAFKA_APPID_TOPICS = str2bool(os.getenv('KAFKA_APPID_TOPICS', False))
 # base64 encode the html body to avoid json dump errors due to malformed text
 KAFKA_BASE_64_ENCODE = str2bool(os.getenv('KAFKA_BASE_64_ENCODE', False))
 KAFKA_PRODUCER_BATCH_LINGER_MS = 25  # 25 ms before flush
-KAFKA_PRODUCER_BUFFER_BYTES = 4 * 1024 * 1024  # 4MB before blocking
+KAFKA_PRODUCER_BUFFER_BYTES = int(os.getenv('KAFKA_PRODUCER_BUFFER_BYTES', 4 * 1024 * 1024))  # 4MB before blocking
+KAFKA_PRODUCER_MAX_REQUEST_SIZE = int(os.getenv('KAFKA_PRODUCER_MAX_REQUEST_SIZE', 1024 * 1024)) # 1MB
 
 ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'

@@ -67,6 +67,12 @@ Default: ``25``
 
 The time to wait between batching multiple requests into a single one sent to the Kafka cluster.
 
+**KAFKA_PRODUCER_MAX_REQUEST_SIZE**
+
+Default: ``1024 * 1024``
+
+The maximum request size the kafka producer can send to Kafka. Should be less than or equal to the Kafka Broker's ``message.max.bytes`` setting. This may need to be increased when crawling large web pages.
+
 **KAFKA_PRODUCER_BUFFER_BYTES**
 
 Default: ``4 * 1024 * 1024``
