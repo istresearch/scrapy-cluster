@@ -40,10 +40,12 @@ class RedisStatsMiddleware(object):
 
         # set up redis
         self.redis_conn = redis.Redis(host=settings.get('REDIS_HOST'),
-            port=settings.get('REDIS_PORT'),
-            db=settings.get('REDIS_DB'),
-            password=settings.get('REDIS_PASSWORD'),
-            decode_responses=True)
+                                      port=settings.get('REDIS_PORT'),
+                                      db=settings.get('REDIS_DB'),
+                                      password=settings.get('REDIS_PASSWORD'),
+                                      decode_responses=True,
+                                      socket_timeout=settings.get('REDIS_SOCKET_TIMEOUT'),
+                                      socket_connect_timeout=settings.get('REDIS_SOCKET_TIMEOUT'))
 
         try:
             self.redis_conn.info()

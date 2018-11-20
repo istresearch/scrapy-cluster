@@ -39,6 +39,7 @@ class StatsCollector(object):
     SECONDS_7_DAY = SECONDS_1_DAY * 7
     SECONDS_1_WEEK = SECONDS_7_DAY
     SECONDS_30_DAY = SECONDS_1_DAY * 30
+    REDIS_SOCKET_TIMEOUT = 10
 
     @classmethod
     def get_time_window(self, redis_conn=None, host='localhost', port=6379,
@@ -220,10 +221,11 @@ class AbstractCounter(object):
         if redis_conn is None:
             if host is not None and port is not None:
                 self.redis_conn = redis.Redis(host=host, port=port, password=password,
-                                              decode_responses=True)
+                                              decode_responses=True,
+                                              socket_timeout=self.REDIS_SOCKET_TIMEOUT,
+                                              socket_connect_timeout=self.REDIS_SOCKET_TIMEOUT)
             else:
-                raise Exception("Please specify some form of connection "
-                                    "to Redis")
+                raise Exception("Please specify some form of connection to Redis")
         else:
             self.redis_conn = redis_conn
 
