@@ -42,6 +42,7 @@ Crawler
 
 Rest
 ^^^^
+- Added REDIS_SOCKET_TIMEOUT setting
 
 - Corrected Kafka environment variable
 

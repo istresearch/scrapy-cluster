@@ -351,10 +351,12 @@ class RestService(object):
                 self.logger.debug("Creating redis connection to host " +
                                   str(self.settings['REDIS_HOST']))
                 self.redis_conn = redis.StrictRedis(host=self.settings['REDIS_HOST'],
-                                              port=self.settings['REDIS_PORT'],
-                                              db=self.settings['REDIS_DB'],
-                                              password=self.settings['REDIS_PASSWORD'],
-                                              decode_responses=True)
+                                                    port=self.settings['REDIS_PORT'],
+                                                    db=self.settings['REDIS_DB'],
+                                                    password=self.settings['REDIS_PASSWORD'],
+                                                    decode_responses=True,
+                                                    socket_timeout=self.settings.get('REDIS_SOCKET_TIMEOUT'),
+                                                    socket_connect_timeout=self.settings.get('REDIS_SOCKET_TIMEOUT'))
                 self.redis_conn.info()
                 self.redis_connected = True
                 self.logger.info("Successfully connected to redis")
