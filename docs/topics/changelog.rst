@@ -18,6 +18,8 @@ Date: ??/??/????
 
 - Corrected Ansible host list for zookeeper
 
+- Improve cookie handling
+
 - Minor documentation changes/updates
 
 Crawler
