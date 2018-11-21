@@ -209,7 +209,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         self.assertEqual(out.url, 'http://ex.com')
         for key in out.meta:
             self.assertEqual(out.meta[key], self.req.meta[key])
-            
+
         # test request from feed with cookies
         feed = {
             "url": "http://ex.com",
@@ -229,31 +229,40 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
 
         # test request from serialized request
         exist_req = Request('http://ex.com')
+        exist_req.meta["crawlid"] = "abc123"
+        exist_req.meta["appid"] = "myapp"
+        exist_req.meta["spiderid"] = "link"
         exist_item = request_to_dict(exist_req)
-        exist_item["meta"]["crawlid"] = "abc123"
-        exist_item["meta"]["appid"] = "myapp"
-        exist_item["meta"]["spiderid"] = "link"
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')
         for key in out.meta:
-            self.assertEqual(out.meta[key], self.req.meta[key])
-        
-        # test request from serialized request with cookie
-        exist_req = Request('http://ex.com')
+            self.assertEqual(out.meta[key], exist_req.meta[key])
+
+        # test request from serialized request with supplied cookie
+        exist_req = Request('http://ex.com', cookies={'auth':'101'})
         exist_item = request_to_dict(exist_req)
-        exist_item["meta"]["crawlid"] = "abc123"
-        exist_item["meta"]["appid"] = "myapp"
-        exist_item["meta"]["spiderid"] = "link"
-        exist_item["meta"]["cookie"] = "authenticated=false;privacy=9"
-        self.req.meta['cookie'] = "authenticated=false;privacy=9"  # add cookie to req since we are not testing this
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')
         for key in out.meta:
-            self.assertEqual(out.meta[key], self.req.meta[key])
-        self.assertEqual(out.cookies, self.scheduler.parse_cookie(exist_item["meta"]["cookie"]))
+            self.assertEqual(out.meta[key], exist_req.meta[key])
+        self.assertEqual(out.cookies, exist_req.cookies)
         self.req.meta['cookie'] = None  # reset
+
+        # test request from serialized request with meta cookie
+        exist_req = Request('http://ex.com')
+        exist_req.meta["crawlid"] = "abc123"
+        exist_req.meta["appid"] = "myapp"
+        exist_req.meta["spiderid"] = "link"
+        exist_req.meta["cookie"] = {'authenticated': False, 'privacy':9}
+        exist_item = request_to_dict(exist_req)
+        self.scheduler.find_item = MagicMock(return_value=exist_item)
+        out = self.scheduler.next_request()
+        self.assertEqual(out.url, 'http://ex.com')
+        for key in out.meta:
+            self.assertEqual(out.meta[key], exist_req.meta[key])
+        self.assertEqual(out.cookies, exist_req.meta['cookie'])
 
         # test didn't get item
         self.scheduler.find_item = MagicMock(return_value=None)
