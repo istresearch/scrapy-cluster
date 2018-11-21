@@ -18,6 +18,8 @@ Date: ??/??/????
 
 - Corrected Ansible host list for zookeeper
 
+- Improve cookie handling
+
 - Minor documentation changes/updates
 
 - Added REDIS_SOCKET_TIMEOUT setting to control socket_timeout and socket_connect_timeout

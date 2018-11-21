@@ -3,6 +3,7 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from past.builtins import basestring
+from six import string_types
 from builtins import object
 from scrapy.http import Request
 from scrapy.conf import settings
@@ -543,6 +544,11 @@ class DistributedScheduler(object):
             # extra check to add items to request
             if 'useragent' in req.meta and req.meta['useragent'] is not None:
                 req.headers['User-Agent'] = req.meta['useragent']
+            if 'cookie' in req.meta and req.meta['cookie'] is not None:
+                if isinstance(req.meta['cookie'], dict):
+                    req.cookies = req.meta['cookie']
+                elif isinstance(req.meta['cookie'], string_types):
+                    req.cookies = self.parse_cookie(req.meta['cookie'])
 
             return req
 
@@ -569,7 +575,7 @@ class DistributedScheduler(object):
         if 'cookie' in item and item['cookie'] is not None:
             if isinstance(item['cookie'], dict):
                 req.cookies = item['cookie']
-            elif isinstance(item['cookie'], basestring):
+            elif isinstance(item['cookie'], string_types):
                 req.cookies = self.parse_cookie(item['cookie'])
         return req
 
