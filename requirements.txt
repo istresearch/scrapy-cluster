@@ -22,6 +22,7 @@ future==0.16.0
 idna==2.6
 ipaddress==1.0.22  # Updated from 1.0.18
 itsdangerous==0.24
+jsonpickle==1.0
 jsonschema==2.6.0
 kafka-python==1.4.3  # Updated from 1.3.4
 kazoo==2.4.0
