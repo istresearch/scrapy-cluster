@@ -4,7 +4,7 @@ import redis
 import tldextract
 import jsonpickle
 
-from scrapy.http import Request
+from scrapy import Item
 from scrapy.exceptions import NotConfigured
 from redis.exceptions import ConnectionError
 from scrapy.http.cookies import CookieJar
@@ -179,7 +179,7 @@ class ClearCookiesMiddleware(object):
         self.logger.debug("processing clean cookies middleware")
         for x in result:
             # only operate on items
-            if not isinstance(x, Request) and not isinstance(x, dict):
+            if not isinstance(x, Item):
                 self.logger.debug("found item")
                 key = self._get_key(x, spider)
                 self.logger.debug("found key : {}".format(key))
