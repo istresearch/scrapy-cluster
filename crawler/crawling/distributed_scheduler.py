@@ -325,7 +325,9 @@ class DistributedScheduler(object):
                              port=settings.get('REDIS_PORT'),
                              db=settings.get('REDIS_DB'),
                              password=settings.get('REDIS_PASSWORD'),
-                             decode_responses=True)
+                             decode_responses=True,
+                             socket_timeout=settings.get('REDIS_SOCKET_TIMEOUT'),
+                             socket_connect_timeout=settings.get('REDIS_SOCKET_TIMEOUT'))
         persist = settings.get('SCHEDULER_PERSIST', True)
         up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
         hits = settings.get('QUEUE_HITS', 10)

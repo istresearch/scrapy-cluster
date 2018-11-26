@@ -22,8 +22,19 @@ Date: ??/??/????
 
 - Minor documentation changes/updates
 
+- Added REDIS_SOCKET_TIMEOUT setting to control socket_timeout and socket_connect_timeout
+
+Kafka Monitor Changes
+^^^^^^^^^^^^^^^^^^^^^
+- Added REDIS_SOCKET_TIMEOUT setting
+
+Redis Monitor Changes
+^^^^^^^^^^^^^^^^^^^^^
+- Added REDIS_SOCKET_TIMEOUT setting
+
 Crawler
 ^^^^^^^
+- Added REDIS_SOCKET_TIMEOUT setting
 
 - Improved request to dictionary serialization support
 
@@ -33,11 +44,13 @@ Crawler
 
 Rest
 ^^^^
+- Added REDIS_SOCKET_TIMEOUT setting
 
 - Corrected Kafka environment variable
 
 Utils
 ^^^^^
+- Added REDIS_SOCKET_TIMEOUT setting
 
 - Fixed LogFactory callback with correct extras dictionary
 
