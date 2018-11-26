@@ -19,6 +19,8 @@ class TestDistributedCookiesMiddleware(TestCase):
         self.dcm.logger = MagicMock()
         self.dcm.logger.debug = MagicMock()
         self.dcm.redis_conn = MagicMock()
+        self.dcm.redis_conn.keys = MagicMock(return_value=[])
+        self.dcm.redis_conn.get = MagicMock(return_value=None)
         self.dcm.redis_conn.psetex = MagicMock()
         self.dcm.redis_conn.set = MagicMock()
         self.dcm.distributed_cookies_timeout = None
@@ -28,14 +30,11 @@ class TestDistributedCookiesMiddleware(TestCase):
     def _update_cookiejar(self, request, cookiejar, spider):
         self.dcm._update_cookiejar(request, cookiejar, spider)
         encoded_cookiejar = jsonpickle.dumps(cookiejar)
-        keys = [].append
         self.dcm.redis_conn.keys = MagicMock(return_value=[self.dcm._get_key(request, spider)])
         self.dcm.redis_conn.get = MagicMock(return_value=encoded_cookiejar)
 
     def test_dcm_middleware(self):
         spider = Spider('foo')
-        self.dcm.redis_conn.keys = MagicMock(return_value=[])
-        self.dcm.redis_conn.get = MagicMock(return_value=None)
         reqest = Request('http://istresearch.com')
         reqest.meta['crawlid'] = 'abc123'
         assert self.dcm.process_request(reqest, spider) is None

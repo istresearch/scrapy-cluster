@@ -20,14 +20,6 @@ class DistributedCookiesMiddleware(CookiesMiddleware):
 
     def __init__(self, settings):
         super(DistributedCookiesMiddleware, self).__init__()
-        debug = settings.getbool('COOKIES_DEBUG')
-        self.redis_conn = None
-        self.logger = None
-        self.cookiejar_keys = None
-        self.distributed_cookies_timeout = None
-
-        self.extract = tldextract.TLDExtract()
-        self.debug = debug
         self.setup(settings)
 
     @classmethod
@@ -40,6 +32,8 @@ class DistributedCookiesMiddleware(CookiesMiddleware):
         '''
         Does the actual setup of the middleware
         '''
+        self.extract = tldextract.TLDExtract()
+        self.debug = settings.getbool('COOKIES_DEBUG')
 
         # set up the default sc logger
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
@@ -136,15 +130,13 @@ class ClearCookiesMiddleware(object):
     Clear the cookies of a crawl job on a yield item
     '''
     def __init__(self, settings):
-        self.logger = None
-        self.redis_conn = None
-        self.extract = tldextract.TLDExtract()
         self.setup(settings)
 
     def setup(self, settings):
         '''
         Does the actual setup of the middleware
         '''
+        self.extract = tldextract.TLDExtract()
 
         # set up the default sc logger
         my_level = settings.get('SC_LOG_LEVEL', 'INFO')
