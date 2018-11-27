@@ -171,7 +171,7 @@ class ClearCookiesMiddleware(object):
         self.logger.debug("processing clean cookies middleware")
         for x in result:
             # only operate on items
-            if not isinstance(x, Item):
+            if isinstance(x, Item):
                 self.logger.debug("found item")
                 key = self._get_key(x, spider)
                 self.logger.debug("found key : {}".format(key))
