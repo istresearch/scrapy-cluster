@@ -280,8 +280,9 @@ class DistributedScheduler(object):
         self.old_ip = self.my_ip
         self.my_ip = '127.0.0.1'
         try:
+            timeout = settings.get('IP_ADDR_REQUEST_TIMEOUT', 5)
             obj = urllib.request.urlopen(settings.get('PUBLIC_IP_URL',
-                                  'http://ip.42.pl/raw'))
+                                  'http://ip.42.pl/raw'), timeout = timeout)
             results = self.ip_regex.findall(obj.read())
             if len(results) > 0:
                 self.my_ip = results[0]

@@ -24,8 +24,8 @@ ZOOKEEPER_ID = 'all'
 ZOOKEEPER_HOSTS = 'localhost:2181'
 
 PUBLIC_IP_URL = 'http://ip.42.pl/raw'
-IP_ADDR_REGEX = '(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
-
+IP_ADDR_REGEX = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+IP_ADDR_REQUEST_TIMEOUT = 5
 # Don't cleanup redis queues, allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 

@@ -57,3 +57,4 @@ docker-compose.override.yml
 
 # backup files
 *.bak
+*.swp
