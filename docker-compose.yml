@@ -36,7 +36,7 @@ services:
       - "6379"
     restart: always
   zookeeper:
-    image: zookeeper
+    image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
     restart: always

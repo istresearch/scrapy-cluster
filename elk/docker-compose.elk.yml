@@ -59,7 +59,7 @@ services:
     restart: always
     # command: redis-server --requirepass redispassword
   zookeeper:
-    image: zookeeper
+    image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
     restart: always
