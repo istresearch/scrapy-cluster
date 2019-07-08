@@ -32,4 +32,4 @@ sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm /bin/bash -c "sou
 sudo docker stop "$(cat ${container_id})"
 
 # send coverage report
-pip install coveralls==1.23; coveralls
+pip install coveralls urllib3==1.23; coveralls
