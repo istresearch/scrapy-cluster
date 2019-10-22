@@ -20,5 +20,5 @@ scutils==1.2.0
 six==1.10.0
 testfixtures==4.13.5 # Updated from 4.11.0
 ujson==1.35
-Werkzeug==0.12.1 # Updated from 0.11.11
+Werkzeug==0.15.3 # Updated from 0.11.11
 # Generated with piprot 0.9.7
