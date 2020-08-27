@@ -3,7 +3,7 @@
 - name: Kafka Brokers
   hosts: kafka
 
-  sudo: yes
+  become: yes
 
   vars:
    - kafka_host_list: "{{ groups['kafka'] }}"
