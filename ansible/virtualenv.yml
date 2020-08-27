@@ -2,7 +2,7 @@
 - name: VirtualEnv
   hosts: virtualenv
 
-  sudo: yes
+  become: yes
 
   roles:
     - virtualenv
