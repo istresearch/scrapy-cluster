@@ -3,7 +3,7 @@
 - name: Redis Master
   hosts: redis
 
-  sudo: yes
+  become: yes
 
   roles:
     - redis
