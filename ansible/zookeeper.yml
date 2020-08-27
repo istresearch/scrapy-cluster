@@ -2,7 +2,7 @@
 - name: ZooKeeper Ensemble
   hosts: zookeeper
 
-  sudo: yes
+  become: yes
 
   vars:
    - zookeeper_host_list: "{{ groups['zookeeper'] }}"
