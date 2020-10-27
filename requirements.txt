@@ -14,7 +14,7 @@ cffi==1.9.1 # Updated from 1.7.0
 characteristic==14.3.0
 click==6.7 # Updated from 6.6
 coverage==4.3.4 # Updated from 4.0.3
-cryptography==1.8.1 # Updated from 1.5
+cryptography==3.2 # Updated from 1.5
 cssselect==1.0.1 # Updated from 0.9.2
 enum34==1.1.6
 funcsigs==1.0.2
