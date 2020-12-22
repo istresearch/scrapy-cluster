@@ -29,7 +29,7 @@ jobs:
             docker build --rm=true --file docker/kafka-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:kafka-monitor-test .
             docker build --rm=true --file docker/redis-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:redis-monitor-test .
             docker build --rm=true --file docker/crawler/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:crawler-test .
-            docker build --rm=true --file docker/rest/api/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:rest-test .
+            docker build --rm=true --file docker/rest/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:rest-test .
 
       - run:
           name: Run docker compose up for docker tests
@@ -93,7 +93,7 @@ jobs:
               docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM --build-arg REPO_PW=$REPO_PW --build-arg REPO_UN=$REPO_USER -t $KAFKA_MONITOR_IMAGE-$VERSION_TAG -f docker/kafka-monitor/Dockerfile.py3 .
               docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM --build-arg REPO_PW=$REPO_PW --build-arg REPO_UN=$REPO_USER -t $REDIS_MONITOR_IMAGE-$VERSION_TAG -f docker/redis-monitor/Dockerfile.py3 .
               docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM --build-arg REPO_PW=$REPO_PW --build-arg REPO_UN=$REPO_USER -t $CRAWLER_IMAGE_IMAGE-$VERSION_TAG -f docker/crawler/Dockerfile.py3 .
-              docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM --build-arg REPO_PW=$REPO_PW --build-arg REPO_UN=$REPO_USER -t $REST_IMAGE-$VERSION_TAG -f docker/rest/api/Dockerfile .
+              docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM --build-arg REPO_PW=$REPO_PW --build-arg REPO_UN=$REPO_USER -t $REST_IMAGE-$VERSION_TAG -f docker/rest/Dockerfile .
 
               docker push $KAFKA_MONITOR_IMAGE-$VERSION_TAG
               docker push $REDIS_MONITOR_IMAGE-$VERSION_TAG
