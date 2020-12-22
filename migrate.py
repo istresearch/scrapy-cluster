@@ -163,7 +163,7 @@ def main():
                         val = pickle.dumps(item, protocol=-1)
 
                         # shortcut to shove stuff into the priority queue
-                        o_redis_conn.zadd(key, val, -item['priority'])
+                        o_redis_conn.zadd(key, {val: -item['priority']})
 
                     # loop through all new keys
                     new_count = 0
@@ -233,7 +233,7 @@ def main():
                             vprint("count: " + str(current_count), 2)
                         val = ujson.dumps(item)
                         # shortcut to shove stuff into the priority queue
-                        o_redis_conn.zadd(queue, val, -item['priority'])
+                        o_redis_conn.zadd(queue, {val: -item['priority']})
 
                     new_count = o_redis_conn.zcard(queue)
 

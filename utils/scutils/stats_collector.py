@@ -432,7 +432,7 @@ class TimeWindow(ThreadedCounter):
     def increment(self):
         curr_time = self._time()
         if curr_time - self.start_time < self.window:
-            self.redis_conn.zadd(self.final_key, curr_time, curr_time)
+            self.redis_conn.zadd(self.final_key, {curr_time: curr_time})
 
     def value(self):
         return self.redis_conn.zcard(self.final_key)
@@ -461,7 +461,7 @@ class RollingTimeWindow(ThreadedCounter):
 
     def increment(self):
         now = self._time()
-        self.redis_conn.zadd(self.key, now, now)
+        self.redis_conn.zadd(self.key, {now: now})
 
     def value(self):
         return self.redis_conn.zcard(self.key)

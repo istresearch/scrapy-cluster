@@ -61,3 +61,4 @@ docker-compose.override.yml
 
 # backup files
 *.bak
+klag_conf.json

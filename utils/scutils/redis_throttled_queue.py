@@ -203,7 +203,7 @@ class RedisThrottledQueue(object):
                     # push value into key
                     now = time.time()
                     pipe.multi()
-                    pipe.zadd(self.window_key, now, now)
+                    pipe.zadd(self.window_key, {now: now})
                     # expire it if it hasnt been touched in a while
                     pipe.expire(self.window_key, int(self.window * 2))
                     pipe.execute()
