@@ -25,11 +25,11 @@ jobs:
       - run:
           name: Build Dockerfiles for Scrapy Cluster
           command: |
-            docker build --rm=true --file docker/utils/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:utils-test .
-            docker build --rm=true --file docker/kafka-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:kafka-monitor-test .
-            docker build --rm=true --file docker/redis-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:redis-monitor-test .
-            docker build --rm=true --file docker/crawler/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:crawler-test .
-            docker build --rm=true --file docker/rest/Dockerfile.py3 --tag=istresearch/scrapy-cluster-ist:rest-test .
+            docker build --rm=true --file docker/utils/Dockerfile.py3 --tag=istresearch/scrapy-cluster:utils-test .
+            docker build --rm=true --file docker/kafka-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:kafka-monitor-test .
+            docker build --rm=true --file docker/redis-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:redis-monitor-test .
+            docker build --rm=true --file docker/crawler/Dockerfile.py3 --tag=istresearch/scrapy-cluster:crawler-test .
+            docker build --rm=true --file docker/rest/Dockerfile.py3 --tag=istresearch/scrapy-cluster:rest-test .
 
       - run:
           name: Run docker compose up for docker tests
