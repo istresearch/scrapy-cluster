@@ -17,12 +17,12 @@ def readme():
 install_requires = [
     'python-json-logger==0.1.8', # Updated from 0.1.7
     'ConcurrentLogHandler>=0.9.1',
-    'redis==2.10.6', # Updated from 2.10.5
+    'redis>=3.0',
     'kazoo>=2.4.0', # Updated from 2.2.1
-    'mock==2.0.0',
-    'testfixtures==6.0.2', # Updated from testfixtures==4.13.5
-    'ujson==1.35',
-    'future==0.16.0'
+    'mock>=2.0.0',
+    'testfixtures>=6.0.2', # Updated from testfixtures==4.13.5
+    'ujson>=1.35',
+    'future>=0.16.0'
 ]
 
 lint_requires = [
@@ -31,8 +31,8 @@ lint_requires = [
 ]
 
 tests_require = [
-    'mock==2.0.0',
-    'testfixtures==4.13.5'
+    'mock>=2.0.0',
+    'testfixtures>=4.13.5'
 ]
 
 dependency_links = []
