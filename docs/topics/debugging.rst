@@ -205,8 +205,7 @@ Refer to the official `Redis <http://redis.io/documentation>`_ documentation for
 
 ::
 
-    $ vagrant ssh
-    vagrant@scdev:~$ /opt/redis/default/bin/redis-cli
+    $ docker-compose exec redis /usr/local/bin/redis-cli
     127.0.0.1:6379> info
     # Server
     redis_version:3.0.5

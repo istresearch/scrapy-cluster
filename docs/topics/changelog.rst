@@ -10,7 +10,7 @@ Scrapy Cluster 1.3
 
 Date: ??/??/????
 
-- Add Python 3 support
+- Add Python 3 support, removed python 2 support
 
 - Add Redis password support
 
@@ -23,6 +23,10 @@ Date: ??/??/????
 - Minor documentation changes/updates
 
 - Added REDIS_SOCKET_TIMEOUT setting to control socket_timeout and socket_connect_timeout
+
+- Removed ansible support
+
+- Fix python package dependencies
 
 Kafka Monitor Changes
 ^^^^^^^^^^^^^^^^^^^^^
@@ -55,6 +59,8 @@ Utils
 - Fixed LogFactory callback with correct extras dictionary
 
 - Adds quicker shutdown to ThreadedCounter object
+
+- Unpinned dependencies for new pip resolution
 
 
 Scrapy Cluster 1.2

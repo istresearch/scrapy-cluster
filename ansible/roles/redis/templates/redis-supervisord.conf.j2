@@ -1,7 +1,0 @@
-[program:redis]
-command={{ redis_install_dir }}/default/bin/redis-server /etc/redis/redis.conf
-autostart=true
-autorestart=true
-user={{ redis_user }}
-stdout_logfile=/var/log/redis/stdout.log
-stderr_logfile=/var/log/redis/stderr.log

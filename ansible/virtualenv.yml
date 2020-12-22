@@ -1,8 +1,0 @@
----
-- name: VirtualEnv
-  hosts: virtualenv
-
-  sudo: yes
-
-  roles:
-    - virtualenv

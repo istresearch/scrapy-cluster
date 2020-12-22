@@ -2,27 +2,39 @@ version: '2'
 
 services:
   kafka_monitor:
-    image: istresearch/scrapy-cluster:kafka-monitor-dev
+    image: istresearch/scrapy-cluster:kafka-monitor-dev-py3
+    build:
+      context: .
+      dockerfile: docker/kafka-monitor/Dockerfile.py3
     depends_on:
       - kafka
       - redis
     restart: always
   redis_monitor:
-    image: istresearch/scrapy-cluster:redis-monitor-dev
+    image: istresearch/scrapy-cluster:redis-monitor-dev-py3
+    build:
+      context: .
+      dockerfile: docker/redis-monitor/Dockerfile.py3
     depends_on:
       - kafka
       - redis
       - zookeeper
     restart: always
   crawler:
-    image: istresearch/scrapy-cluster:crawler-dev
+    image: istresearch/scrapy-cluster:crawler-dev-py3
+    build:
+      context: .
+      dockerfile: docker/crawler/Dockerfile.py3
     depends_on:
       - kafka
       - redis
       - zookeeper
     restart: always
   rest:
-    image: istresearch/scrapy-cluster:rest-dev
+    image: istresearch/scrapy-cluster:rest-dev-py3
+    build:
+      context: .
+      dockerfile: docker/rest/Dockerfile.py3
     depends_on:
       - kafka
       - redis
@@ -33,7 +45,7 @@ services:
     image: redis
     # command: redis-server --requirepass redispassword
     ports:
-      - "6379"
+      - "6379:6379"
     restart: always
   zookeeper:
     image: wurstmeister/zookeeper
