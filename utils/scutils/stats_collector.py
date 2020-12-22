@@ -544,7 +544,7 @@ class HyperLogLogCounter(ThreadedCounter):
 
         @param item: the potentially unique item
         '''
-        self.redis_conn.execute_command("PFADD", self.final_key, item)
+        self.redis_conn.execute_command("PFADD", self.final_key, str(item))
 
     def value(self):
         return self.redis_conn.execute_command("PFCOUNT", self.final_key)
