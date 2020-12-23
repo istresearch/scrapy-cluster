@@ -20,5 +20,5 @@ retrying==1.3.3
 six==1.11.0  # Updated from 1.10.0
 testfixtures==6.0.2  # Updated from 4.13.5
 ujson==1.35
-Werkzeug==0.14.1  # Updated from 0.12.1
+Werkzeug==0.15.3  # Updated from 0.12.1
 # Generated with piprot 0.9.10
