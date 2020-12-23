@@ -9,7 +9,123 @@ test:
     - echo "Ignoring default test setup"
 
 jobs:
-  test:
+  test_kafka_monitor:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/kafka-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:kafka-monitor-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d
+            sleep 60
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T kafka_monitor ./run_docker_tests.sh
+
+  test_redis_monitor:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/redis-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:redis-monitor-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d redis_monitor
+            sleep 30
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T redis_monitor ./run_docker_tests.sh
+
+  test_crawler:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/crawler/Dockerfile.py3 --tag=istresearch/scrapy-cluster:crawler-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d crawler
+            sleep 60
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T crawler ./run_docker_tests.sh
+
+  test_rest:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/rest/Dockerfile.py3 --tag=istresearch/scrapy-cluster:rest-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d rest
+            sleep 60
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T rest ./run_docker_tests.sh
+
+  test_utils:
     docker:
       - image: docker:18.03.0
 
@@ -26,25 +142,17 @@ jobs:
           name: Build Dockerfiles for Scrapy Cluster
           command: |
             docker build --rm=true --file docker/utils/Dockerfile.py3 --tag=istresearch/scrapy-cluster:utils-test .
-            docker build --rm=true --file docker/kafka-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:kafka-monitor-test .
-            docker build --rm=true --file docker/redis-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:redis-monitor-test .
-            docker build --rm=true --file docker/crawler/Dockerfile.py3 --tag=istresearch/scrapy-cluster:crawler-test .
-            docker build --rm=true --file docker/rest/Dockerfile.py3 --tag=istresearch/scrapy-cluster:rest-test .
 
       - run:
           name: Run docker compose up for docker tests
           command: |
-            docker-compose -f travis/docker-compose.test.yml up -d
+            docker-compose -f travis/docker-compose.test.yml up -d utils
             sleep 60
 
       - run:
-          name: Run docker unit and integration tests for each component
+          name: Run docker unit and integration tests
           command: |
             docker-compose -f travis/docker-compose.test.yml exec -T utils ./run_docker_tests.sh redis 6379 zookeeper:2181
-            docker-compose -f travis/docker-compose.test.yml exec -T kafka_monitor ./run_docker_tests.sh
-            docker-compose -f travis/docker-compose.test.yml exec -T redis_monitor ./run_docker_tests.sh
-            docker-compose -f travis/docker-compose.test.yml exec -T crawler ./run_docker_tests.sh
-            docker-compose -f travis/docker-compose.test.yml exec -T rest ./run_docker_tests.sh
 
   build:
     docker:
@@ -123,7 +231,27 @@ workflows:
   version: 2
   scrapycluster_pipeline:
     jobs:
-      - test:
+      - test_kafka_monitor:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_redis_monitor:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_crawler:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_rest:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_utils:
           context: globalconfig
           filters:
             tags:
@@ -131,7 +259,11 @@ workflows:
       - build:
           context: globalconfig
           requires:
-            - test
+            - test_kafka_monitor
+            - test_redis_monitor
+            - test_crawler
+            - test_rest
+            - test_utils
           filters:
             tags:
               ignore: /^test-.*/
