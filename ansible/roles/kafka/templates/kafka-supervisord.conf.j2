@@ -1,6 +1,0 @@
-[program:kafka]
-command={{ kafka_install_dir }}/default/bin/kafka-server-start.sh {{ kafka_config_dir }}/server.properties
-autostart=true
-autorestart=true
-startsecs=5
-stopsignal=KILL

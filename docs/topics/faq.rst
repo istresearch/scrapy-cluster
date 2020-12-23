@@ -14,7 +14,7 @@ General
 
     Normally, online test failure is a result of improper settings configuration or network ports not being properly configured. Triple check these!
 
-    If you are still stuck please refer the the :ref:`Vagrant Quickstart <vagrant_setup>` guide for setting up an example cluster, or the :ref:`Troubleshooting <debugging>` page for more information.
+    If you are still stuck please refer the the :ref:`Docker Quickstart <docker_setup>` guide for setting up an example cluster, or the :ref:`Troubleshooting <debugging>` page for more information.
 
 **How do I debug a component?**
 
@@ -24,7 +24,7 @@ General
 
         $ python kafka_monitor.py run --log-level DEBUG
 
-    You can also alter the ``LOG_LEVEL`` setting in your ``localsettings.py`` file to achieve the same effect.
+    You can also alter the ``LOG_LEVEL`` setting in your ``localsettings.py`` file to achieve the same effect, or set it as an environment variable in docker-compose.
 
     If you wish to debug Scrapy Cluster based components in your Scrapy Spiders, use the ``SC_LOG_LEVEL`` setting in your ``localsettings.py`` file to see scrapy cluster based debug output. Normal Scrapy debugging techniques can be applied here as well, as the scrapy cluster debugging is designed to not interfere with Scrapy based debugging.
 

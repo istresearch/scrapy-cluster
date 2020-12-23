@@ -14,7 +14,7 @@ The GitHub issue tracker is the preferred channel for `Bug Reports`_, `Feature R
 
 * Please **search for existing issues**. Help us keep duplicate issues to a minimum by checking to see if someone has already reported your problem or requested your idea.
 
-* Please **do not** use the issue tracker for personal setup or support requests. If the symptom doesn't appear in the :ref:`vagrant_setup` but appears in your production setup, it is not a Scrapy Cluster issue.
+* Please **do not** use the issue tracker for personal setup or support requests. If the symptom doesn't appear in the :ref:`docker_setup` but appears in your production setup, it is not a Scrapy Cluster issue.
 
 For all other chatter, feel free to join the `Community Chat`_ set up for Scrapy Cluster.
 
@@ -83,7 +83,7 @@ If you're looking to raise a PR for something which doesn't have an open issue, 
 
 To make sure your PR is accepted as quickly as possible, please ensure you hit the following points:
 
-    * You can run ``./run_tests_offline.sh`` **and** ``./run_tests_online.sh`` in your Vagrant test environment to ensure nothing is broken.
+    * You can run ``./run_tests_offline.sh`` **and** ``./run_tests_online.sh`` in your test environment to ensure nothing is broken.
 
     * Did you add new code? That means it is probably unit-testable and should have a new unit test associated with it.
 
@@ -114,7 +114,7 @@ Working on Scrapy Cluster Core
 ------------------------------
 
 Are you looking to help develop core functionality for Scrapy Cluster? Awesome!
-Please see the :ref:`vagrant_setup` guide for a Vagrant Image to use to test small scale deployments of Scrapy Cluster. If you are looking to do large scale testing and development, please first ensure you can work with the Vagrant Image first.
+Please see the :ref:`docker_setup` guide to test small scale deployments of Scrapy Cluster. If you are looking to do large scale testing and development, please first ensure you can work with the Vagrant Image first.
 
 If something goes wrong, please see the :ref:`debugging` guide first.
 

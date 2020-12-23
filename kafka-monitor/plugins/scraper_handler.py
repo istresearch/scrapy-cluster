@@ -48,7 +48,7 @@ class ScraperHandler(BaseHandler):
         val = ujson.dumps(dict)
 
         # shortcut to shove stuff into the priority queue
-        self.redis_conn.zadd(key, val, -dict['priority'])
+        self.redis_conn.zadd(key, {val: -dict['priority']})
 
         # if timeout crawl, add value to redis
         if 'expires' in dict and dict['expires'] != 0:

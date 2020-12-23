@@ -1,3 +1,0 @@
----
-  - name: reread supervisord
-    shell: supervisorctl reread && supervisorctl update

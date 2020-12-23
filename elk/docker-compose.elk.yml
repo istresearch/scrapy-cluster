@@ -82,6 +82,7 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    restart: always
   logstash:
     image: logstash:5.2
     command: logstash -f /etc/logstash/conf.d/logstash.conf
@@ -93,12 +94,14 @@ services:
       - "5000:5000"
     links:
       - elasticsearch
+    restart: always
   kibana:
     image: kibana:5.2
     ports:
       - "5601:5601"
     links:
       - elasticsearch
+    restart: always
 
 volumes:
   logs:

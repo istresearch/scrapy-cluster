@@ -474,8 +474,7 @@ class DistributedScheduler(object):
                     # shoving into a new redis queue, negative b/c of sorted sets
                     # this will populate ourself and other schedulers when
                     # they call create_queues
-                    self.redis_conn.zadd(key, ujson.dumps(req_dict),
-                                        -req_dict['meta']['priority'])
+                    self.redis_conn.zadd(key, {ujson.dumps(req_dict): -req_dict['meta']['priority']})
                 self.logger.debug("Crawlid: '{id}' Appid: '{appid}' added to queue"
                     .format(appid=req_dict['meta']['appid'],
                             id=req_dict['meta']['crawlid']))

@@ -1,9 +1,0 @@
----
-
-- name: Redis Master
-  hosts: redis
-
-  sudo: yes
-
-  roles:
-    - redis

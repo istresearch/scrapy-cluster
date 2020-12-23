@@ -1,6 +1,0 @@
----
-# file: roles/common/defaults/main.yml
-
-# The specific version of Oracle Java that can be found in YUM
-java_version: 1.7.0
-

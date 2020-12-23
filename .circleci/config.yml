@@ -1,0 +1,269 @@
+version: 2
+
+dependencies:
+  override:
+    - echo "Ignore default dependencies setup"
+
+test:
+  override:
+    - echo "Ignoring default test setup"
+
+jobs:
+  test_kafka_monitor:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/kafka-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:kafka-monitor-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d kafka_monitor
+            sleep 30
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T kafka_monitor ./run_docker_tests.sh
+
+  test_redis_monitor:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/redis-monitor/Dockerfile.py3 --tag=istresearch/scrapy-cluster:redis-monitor-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d redis_monitor
+            sleep 30
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T redis_monitor ./run_docker_tests.sh
+
+  test_crawler:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/crawler/Dockerfile.py3 --tag=istresearch/scrapy-cluster:crawler-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d crawler
+            sleep 30
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T crawler ./run_docker_tests.sh
+
+  test_rest:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/rest/Dockerfile.py3 --tag=istresearch/scrapy-cluster:rest-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d rest
+            sleep 30
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T rest ./run_docker_tests.sh
+
+  test_utils:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update py-pip bash python openssh git
+            pip install docker-compose==1.19.0
+
+      - run:
+          name: Build Dockerfiles for Scrapy Cluster
+          command: |
+            docker build --rm=true --file docker/utils/Dockerfile.py3 --tag=istresearch/scrapy-cluster:utils-test .
+
+      - run:
+          name: Run docker compose up for docker tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml up -d utils
+            sleep 30
+
+      - run:
+          name: Run docker unit and integration tests
+          command: |
+            docker-compose -f travis/docker-compose.test.yml exec -T utils ./run_docker_tests.sh redis 6379 zookeeper:2181
+
+  build:
+    docker:
+      - image: docker:18.03.0
+
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Docker build and push
+          command: |
+            DEVELOP_BRANCH=dev
+            IMAGE_BASE=istresearch/scrapy-cluster
+            BRANCH=${CIRCLE_BRANCH#*/}
+            VERSION=$(cat version.py | grep [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\\.*[0-9]*[0-9]* -o)
+
+            # tagged release
+            if [[ ! -z $CIRCLE_TAG ]]; then
+              VERSION_TAG="${VERSION}"
+
+            # on develop branch, no PR
+            elif [[ $BRANCH == $DEVELOP_BRANCH ]] && [[ -z $CIRCLE_PULL_REQUEST ]]; then
+              VERSION_TAG="${VERSION}-dev"
+
+            # on develop branch, is PR (to master)
+            elif [[ $BRANCH == $DEVELOP_BRANCH ]] && [[ ! -z $CIRCLE_PULL_REQUEST ]]; then
+              VERSION_TAG="rc-${VERSION}"
+
+            # non standard branch, tag as ci
+            else
+              VERSION_TAG="ci-${VERSION}-dev-${BRANCH}"
+            fi
+
+            KAFKA_MONITOR_IMAGE=$IMAGE_BASE:kafka-monitor
+            REDIS_MONITOR_IMAGE=$IMAGE_BASE:redis-monitor
+            CRAWLER_IMAGE_IMAGE=$IMAGE_BASE:crawler
+            REST_IMAGE=$IMAGE_BASE:rest
+
+            # -------------
+
+            #     is a tagged release   |       is a pull request        |     is on the develop branch
+            if [[ ! -z $CIRCLE_TAG ]] || [[ ! -z $CIRCLE_PULL_REQUEST ]] || [[ $BRANCH == $DEVELOP_BRANCH ]]; then
+              docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+
+              docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM -t $KAFKA_MONITOR_IMAGE-$VERSION_TAG -f docker/kafka-monitor/Dockerfile.py3 .
+              docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM -t $REDIS_MONITOR_IMAGE-$VERSION_TAG -f docker/redis-monitor/Dockerfile.py3 .
+              docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM -t $CRAWLER_IMAGE_IMAGE-$VERSION_TAG -f docker/crawler/Dockerfile.py3 .
+              docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM -t $REST_IMAGE-$VERSION_TAG -f docker/rest/Dockerfile.py3 .
+
+              docker push $KAFKA_MONITOR_IMAGE-$VERSION_TAG
+              docker push $REDIS_MONITOR_IMAGE-$VERSION_TAG
+              docker push $CRAWLER_IMAGE_IMAGE-$VERSION_TAG
+              docker push $REST_IMAGE-$VERSION_TAG
+
+              if [[ $BRANCH == "$DEVELOP_BRANCH" ]]; then
+                docker tag $KAFKA_MONITOR_IMAGE-$VERSION_TAG $KAFKA_MONITOR_IMAGE-ci-dev
+                docker tag $REDIS_MONITOR_IMAGE-$VERSION_TAG $REDIS_MONITOR_IMAGE-ci-dev
+                docker tag $CRAWLER_IMAGE_IMAGE-$VERSION_TAG $CRAWLER_IMAGE_IMAGE-ci-dev
+                docker tag $REST_IMAGE-$VERSION_TAG $REST_IMAGE-ci-dev
+
+                docker push $KAFKA_MONITOR_IMAGE-ci-dev
+                docker push $REDIS_MONITOR_IMAGE-ci-dev
+                docker push $CRAWLER_IMAGE_IMAGE-ci-dev
+                docker push $REST_IMAGE-ci-dev
+
+              else
+                echo "Skipping ci-dev tag"
+              fi
+
+            else
+              echo "No docker images pushed"
+            fi
+
+workflows:
+  version: 2
+  scrapycluster_pipeline:
+    jobs:
+      - test_kafka_monitor:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_redis_monitor:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_crawler:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_rest:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - test_utils:
+          context: globalconfig
+          filters:
+            tags:
+              ignore: /^test-.*/
+      - build:
+          context: globalconfig
+          requires:
+            - test_kafka_monitor
+            - test_redis_monitor
+            - test_crawler
+            - test_rest
+            - test_utils
+          filters:
+            tags:
+              ignore: /^test-.*/

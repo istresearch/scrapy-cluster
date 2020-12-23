@@ -86,8 +86,8 @@ class TestLinkSpider(TestCase):
         d.addBoth(lambda _: reactor.stop())
         # add crawl to redis
         key = "test-spider:dmoztools.net:queue"
-        self.redis_conn.zadd(key, self.example_feed, -80)
-        self.redis_conn.zadd(key, self.example_feed_max, -90)
+        self.redis_conn.zadd(key, {self.example_feed: -80})
+        self.redis_conn.zadd(key, {self.example_feed_max: -90})
 
         # run the spider, give 20 seconds to see the urls and crawl them
         # and send to kafka. Then we kill the reactor
