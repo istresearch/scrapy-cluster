@@ -30,8 +30,8 @@ jobs:
       - run:
           name: Run docker compose up for docker tests
           command: |
-            docker-compose -f travis/docker-compose.test.yml up -d
-            sleep 60
+            docker-compose -f travis/docker-compose.test.yml up -d kafka_monitor
+            sleep 30
 
       - run:
           name: Run docker unit and integration tests
@@ -89,7 +89,7 @@ jobs:
           name: Run docker compose up for docker tests
           command: |
             docker-compose -f travis/docker-compose.test.yml up -d crawler
-            sleep 60
+            sleep 30
 
       - run:
           name: Run docker unit and integration tests
@@ -118,7 +118,7 @@ jobs:
           name: Run docker compose up for docker tests
           command: |
             docker-compose -f travis/docker-compose.test.yml up -d rest
-            sleep 60
+            sleep 30
 
       - run:
           name: Run docker unit and integration tests
@@ -147,7 +147,7 @@ jobs:
           name: Run docker compose up for docker tests
           command: |
             docker-compose -f travis/docker-compose.test.yml up -d utils
-            sleep 60
+            sleep 30
 
       - run:
           name: Run docker unit and integration tests
