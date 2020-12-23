@@ -14,7 +14,7 @@ nose==1.3.7
 pbr==4.0.3  # Updated from 2.0.0
 python-json-logger==0.1.8  # Updated from 0.1.7
 redis>=3.0  # Updated from 2.10.5
-requests==2.18.4  # Updated from 2.13.0
+requests==2.20.0  # Updated from 2.13.0
 retrying==1.3.3
 ../utils # scutils==1.3.0dev0
 six==1.11.0  # Updated from 1.10.0
