@@ -4,7 +4,7 @@ Flask==1.0.2  # Updated from 0.12
 funcsigs==1.0.2
 future==0.16.0
 itsdangerous==0.24
-Jinja2==2.10  # Updated from 2.9.5
+Jinja2==2.10.1  # Updated from 2.9.5
 jsonschema==2.6.0
 kafka-python==1.4.3  # Updated from 1.3.3
 kazoo==2.4.0  # Updated from 2.2.1
