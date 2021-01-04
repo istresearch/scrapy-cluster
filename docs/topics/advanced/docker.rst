@@ -3,7 +3,7 @@
 Docker
 ======
 
-Scrapy Cluster supports `Docker <https://docker.com>`_ by ensuring each individual component is contained within a a different docker image. You can find the docker compose files in the root of the project, and the Dockerfiles themselves and related configuration is located within the ``/docker/`` folder. This page is not meant as an introduction to Docker, but as a supplement for those comfortable working with Docker already.
+Scrapy Cluster supports `Docker <https://docker.com>`_ by ensuring each individual component is contained within a different docker image. You can find the docker compose files in the root of the project, and the Dockerfiles themselves and related configuration are located within the ``/docker/`` folder. This page is not meant as an introduction to Docker, but as a supplement for those comfortable working with Docker already.
 
 A container could either contain:
 
@@ -16,12 +16,12 @@ Thanks to the ability to scale each component independently of each other, we ut
 
 You can find the latest images on the Scrapy Cluster Docker hub page `here <https://hub.docker.com/r/istresearch/scrapy-cluster/>`_.
 
-.. note:: Docker support for Scrapy Cluster is fairly new, and large scale deployments of Scrapy Cluster have not been fully tested at time of writing.
+.. note:: Docker support for Scrapy Cluster is fairly new, and large-scale deployments of Scrapy Cluster have not been fully tested at the time of writing.
 
 Images
 ------
 
-Each component for Scrapy Cluster is designated as a tag within the root docker repository. Unlike a lot of projects, we chose to keep the dockerized Scrapy Cluster within the same github repository in order to stay consistent with how the project is used. This means that there will be no ``latest`` tag for Scrapy Cluster, instead the tags are defined as follows.
+Each component for Scrapy Cluster is designated as a tag within the root docker repository. Unlike a lot of projects, we chose to keep the dockerized Scrapy Cluster within the same github repository in order to stay consistent with how the project is used. This means that there will be no ``latest`` tag for Scrapy Cluster, instead, the tags are defined as follows.
 
 Kafka Monitor: ``istresearch/scrapy-cluster:kafka-monitor-{release/build}``
 
@@ -36,7 +36,7 @@ For example ``istresearch/scrapy-cluster:redis-monitor-1.2`` would be the offici
 Code Layout
 -----------
 
-Each container contains only code for that particular component, located at ``/usr/src/app``. By default a ``localsettings.py`` file will supply the override to provide the container the configuration to work with the native docker compose files. You are free to use docker volumes to mount a different settings file on top of the ``localsettings.py`` file in order to configure the component with your particular setup.
+Each container contains only code for that particular component, located at ``/usr/src/app``. By default, a ``localsettings.py`` file will supply the override to provide the container the configuration to work with the native docker compose files. You are free to use docker volumes to mount a different settings file on top of the ``localsettings.py`` file in order to configure the component with your particular setup.
 
 However, if you look at the component's local settings file, you may see some slight alterations based on environment variable overrides. The following snippet shows some of the alterations you would find in the project's ``docker/*/settings.py`` files, or within the container at ``/usr/src/app/localsettings.py``:
 
@@ -59,7 +59,7 @@ Boolean: ``str2bool(os.getenv('PARAM_NAME', default_value))``
 
 Where ``default_value`` is your specified default, and ``PARAM_NAME`` is the name of the configuration you are overriding. Note that you will need to rebuild your containers if you alter code within the project.
 
-The environment overrides can then be applied to your component within the normal ``-e`` flag from Docker, or in the ``docker-compose.yml`` files like show below.
+The environment overrides can then be applied to your component within the normal ``-e`` flag from Docker, or in the ``docker-compose.yml`` files as shown below.
 
 ::
 
@@ -177,4 +177,4 @@ From here, please continue to the :ref:`Kibana <elk_kibana>` portion of the :doc
 
 ------
 
-As we continue to to expand into the docker world this page is subject to change. If you have a novel or different way you would like to use Scrapy Cluster in your container based application we would love to hear about it.
+As we continue to expand into the docker world this page is subject to change. If you have a novel or different way you would like to use Scrapy Cluster in your container-based application we would love to hear about it.
