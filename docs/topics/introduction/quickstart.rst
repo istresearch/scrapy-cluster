@@ -79,7 +79,7 @@ At the time of writing, there is no Docker container to interface and run all of
 
   OK
 
-This script will run both offline unit tests and online integration tests for your particular container. You will want to do this on all three component containers.
+This script will run both offline unit tests and online integration tests for your particular container. You will want to do this on all the component containers.
 
 You now appear to have a working docker environment, so jump down to `Your First Crawl`_ to finish the quickstart. Note that since this is a pre-canned cluster thanks to docker compose, you have everything already spun up except the dump utilities.
 
