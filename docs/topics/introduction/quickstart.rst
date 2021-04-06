@@ -3,7 +3,7 @@
 Quick Start
 ===========
 
-*This guide does not go into detail as to how everything works but, hopefully, it will get you scraping quickly. For more information about how each process works please see the rest of the documentation.*
+*This guide does not go into detail as to how everything works but it will hopefully get you scraping quickly. For more information about how each process works please see the rest of the documentation.*
 
 Setup
 -----
