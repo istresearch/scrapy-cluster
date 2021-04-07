@@ -36,13 +36,13 @@ class CustomSpider(LinkSpider):
 class TestLinkSpider(TestCase):
 
     example_feed = "{\"allowed_domains\":null,\"allow_regex\":null,\""\
-        "crawlid\":\"abc12345\",\"url\":\"http://dmoztools.net/\",\"expires\":0,\""\
+        "crawlid\":\"abc12345\",\"url\":\"http://books.toscrape.com/\",\"expires\":0,\""\
         "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
         "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
         "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":0, \"domain_max_pages\":0}"
 
-    example_feed_max = "{\"allowed_domains\":[\"dmoztools.net\"],\"allow_regex\":null,\""\
-        "crawlid\":\"abc1234567\",\"url\":\"http://dmoztools.net/\",\"expires\":0,\""\
+    example_feed_max = "{\"allowed_domains\":[\"toscrape.com\"],\"allow_regex\":null,\""\
+        "crawlid\":\"abc1234567\",\"url\":\"http://books.toscrape.com/\",\"expires\":0,\""\
         "ts\":1461549923.7956631184,\"priority\":1,\"deny_regex\":null,\""\
         "cookie\":null,\"attrs\":null,\"appid\":\"test\",\"spiderid\":\""\
         "test-spider\",\"useragent\":null,\"deny_extensions\":null,\"maxdepth\":3, \"domain_max_pages\":4}"
@@ -85,7 +85,7 @@ class TestLinkSpider(TestCase):
         d = runner.crawl(CustomSpider)
         d.addBoth(lambda _: reactor.stop())
         # add crawl to redis
-        key = "test-spider:dmoztools.net:queue"
+        key = "test-spider:toscrape.com:queue"
         self.redis_conn.zadd(key, {self.example_feed: -80})
         self.redis_conn.zadd(key, {self.example_feed_max: -90})
 
