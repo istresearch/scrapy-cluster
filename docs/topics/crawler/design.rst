@@ -60,6 +60,13 @@ custom_cookies.py
 
 Enables long lived spiders to not cache the cookies received in the Spider cookie jar, yet pass cookies in all Requests. This prevents the spiders from caching response cookies and making subsequent requests with those cookies for a completely different crawl job.
 
+distributed\_cookies.py
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Cache the cookies across Redis for each crawl job.
+It also permit to clear the cookies when an item, sharing the same ``crawlid``, is yield.
+You have to choose between this and custom_cookies.
+
 distributed\_scheduler.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

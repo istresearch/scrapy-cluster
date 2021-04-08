@@ -151,7 +151,10 @@ SPIDER_MIDDLEWARES = {
     # depth management per crawl request
     'scrapy.spidermiddlewares.depth.DepthMiddleware': None,
     'crawling.meta_passthrough_middleware.MetaPassthroughMiddleware': 100,
-    'crawling.redis_stats_middleware.RedisStatsMiddleware': 101
+    'crawling.redis_stats_middleware.RedisStatsMiddleware': 101,
+    # delete the cookies in Redis having the same crawlid of the yield item
+    # It is used with distributed_ccokies.DistributedCookiesMiddleware
+    # 'crawling.distributed_cookies.ClearCookiesMiddleware': 102
 }
 
 DOWNLOADER_MIDDLEWARES = {
@@ -163,7 +166,16 @@ DOWNLOADER_MIDDLEWARES = {
     # custom cookies to not persist across crawl requests
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
     'crawling.custom_cookies.CustomCookiesMiddleware': 700,
+    # delete the cookies in Redis having the same crawlid of the yield item
+    # It is used with distributed_cookies.DistributedCookiesMiddleware
+    # 'crawling.distributed_cookies.ClearCookiesMiddleware': 102
 }
+
+# To use this, you must enable the crawling.distributed_cookies.DistributedCookiesMiddleware downloader
+# The key and value (containing the cookies of a crawl process) are deleted after the
+# timeout in ms (the timeout is refreshed after each request or returned response).
+# If the value is None, the cookies will stay in Redis.
+# DISTRIBUTED_COOKIES_TIMEOUT = 1 * 1000 * 60 * 5  # 5 minutes
 
 # Disable the built in logging in production
 LOG_ENABLED = False
