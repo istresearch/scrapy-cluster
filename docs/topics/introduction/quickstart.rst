@@ -145,25 +145,26 @@ At time of writing, there is no Docker container to interface and run all of the
 
   ::
 
-    $ docker exec -it scrapycluster_kafka_monitor_1 bash
+    $ docker exec -it scrapy-cluster_kafka_monitor_1 bash
 
   Redis monitor
 
   ::
 
-    $ docker exec -it scrapycluster_redis_monitor_1 bash
+    $ docker exec -it scrapy-cluster_redis_monitor_1 bash
 
   Crawler
 
   ::
 
-    $ docker exec -it scrapycluster_crawler_1 bash
+    $ docker exec -it scrapy-cluster_crawler_1 bash
 
   Rest
+  Chnage the Flask port in localsettings.py to 5000
 
   ::
 
-    $ docker exec -it scrapycluster_rest_1 bash
+    $ docker exec -it scrapy-cluster_rest_1 bash
 
 5) Run the unit and integration test for that component. Note that your output may be slightly different but your tests should pass consistently.
 
