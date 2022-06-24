@@ -46,15 +46,15 @@ class CategorySpider(RedisSpider):
 		item['attrs'] = response.meta['attrs']
 
         # Populated from raw HTTP response
-        item["url"] = response.request.url
-        item["response_url"] = response.url
-        item["status_code"] = response.status
-        item["status_msg"] = "OK"
-        item["response_headers"] = self.reconstruct_headers(response)
-        item["request_headers"] = response.request.headers
-        item["body"] = response.body
-        item["encoding"] = response.encoding
-        yield item
+		item["url"] = response.request.url
+		item["response_url"] = response.url
+		item["status_code"] = response.status
+		item["status_msg"] = "OK"
+		item["response_headers"] = self.reconstruct_headers(response)
+		item["request_headers"] = response.request.headers
+		item["body"] = response.body
+		item["encoding"] = response.encoding
+		yield item
 		# home_soup = BeautifulSoup(response.body.text, 'html.parser')
 	 #    cat_list = home_soup.find_all("ul", {'class': 'sub-item-list'})
 	 #    subcat_list = []
