@@ -26,7 +26,7 @@ ZOOKEEPER_ASSIGN_PATH = '/scrapy-cluster/crawler/'
 ZOOKEEPER_ID = 'all'
 ZOOKEEPER_HOSTS = 'localhost:2181'
 
-PUBLIC_IP_URL = 'http://ip.42.pl/raw'
+PUBLIC_IP_URL = 'https://api.ipify.org?format=text'
 IP_ADDR_REGEX = '(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
 # Don't cleanup redis queues, allows to pause/resume crawls.
