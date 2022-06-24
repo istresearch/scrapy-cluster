@@ -42,8 +42,8 @@ class CategorySpider(RedisSpider):
 
 		# Populated from response.meta
 		item['appid'] = response.meta['appid']
-        item['crawlid'] = response.meta['crawlid']
-        item['attrs'] = response.meta['attrs']
+		item['crawlid'] = response.meta['crawlid']
+		item['attrs'] = response.meta['attrs']
 
         # Populated from raw HTTP response
         item["url"] = response.request.url
