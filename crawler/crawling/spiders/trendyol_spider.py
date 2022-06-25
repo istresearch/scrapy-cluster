@@ -34,8 +34,8 @@ class CategorySpider(RedisSpider):
 	# Start parsing the response
 	def parse(self, response):
 		# Log parsing start
-		self._logger.info("Crawled URL: ". response.request.url)
-		self.logger.info("Parsing the response...")
+		self._logger.info(f"Crawled URL: {response.request.url}")
+		self._logger.info("Parsing the response...")
 
 		# Capture raw response
 		item = RawResponseItem()
