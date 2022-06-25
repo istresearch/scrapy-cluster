@@ -20,11 +20,21 @@ services:
       - redis
       - zookeeper
     restart: always
-  crawler:
+  link_crawler:
     image: istresearch/scrapy-cluster:crawler-ci-dev
     build:
       context: .
-      dockerfile: docker/crawler/Dockerfile.py3
+      dockerfile: docker/crawler/link-Dockerfile.py3
+    depends_on:
+      - kafka
+      - redis
+      - zookeeper
+    restart: always
+  trendyol_crawler:
+    image: istresearch/scrapy-cluster:crawler-ci-dev
+    build:
+      context: .
+      dockerfile: docker/crawler/trendyol-Dockerfile.py3
     depends_on:
       - kafka
       - redis
