@@ -7,7 +7,7 @@ import time
 import sys
 from scrapy.utils.response import response_status_message
 
-from scrapy.xlib.tx import ResponseFailed
+from scrapy.exceptions import IgnoreRequest
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
         ConnectionRefusedError, ConnectionDone, ConnectError, \
@@ -22,7 +22,7 @@ class LogRetryMiddleware(object):
 
     EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
                            ConnectionRefusedError, ConnectionDone, ConnectError,
-                           ConnectionLost, TCPTimedOutError, ResponseFailed,
+                           ConnectionLost, TCPTimedOutError, IgnoreRequest,
                            IOError)
 
     def __init__(self, settings):

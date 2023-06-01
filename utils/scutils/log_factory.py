@@ -8,7 +8,7 @@ import errno
 import copy
 
 from pythonjsonlogger import jsonlogger
-from cloghandler import ConcurrentRotatingFileHandler
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 
 class LogFactory(object):

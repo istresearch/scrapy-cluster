@@ -2,21 +2,21 @@
 
 # Define here the models for your scraped items
 
-from scrapy import Item, Field
+import scrapy
 
 
-class RawResponseItem(Item):
-    appid = Field()
-    crawlid = Field()
-    url = Field()
-    response_url = Field()
-    status_code = Field()
-    status_msg = Field()
-    response_headers = Field()
-    request_headers = Field()
-    body = Field()
-    links = Field()
-    attrs = Field()
-    success = Field()
-    exception = Field()
-    encoding = Field()
+class RawResponseItem(scrapy.Item):
+    appid = scrapy.Field()
+    crawlid = scrapy.Field()
+    url = scrapy.Field()
+    response_url = scrapy.Field()
+    status_code = scrapy.Field()
+    status_msg = scrapy.Field()
+    response_headers = scrapy.Field()
+    request_headers = scrapy.Field()
+    body = scrapy.Field()
+    links = scrapy.Field()
+    attrs = scrapy.Field()
+    success = scrapy.Field()
+    exception = scrapy.Field()
+    encoding = scrapy.Field()

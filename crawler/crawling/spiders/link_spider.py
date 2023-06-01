@@ -1,12 +1,11 @@
 from __future__ import absolute_import
-import scrapy
 
 from scrapy.http import Request
-from crawling.spiders.lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
-from scrapy.conf import settings
+from .lxmlhtml import CustomLxmlLinkExtractor as LinkExtractor
 
-from crawling.items import RawResponseItem
-from crawling.spiders.redis_spider import RedisSpider
+
+from ..items import RawResponseItem
+from .redis_spider import RedisSpider
 
 
 class LinkSpider(RedisSpider):

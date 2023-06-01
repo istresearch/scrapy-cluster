@@ -1,23 +1,23 @@
-ConcurrentLogHandler==0.9.1
+concurrent-log-handler==0.9.20
 funcsigs==1.0.2
-future==0.16.0
+future==0.18.3
 idna==2.6  # Updated from 2.5
 jsonschema==2.6.0
-kafka-python==1.4.3  # Updated from 1.3.3
-kazoo==2.4.0  # Updated from 2.2.1
+kafka-python==1.4.3
+kazoo==2.5.0
 mock==2.0.0
 nose==1.3.7
 pbr==4.0.3  # Updated from 2.0.0
 python-json-logger==0.1.8  # Updated from 0.1.7
 python-redis-lock==3.2.0
-PyYAML==3.12
+PyYAML==6.0
 redis>=3.0  # Updated from 2.10.5
-requests==2.18.4  # Updated from 2.13.0
+requests==2.26.0
 requests-file==1.4.3  # Updated from 1.4.1
 retrying==1.3.3
 ../utils # scutils==1.3.0dev0
 six==1.11.0  # Updated from 1.10.0
 testfixtures==6.0.2  # Updated from 4.13.5
 tldextract==2.2.0  # Updated from 2.0.2
-ujson==1.35
+ujson==5.7.0
 # Generated with piprot 0.9.10

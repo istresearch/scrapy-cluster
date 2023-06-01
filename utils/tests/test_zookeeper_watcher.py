@@ -1,7 +1,6 @@
 from mock import MagicMock, patch
 from unittest import TestCase
 from scutils.zookeeper_watcher import ZookeeperWatcher
-from kazoo.client import KazooState
 from kazoo.exceptions import ZookeeperError, KazooException
 
 class TestZookeeperWatcher(TestCase):
