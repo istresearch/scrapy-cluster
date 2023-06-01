@@ -487,10 +487,10 @@ class RestService(object):
         @param thread: the thread to close
         @param thread_name: a human readable name of the thread
         """
-        if thread is not None and thread.isAlive():
+        if thread is not None and thread.is_alive():
             self.logger.debug("Waiting for {} thread to close".format(thread_name))
             thread.join(timeout=self.settings['DAEMON_THREAD_JOIN_TIMEOUT'])
-            if thread.isAlive():
+            if thread.is_alive():
                 self.logger.warn("{} daemon thread unable to be shutdown"
                                  " within timeout".format(thread_name))
 
