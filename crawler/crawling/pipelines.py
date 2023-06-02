@@ -173,10 +173,32 @@ class KafkaPipeline(object):
         item = self._clean_item(item)
         self.logger.error("Failed to send page to Kafka", item)
 
+    def decode_dict(self, data):
+        decoded_dict = {}
+        for key, value in data.items():
+            if isinstance(value, bytes):
+                decoded_dict[key] = value.decode()
+            elif isinstance(value, dict):
+                decoded_dict[key] = self.decode_dict(value)
+            elif isinstance(value, list):
+                decoded_list = []
+                for item in value:
+                    if isinstance(item, bytes):
+                        decoded_list.append(item.decode())
+                    elif isinstance(item, dict):
+                        decoded_list.append(self.decode_dict(item))
+                    else:
+                        decoded_list.append(item)
+                decoded_dict[key] = decoded_list
+            else:
+                decoded_dict[key] = value
+        return decoded_dict
+
     def process_item(self, item, spider):
         try:
             self.logger.debug("Processing item in KafkaPipeline")
             datum = dict(item)
+            datum = self.decode_dict(datum)
             datum["timestamp"] = self._get_time()
             prefix = self.topic_prefix
 

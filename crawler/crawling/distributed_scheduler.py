@@ -417,6 +417,27 @@ class DistributedScheduler(object):
         redis_key = self.spider.name + ":blacklist"
         return self.redis_conn.sismember(redis_key, key_check)
 
+    def decode_dict(self, data):
+        decoded_dict = {}
+        for key, value in data.items():
+            if isinstance(value, bytes):
+                decoded_dict[key] = value.decode()
+            elif isinstance(value, dict):
+                decoded_dict[key] = self.decode_dict(value)
+            elif isinstance(value, list):
+                decoded_list = []
+                for item in value:
+                    if isinstance(item, bytes):
+                        decoded_list.append(item.decode())
+                    elif isinstance(item, dict):
+                        decoded_list.append(self.decode_dict(item))
+                    else:
+                        decoded_list.append(item)
+                decoded_dict[key] = decoded_list
+            else:
+                decoded_dict[key] = value
+        return decoded_dict
+
     def enqueue_request(self, request):
         '''
         Pushes a request from the spider into the proper throttled queue
@@ -429,6 +450,7 @@ class DistributedScheduler(object):
 
         # An individual crawling request of a domain's page
         req_dict = request_to_dict(request, self.spider)
+        req_dict = self.decode_dict(req_dict)
 
         # # # # # # # # # # # # # # # # # # Page Limit Filters # # # # # # # # # # # # # # #
         # Max page filter per individual domain
