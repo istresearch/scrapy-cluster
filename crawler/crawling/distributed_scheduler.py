@@ -126,7 +126,7 @@ class DistributedScheduler(object):
             self.logger.error("Could not connect to Zookeeper")
             sys.exit(1)
 
-        if self.zoo_watcher.ping():
+        if self.zoo_watcher.is_valid():
             self.logger.debug("Successfully set up Zookeeper connection")
         else:
             self.logger.error("Could not ping Zookeeper")
