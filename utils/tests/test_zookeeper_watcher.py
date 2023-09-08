@@ -20,9 +20,9 @@ class TestZookeeperWatcher(TestCase):
 
     def test_ping(self):
         self.zoo_watcher.zoo_client.server_version = MagicMock()
-        self.assertTrue(self.zoo_watcher.ping())
+        self.assertTrue(self.zoo_watcher.is_valid())
         self.zoo_watcher.zoo_client.server_version = MagicMock(side_effect=KazooException)
-        self.assertFalse(self.zoo_watcher.ping())
+        self.assertFalse(self.zoo_watcher.is_valid())
 
     def test_get_file_contents(self):
         self.zoo_watcher.old_pointed = 'old_pointed'
