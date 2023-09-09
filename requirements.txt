@@ -6,7 +6,7 @@ Jinja2==3.0.0
 MarkupSafe==2.1.2
 PyDispatcher==2.0.5
 PyYAML==6.0
-scrapy==2.6.2
+scrapy==2.10.0
 Twisted~=22.10.0
 Werkzeug==2.0.0
 characteristic==14.3.0
@@ -38,7 +38,7 @@ requests==2.26.0
 requests-file==1.4.3  # Updated from 1.4.2
 retrying==1.3.3
 ./utils # scutils==1.3.0dev0
-service-identity==17.0.0
+service-identity==23.1.0
 six==1.11.0  # Updated from 1.10.0
 testfixtures==6.0.2  # Updated from 5.1.1
 tldextract==2.2.0  # Updated from 2.1.0

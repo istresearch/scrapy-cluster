@@ -1,7 +1,7 @@
 # coding=utf-8
 import tldextract
 from scrapy.dupefilters import BaseDupeFilter
-from scrapy.utils.reqser import request_to_dict
+from scrapy.http import Request
 
 
 class RFDomainMaxPageFilter(BaseDupeFilter):
@@ -31,7 +31,7 @@ class RFDomainMaxPageFilter(BaseDupeFilter):
     def request_page_limit_reached(self, request, spider):
         # Collect items composing the redis key
         # grab the tld of the request
-        req_dict = request_to_dict(request, spider)
+        req_dict = Request.to_dict(request, spider=spider)
         ex_res = self.extract(req_dict['url'])
         domain = "{d}.{s}".format(d=ex_res.domain, s=ex_res.suffix)
 

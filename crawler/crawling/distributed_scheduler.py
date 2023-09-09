@@ -14,7 +14,7 @@ new_settings = Settings()
 new_settings.setmodule(settings)
 
 from scrapy.utils.python import to_unicode
-from scrapy.utils.reqser import request_to_dict, request_from_dict
+from scrapy.utils.request import request_from_dict
 
 import redis
 import random
@@ -449,8 +449,7 @@ class DistributedScheduler(object):
             return
 
         # An individual crawling request of a domain's page
-        req_dict = request_to_dict(request, self.spider)
-        req_dict = self.decode_dict(req_dict)
+        req_dict = Request.to_dict(request, spider=self.spider)
 
         # # # # # # # # # # # # # # # # # # Page Limit Filters # # # # # # # # # # # # # # #
         # Max page filter per individual domain
@@ -496,6 +495,7 @@ class DistributedScheduler(object):
                     curr_time < req_dict['meta']['expires']):
                 # we may already have the queue in memory
                 if key in self.queue_keys:
+                    req_dict = self.decode_dict(req_dict)
                     self.queue_dict[key][0].push(req_dict,
                                               req_dict['meta']['priority'])
                 else:
@@ -563,7 +563,7 @@ class DistributedScheduler(object):
                     .format(url=item['url']))
             if 'meta' in item:
                 # item is a serialized request
-                req = request_from_dict(item, self.spider)
+                req = request_from_dict(item, spider=self.spider)
             else:
                 # item is a feed from outside, parse it manually
                 req = self.request_from_feed(item)

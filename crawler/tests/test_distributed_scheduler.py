@@ -7,7 +7,7 @@ import mock
 from mock import MagicMock
 from crawling.distributed_scheduler import DistributedScheduler
 from scrapy.http import Request
-from scrapy.utils.reqser import request_to_dict
+from scrapy.http import Request
 from scutils.redis_throttled_queue import RedisThrottledQueue
 
 
@@ -232,7 +232,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         exist_req.meta["crawlid"] = "abc123"
         exist_req.meta["appid"] = "myapp"
         exist_req.meta["spiderid"] = "link"
-        exist_item = request_to_dict(exist_req)
+        exist_item = Request.to_dict(exist_req)
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')
@@ -241,7 +241,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
 
         # test request from serialized request with supplied cookie
         exist_req = Request('http://ex.com', cookies={'auth':'101'})
-        exist_item = request_to_dict(exist_req)
+        exist_item = Request.to_dict(exist_req)
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')
@@ -256,7 +256,7 @@ class TestDistributedSchedulerNextRequest(ThrottleMixin, TestCase):
         exist_req.meta["appid"] = "myapp"
         exist_req.meta["spiderid"] = "link"
         exist_req.meta["cookie"] = {'authenticated': False, 'privacy':9}
-        exist_item = request_to_dict(exist_req)
+        exist_item = Request.to_dict(exist_req)
         self.scheduler.find_item = MagicMock(return_value=exist_item)
         out = self.scheduler.next_request()
         self.assertEqual(out.url, 'http://ex.com')

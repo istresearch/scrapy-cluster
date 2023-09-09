@@ -198,7 +198,6 @@ class KafkaPipeline(object):
         try:
             self.logger.debug("Processing item in KafkaPipeline")
             datum = dict(item)
-            datum = self.decode_dict(datum)
             datum["timestamp"] = self._get_time()
             prefix = self.topic_prefix
 
@@ -216,6 +215,7 @@ class KafkaPipeline(object):
                 elif 'utf-8' != encoding:
                     datum['body'] = datum['body'].decode(datum['encoding'])
 
+                datum = self.decode_dict(datum)
                 message = ujson.dumps(datum, sort_keys=True)
             except:
                 message = 'json failed to parse'
