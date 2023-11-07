@@ -196,7 +196,7 @@ jobs:
 
             #     is a tagged release   |       is a pull request        |     is on the develop branch
             if [[ ! -z $CIRCLE_TAG ]] || [[ ! -z $CIRCLE_PULL_REQUEST ]] || [[ $BRANCH == $DEVELOP_BRANCH ]]; then
-              docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+              docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}" docker.io
 
               docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM -t $KAFKA_MONITOR_IMAGE-$VERSION_TAG -f docker/kafka-monitor/Dockerfile.py3 .
               docker build --build-arg BUILD_NUMBER=$CIRCLE_BUILD_NUM -t $REDIS_MONITOR_IMAGE-$VERSION_TAG -f docker/redis-monitor/Dockerfile.py3 .
