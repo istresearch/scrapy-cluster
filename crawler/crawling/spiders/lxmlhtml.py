@@ -6,7 +6,6 @@ from scrapy.linkextractors.lxmlhtml import LxmlParserLinkExtractor
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.link import Link
 from six.moves.urllib.parse import urljoin
-from scrapy.utils.python import unique as unique_list, to_native_str
 import lxml.etree as etree
 from scrapy.utils.misc import rel_has_nofollow
 
@@ -36,8 +35,8 @@ class CustomParser(LxmlParserLinkExtractor):
                 if url is None:
                     continue
             # added 'ignore' to encoding errors
-            url = to_native_str(url, encoding=response_encoding,
-                                errors='ignore')
+            if isinstance(url, bytes):
+                url = url.decode('utf-8')
             # to fix relative links after process_value
             url = urljoin(response_url, url)
             link = Link(url, _collect_string_content(el) or u'',

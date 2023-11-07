@@ -6,9 +6,15 @@ from past.builtins import basestring
 from six import string_types
 from builtins import object
 from scrapy.http import Request
-from scrapy.conf import settings
+
+# from scrapy.conf import settings
+from scrapy.settings import Settings
+from . import settings
+new_settings = Settings()
+new_settings.setmodule(settings)
+
 from scrapy.utils.python import to_unicode
-from scrapy.utils.reqser import request_to_dict, request_from_dict
+from scrapy.utils.request import request_from_dict
 
 import redis
 import random
@@ -106,12 +112,12 @@ class DistributedScheduler(object):
         self.my_uuid = str(uuid.uuid4()).split('-')[4]
 
     def setup_zookeeper(self):
-        self.assign_path = settings.get('ZOOKEEPER_ASSIGN_PATH', "")
-        self.my_id = settings.get('ZOOKEEPER_ID', 'all')
+        self.assign_path = new_settings.get('ZOOKEEPER_ASSIGN_PATH', "")
+        self.my_id = new_settings.get('ZOOKEEPER_ID', 'all')
         self.logger.debug("Trying to establish Zookeeper connection")
         try:
             self.zoo_watcher = ZookeeperWatcher(
-                                hosts=settings.get('ZOOKEEPER_HOSTS'),
+                                hosts=new_settings.get('ZOOKEEPER_HOSTS'),
                                 filepath=self.assign_path + self.my_id,
                                 config_handler=self.change_config,
                                 error_handler=self.error_config,
@@ -120,7 +126,7 @@ class DistributedScheduler(object):
             self.logger.error("Could not connect to Zookeeper")
             sys.exit(1)
 
-        if self.zoo_watcher.ping():
+        if self.zoo_watcher.is_valid():
             self.logger.debug("Successfully set up Zookeeper connection")
         else:
             self.logger.error("Could not ping Zookeeper")
@@ -290,7 +296,7 @@ class DistributedScheduler(object):
         self.old_ip = self.my_ip
         self.my_ip = '127.0.0.1'
         try:
-            obj = urllib.request.urlopen(settings.get('PUBLIC_IP_URL',
+            obj = urllib.request.urlopen(new_settings.get('PUBLIC_IP_URL',
                                   'http://ip.42.pl/raw'))
             results = self.ip_regex.findall(obj.read().decode('utf-8'))
             if len(results) > 0:
@@ -311,7 +317,7 @@ class DistributedScheduler(object):
         '''
         Reports the crawler uuid to redis
         '''
-        self.logger.debug("Reporting self id", extra={'uuid':self.my_uuid})
+        self.logger.debug("Reporting self id: {extra}".format(extra={'uuid':self.my_uuid}))
         key = "stats:crawler:{m}:{s}:{u}".format(
             m=socket.gethostname(),
             s=self.spider.name,
@@ -321,36 +327,36 @@ class DistributedScheduler(object):
 
     @classmethod
     def from_settings(cls, settings):
-        server = redis.Redis(host=settings.get('REDIS_HOST'),
-                             port=settings.get('REDIS_PORT'),
-                             db=settings.get('REDIS_DB'),
-                             password=settings.get('REDIS_PASSWORD'),
+        server = redis.Redis(host=new_settings.get('REDIS_HOST'),
+                             port=new_settings.get('REDIS_PORT'),
+                             db=new_settings.get('REDIS_DB'),
+                             password=new_settings.get('REDIS_PASSWORD'),
                              decode_responses=True,
-                             socket_timeout=settings.get('REDIS_SOCKET_TIMEOUT'),
-                             socket_connect_timeout=settings.get('REDIS_SOCKET_TIMEOUT'))
-        persist = settings.get('SCHEDULER_PERSIST', True)
-        up_int = settings.get('SCHEDULER_QUEUE_REFRESH', 10)
-        hits = settings.get('QUEUE_HITS', 10)
-        window = settings.get('QUEUE_WINDOW', 60)
-        mod = settings.get('QUEUE_MODERATED', False)
-        timeout = settings.get('DUPEFILTER_TIMEOUT', 600)
-        ip_refresh = settings.get('SCHEDULER_IP_REFRESH', 60)
-        add_type = settings.get('SCHEDULER_TYPE_ENABLED', False)
-        add_ip = settings.get('SCHEDULER_IP_ENABLED', False)
-        retries = settings.get('SCHEUDLER_ITEM_RETRIES', 3)
-        ip_regex = settings.get('IP_ADDR_REGEX', '.*')
-        backlog_blacklist = settings.get('SCHEDULER_BACKLOG_BLACKLIST', True)
-        queue_timeout = settings.get('SCHEDULER_QUEUE_TIMEOUT', 3600)
+                             socket_timeout=new_settings.get('REDIS_SOCKET_TIMEOUT'),
+                             socket_connect_timeout=new_settings.get('REDIS_SOCKET_TIMEOUT'))
+        persist = new_settings.get('SCHEDULER_PERSIST', True)
+        up_int = new_settings.get('SCHEDULER_QUEUE_REFRESH', 10)
+        hits = new_settings.get('QUEUE_HITS', 10)
+        window = new_settings.get('QUEUE_WINDOW', 60)
+        mod = new_settings.get('QUEUE_MODERATED', False)
+        timeout = new_settings.get('DUPEFILTER_TIMEOUT', 600)
+        ip_refresh = new_settings.get('SCHEDULER_IP_REFRESH', 60)
+        add_type = new_settings.get('SCHEDULER_TYPE_ENABLED', False)
+        add_ip = new_settings.get('SCHEDULER_IP_ENABLED', False)
+        retries = new_settings.get('SCHEUDLER_ITEM_RETRIES', 3)
+        ip_regex = new_settings.get('IP_ADDR_REGEX', '.*')
+        backlog_blacklist = new_settings.get('SCHEDULER_BACKLOG_BLACKLIST', True)
+        queue_timeout = new_settings.get('SCHEDULER_QUEUE_TIMEOUT', 3600)
 
 
-        my_level = settings.get('SC_LOG_LEVEL', 'INFO')
-        my_name = settings.get('SC_LOGGER_NAME', 'sc-logger')
-        my_output = settings.get('SC_LOG_STDOUT', True)
-        my_json = settings.get('SC_LOG_JSON', False)
-        my_dir = settings.get('SC_LOG_DIR', 'logs')
-        my_bytes = settings.get('SC_LOG_MAX_BYTES', '10MB')
-        my_file = settings.get('SC_LOG_FILE', 'main.log')
-        my_backups = settings.get('SC_LOG_BACKUPS', 5)
+        my_level = new_settings.get('SC_LOG_LEVEL', 'INFO')
+        my_name = new_settings.get('SC_LOGGER_NAME', 'sc-logger')
+        my_output = new_settings.get('SC_LOG_STDOUT', True)
+        my_json = new_settings.get('SC_LOG_JSON', False)
+        my_dir = new_settings.get('SC_LOG_DIR', 'logs')
+        my_bytes = new_settings.get('SC_LOG_MAX_BYTES', '10MB')
+        my_file = new_settings.get('SC_LOG_FILE', 'main.log')
+        my_backups = new_settings.get('SC_LOG_BACKUPS', 5)
 
         logger = LogFactory.get_instance(json=my_json,
                                          name=my_name,
@@ -361,9 +367,9 @@ class DistributedScheduler(object):
                                          bytes=my_bytes,
                                          backups=my_backups)
 
-        global_page_per_domain_limit = settings.get('GLOBAL_PAGE_PER_DOMAIN_LIMIT', None)
-        global_page_per_domain_limit_timeout = settings.get('GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT', 600)
-        domain_max_page_timeout = settings.get('DOMAIN_MAX_PAGE_TIMEOUT', 600)
+        global_page_per_domain_limit = new_settings.get('GLOBAL_PAGE_PER_DOMAIN_LIMIT', None)
+        global_page_per_domain_limit_timeout = new_settings.get('GLOBAL_PAGE_PER_DOMAIN_LIMIT_TIMEOUT', 600)
+        domain_max_page_timeout = new_settings.get('DOMAIN_MAX_PAGE_TIMEOUT', 600)
 
         return cls(server, persist, up_int, timeout, retries, logger, hits,
                    window, mod, ip_refresh, add_type, add_ip, ip_regex,
@@ -411,6 +417,27 @@ class DistributedScheduler(object):
         redis_key = self.spider.name + ":blacklist"
         return self.redis_conn.sismember(redis_key, key_check)
 
+    def decode_dict(self, data):
+        decoded_dict = {}
+        for key, value in data.items():
+            if isinstance(value, bytes):
+                decoded_dict[key] = value.decode()
+            elif isinstance(value, dict):
+                decoded_dict[key] = self.decode_dict(value)
+            elif isinstance(value, list):
+                decoded_list = []
+                for item in value:
+                    if isinstance(item, bytes):
+                        decoded_list.append(item.decode())
+                    elif isinstance(item, dict):
+                        decoded_list.append(self.decode_dict(item))
+                    else:
+                        decoded_list.append(item)
+                decoded_dict[key] = decoded_list
+            else:
+                decoded_dict[key] = value
+        return decoded_dict
+
     def enqueue_request(self, request):
         '''
         Pushes a request from the spider into the proper throttled queue
@@ -422,7 +449,7 @@ class DistributedScheduler(object):
             return
 
         # An individual crawling request of a domain's page
-        req_dict = request_to_dict(request, self.spider)
+        req_dict = Request.to_dict(request, spider=self.spider)
 
         # # # # # # # # # # # # # # # # # # Page Limit Filters # # # # # # # # # # # # # # #
         # Max page filter per individual domain
@@ -468,6 +495,7 @@ class DistributedScheduler(object):
                     curr_time < req_dict['meta']['expires']):
                 # we may already have the queue in memory
                 if key in self.queue_keys:
+                    req_dict = self.decode_dict(req_dict)
                     self.queue_dict[key][0].push(req_dict,
                                               req_dict['meta']['priority'])
                 else:
@@ -535,7 +563,7 @@ class DistributedScheduler(object):
                     .format(url=item['url']))
             if 'meta' in item:
                 # item is a serialized request
-                req = request_from_dict(item, self.spider)
+                req = request_from_dict(item, spider=self.spider)
             else:
                 # item is a feed from outside, parse it manually
                 req = self.request_from_feed(item)

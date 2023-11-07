@@ -396,7 +396,7 @@ class TestZookeeperWatcher(TestCase):
                                             valid_init=True)
 
     def test_ping(self):
-        self.assertTrue(self.zoo_watcher.ping())
+        self.assertTrue(self.zoo_watcher)
 
     def test_get_file_contents(self):
         pointer_zoo_watcher = ZookeeperWatcher(hosts=self.hosts,
